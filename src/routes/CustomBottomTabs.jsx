@@ -11,14 +11,17 @@ import {
   responsiveWidth,
 } from '../utils';
 import Home from '../screens/main/Home/Home';
+import BookingsScreens from './../screens/main/Bookings/BookingsScreens';
+import Calculator from './../screens/main/Calculator/Calculator';
+import MyFiles from './../screens/main/MyFiles/MyFiles';
 
 const Tab = createBottomTabNavigator();
 
 const screens = [
   { name: 'Home', icon: 'home-outline' },
   { name: 'Calculator', icon: 'calculator-variant' },
-  { name: 'Calendar', icon: 'calendar-check-outline' },
-  { name: 'Documents', icon: 'file-document-outline' },
+  { name: 'Bookings', icon: 'calendar-check-outline' },
+  { name: 'My Files', icon: 'file-document-outline' },
   { name: 'Profile', icon: 'account-outline' },
 ];
 
@@ -26,12 +29,12 @@ const DummyScreen = ({ route }) => {
   switch (route.name) {
     case 'Home':
       return <Home />;
-    // case 'Calculator':
-    //   return <Calculator />;
-    // case 'Calendar':
-    //   return <Calendar />;
-    // case 'Documents':
-    //   return <Documents />;
+    case 'Calculator':
+      return <Calculator />;
+    case 'Bookings':
+      return <BookingsScreens />;
+    case 'My Files':
+      return <MyFiles />;
     // case 'Profile':
     //   return <Profile />;
     default:
@@ -93,7 +96,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 export default function CustomBottomTabs() {
   return (
     <Tab.Navigator
-      screenOptions={{ headerShown: false, }}
+      screenOptions={{ headerShown: false }}
       tabBar={props => <CustomTabBar {...props} />}
     >
       {screens.map(s => (

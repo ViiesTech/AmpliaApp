@@ -5,8 +5,10 @@ import { AppColors, responsiveFontSize, responsiveWidth } from '../utils'
 import { AppImages } from '../assets/images'
 import AppText from './AppText'
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native'
 
 const HomeHeader = () => {
+    const nav = useNavigation();
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', gap: responsiveWidth(3), alignItems: 'center' }}>
@@ -33,7 +35,9 @@ const HomeHeader = () => {
                     height: 40,
                     borderRadius: 100,
                     backgroundColor: AppColors.ThemeColor
-                }}>
+                }}
+                onPress={() => nav.navigate("Notification")}
+                >
                 <Icon
                     name={'bell'}
                     size={responsiveFontSize(2.5)}

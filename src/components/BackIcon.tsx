@@ -12,7 +12,7 @@ const BackIcon = ({ onPress }: Props) => {
     return (
         <TouchableOpacity
             style={{
-                backgroundColor: AppColors.light_themeColor,
+                backgroundColor: AppColors.app_light,
                 width: 40,
                 height: 40,
                 justifyContent: 'center',

@@ -9,11 +9,12 @@ import SVGXml from '../assets/icons/SVGXML'
 type Prop = {
     title?:any,
     icon?:any,
+    onPress?:any,
 }
 
-const ServiceCategory = ({title, icon}:Prop) => {
+const ServiceCategory = ({title, icon, onPress}:Prop) => {
     return (
-        <TouchableOpacity style={{alignItems: 'center'}}>
+        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPress}>
             <View
                 style={{
                     backgroundColor: AppColors.app_light,

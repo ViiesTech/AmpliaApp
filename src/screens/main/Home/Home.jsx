@@ -20,6 +20,7 @@ import PopularService from '../../../components/PopularService';
 import { AppImages } from '../../../assets/images';
 import Bookings from '../../../components/Bookings';
 import OurConsultants from '../../../components/OurConsultants';
+import { useNavigation } from '@react-navigation/native';
 
 const serviceCate = [
   { id: 1, title: 'Tax Preparation & Filing', icon: AppIcons.file },
@@ -73,6 +74,7 @@ const bookings = [
 ];
 
 const Home = () => {
+  const nav = useNavigation();
   return (
     <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
@@ -113,7 +115,7 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => nav.navigate('ServiceCategories')}>
             <AppText
               title={'View More'}
               textSize={1.8}
@@ -132,7 +134,11 @@ const Home = () => {
           }}
           horizontal
           renderItem={({ item }) => (
-            <ServiceCategory title={item.title} icon={item.icon} />
+            <ServiceCategory
+              title={item.title}
+              icon={item.icon}
+              onPress={() => nav.navigate('Services')}
+            />
           )}
         />
         <LineBreak space={3} />
@@ -151,7 +157,7 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => nav.navigate("PopularAndOtherServices")}>
             <AppText
               title={'View More'}
               textSize={1.8}
@@ -201,7 +207,9 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => nav.navigate('Main', { screen: 'Bookings' })}
+          >
             <AppText
               title={'View All'}
               textSize={1.8}

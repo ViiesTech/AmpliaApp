@@ -6,8 +6,10 @@ import AppText from './AppText';
 import AppButton from './AppButton';
 import LineBreak from './LineBreak';
 import { AppImages } from '../assets/images';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeBanner = () => {
+    const nav = useNavigation();
     return (
         <View
             style={{
@@ -33,7 +35,7 @@ const HomeBanner = () => {
                     textFontWeight
                 />
                 <LineBreak space={1} />
-                <AppButton title={'Chat Now'} btnWidth={22} textSize={1.8} btnPadding={8} />
+                <AppButton title={'Chat Now'} handlePress={() => nav.navigate("LiveChat")} btnWidth={22} textSize={1.8} btnPadding={8} />
             </View>
             <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
                 <Image source={AppImages.banner_img} />
