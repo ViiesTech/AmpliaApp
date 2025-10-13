@@ -44,7 +44,7 @@ const AppButton = ({
       }}
     >
       <LinearGradient
-        colors={['#003C46', '#007C91']}
+        colors={ btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
@@ -56,6 +56,7 @@ const AppButton = ({
           borderWidth: borderWidth || 0,
           borderColor: borderColor ?? 'transparent',
           flexDirection: 'row',
+          backgroundColor: btnBackgroundColor,
         }}
       >
         {leftIcon && leftIcon}

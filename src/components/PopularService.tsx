@@ -5,6 +5,8 @@ import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from
 import AppText from './AppText'
 import LineBreak from './LineBreak'
 import Icon from 'react-native-vector-icons/Entypo';
+import { useNavigation } from '@react-navigation/native'
+import RatingView from './RatingView'
 
 type Props = {
     image?: any,
@@ -14,6 +16,7 @@ type Props = {
 }
 
 const PopularService = ({ image, title, rating, price }: Props) => {
+    const nav = useNavigation();
     return (
         <TouchableOpacity
             style={{
@@ -21,7 +24,7 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                 width: responsiveWidth(45),
                 paddingBottom: responsiveHeight(1.5),
                 borderRadius: 15,
-            }}>
+            }} onPress={() => nav.navigate("ServiceDetails")}>
             <Image source={image} />
             <LineBreak space={1.5} />
             <View style={{ paddingHorizontal: responsiveWidth(4) }}>
@@ -33,16 +36,7 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                     numberOfLines={1}
                 />
                 <View style={{ flexDirection: 'row', gap: responsiveWidth(2) }}>
-                    <View style={{ flexDirection: 'row' }}>
-                        {[...Array(5)].map((_, index) => (
-                            <Icon
-                                key={index}
-                                name="star"
-                                size={responsiveFontSize(2.2)}
-                                color={AppColors.ThemeColor}
-                            />
-                        ))}
-                    </View>
+                    <RatingView />
                     <AppText
                         title={rating}
                         textSize={1.8}

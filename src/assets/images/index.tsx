@@ -10,4 +10,5 @@ export const AppImages = {
     service_three: require('./service_three.png'),
     consultant: require('./consultant.png'),
     pdf: require('./pdf_image.png'),
+    service_bg: require('./service_bg.png'),
 };

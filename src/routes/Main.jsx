@@ -7,6 +7,9 @@ import Services from './../screens/main/Home/Services';
 import ReviewsAndRatings from './../screens/main/Bookings/ReviewsAndRatings';
 import PopularAndOtherServices from './../screens/main/Home/PopularAndOtherServices';
 import LiveChat from './../screens/main/Home/LiveChat';
+import ServiceDetails from './../screens/main/Home/ServiceDetails';
+import Payment from './../screens/main/Home/Payment';
+import ScheduleService from './../screens/main/Home/ScheduleService';
 
 const Stack = createStackNavigator();
 const Main = () => {
@@ -23,6 +26,9 @@ const Main = () => {
       <Stack.Screen name="ReviewsAndRatings" component={ReviewsAndRatings} />
       <Stack.Screen name="PopularAndOtherServices" component={PopularAndOtherServices} />
       <Stack.Screen name="LiveChat" component={LiveChat} />
+      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+      <Stack.Screen name="Payment" component={Payment} />
+      <Stack.Screen name="ScheduleService" component={ScheduleService} />
     </Stack.Navigator>
   );
 };
