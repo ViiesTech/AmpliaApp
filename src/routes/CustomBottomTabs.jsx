@@ -14,6 +14,7 @@ import Home from '../screens/main/Home/Home';
 import BookingsScreens from './../screens/main/Bookings/BookingsScreens';
 import Calculator from './../screens/main/Calculator/Calculator';
 import MyFiles from './../screens/main/MyFiles/MyFiles';
+import MyProfile from './../screens/main/MyProfile/MyProfile';
 
 const Tab = createBottomTabNavigator();
 
@@ -35,8 +36,8 @@ const DummyScreen = ({ route }) => {
       return <BookingsScreens />;
     case 'My Files':
       return <MyFiles />;
-    // case 'Profile':
-    //   return <Profile />;
+    case 'Profile':
+      return <MyProfile />;
     default:
       return null; // Always return something
   }

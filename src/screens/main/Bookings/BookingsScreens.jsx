@@ -15,6 +15,7 @@ import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import ManageBookingsCard from '../../../components/ManageBookingsCard';
+import { useNavigation } from '@react-navigation/native';
 
 const topTabsData = [
   { id: 1, title: 'Active' },
@@ -105,6 +106,7 @@ const completedData = [
 
 const BookingsScreens = () => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const nav = useNavigation();
 
   return (
     <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
@@ -172,6 +174,7 @@ const BookingsScreens = () => {
                 title={item.title}
                 subTitle={item.subTitle}
                 status={item.status}
+                OnPressCard={() => nav.navigate('BookingChat')}
               />
             )}
           />
@@ -185,6 +188,7 @@ const BookingsScreens = () => {
                 title={item.title}
                 subTitle={item.subTitle}
                 status={item.status}
+                OnPressCard={() => {}}
               />
             )}
           />
@@ -198,6 +202,7 @@ const BookingsScreens = () => {
                 title={item.title}
                 subTitle={item.subTitle}
                 status={item.status}
+                OnPressCard={() => {}}
               />
             )}
           />

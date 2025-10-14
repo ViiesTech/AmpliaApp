@@ -1,19 +1,20 @@
-/* eslint-disable react/self-closing-comp */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View } from 'react-native';
 import Container from '../../../components/Container';
-import { responsiveWidth } from '../../../utils';
-import AppHeader from '../../../components/AppHeader';
-import LineBreak from '../../../components/LineBreak';
 import LiveChatScreen from '../../../components/LiveChatScreen';
 import ChatInput from '../../../components/ChatInput';
+import LineBreak from '../../../components/LineBreak';
+import { responsiveWidth } from '../../../utils';
+import BookingChatHeader from '../../../components/BookingChatHeader';
+import BookingChatStatus from '../../../components/BookingChatStatus';
 
-const LiveChat = () => {
+const BookingChat = () => {
   return (
     <Container scrollEnabled={false} safeAreaViewStyle={{ flex: 1 }}>
       <View style={{ flex: 1, marginHorizontal: responsiveWidth(5) }}>
-        <AppHeader onBackPress={true} heading={'Live Chat'} />
+        <BookingChatHeader />
+        <BookingChatStatus />
         <LiveChatScreen />
       </View>
 
@@ -30,4 +31,4 @@ const LiveChat = () => {
   );
 };
 
-export default LiveChat;
+export default BookingChat;

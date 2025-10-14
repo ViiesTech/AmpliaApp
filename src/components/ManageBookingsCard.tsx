@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react'
-import { View, Image, FlatList } from 'react-native'
+import { View, Image, FlatList, TouchableOpacity } from 'react-native'
 import { AppColors, responsiveHeight, responsiveWidth } from '../utils';
 import { AppImages } from '../assets/images';
 import AppText from './AppText';
@@ -20,18 +20,21 @@ type Prop = {
     title?: string,
     subTitle?: string,
     status?: string,
+    OnPressCard?: () => void,
 }
 
-const ManageBookingsCard = ({ title, subTitle, status }: Prop) => {
+const ManageBookingsCard = ({ title, subTitle, status, OnPressCard }: Prop) => {
     const nav = useNavigation();
     return (
-        <View
+        <TouchableOpacity
             style={{
                 backgroundColor: AppColors.app_light,
                 paddingHorizontal: responsiveWidth(4),
                 paddingVertical: responsiveHeight(2),
                 borderRadius: 10,
-            }}>
+            }}
+            onPress={OnPressCard}
+        >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: responsiveWidth(3) }}>
                 <Image source={AppImages.service_one} style={{ width: 45, height: 45, borderRadius: 10 }} />
                 <View>
@@ -117,7 +120,7 @@ const ManageBookingsCard = ({ title, subTitle, status }: Prop) => {
                 <LineBreak space={2} />
                 <AppButton title={'Review'} textSize={2} btnPadding={10} textFontWeight={false} handlePress={() => nav.navigate("ReviewsAndRatings")} />
             </View>}
-        </View>
+        </TouchableOpacity>
     );
 };
 
