@@ -31,7 +31,6 @@ const SignIn = () => {
       showScrollBar={false}
       safeAreaViewStyle={{
         paddingHorizontal: responsiveWidth(5),
-        marginBottom: responsiveHeight(-18),
       }}
     >
       <Image source={AppImages.horizontal_logo} style={styles.image} />
@@ -53,6 +52,7 @@ const SignIn = () => {
           isFocused={isPasswordFocused}
           onFocus={() => setIsPasswordFocused(true)}
           onBlur={() => setIsPasswordFocused(false)}
+          secureTextEntry={isShow}
           inputWidth={72}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
@@ -107,7 +107,7 @@ const SignIn = () => {
           </TouchableOpacity>
         </View>
         <LineBreak space={1} />
-        <AppButton title={'Sign In'} handlePress={() => nav.navigate("Main")} />
+        <AppButton title={'Sign In'} handlePress={() => nav.navigate('Main')} />
         <LineBreak space={1} />
         <View
           style={{

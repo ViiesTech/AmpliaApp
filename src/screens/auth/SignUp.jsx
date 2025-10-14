@@ -35,6 +35,7 @@ const SignUp = () => {
       showScrollBar={false}
       safeAreaViewStyle={{
         paddingHorizontal: responsiveWidth(5),
+        marginBottom: responsiveHeight(-6)
       }}
     >
       <Image source={AppImages.horizontal_logo} style={styles.image} />
@@ -92,6 +93,7 @@ const SignUp = () => {
           isFocused={isPasswordFocused}
           onFocus={() => setIsPasswordFocused(true)}
           onBlur={() => setIsPasswordFocused(false)}
+          secureTextEntry={isShow}
           inputWidth={72}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
@@ -113,6 +115,7 @@ const SignUp = () => {
           isFocused={isConfirmPasswordFocused}
           onFocus={() => setIsConfirmPasswordFocused(true)}
           onBlur={() => setIsConfirmPasswordFocused(false)}
+          secureTextEntry={isShowConfirmPassword}
           inputWidth={72}
           rightIcon={
             <TouchableOpacity
