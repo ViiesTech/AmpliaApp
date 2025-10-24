@@ -23,9 +23,9 @@ import OurConsultants from '../../../components/OurConsultants';
 import { useNavigation } from '@react-navigation/native';
 
 const serviceCate = [
-  { id: 1, title: 'Tax Preparation & Filing', icon: AppIcons.file },
-  { id: 2, title: 'Financial Consulting', icon: AppIcons.dollar },
-  { id: 3, title: 'Bookkeeping & Accounting', icon: AppIcons.booking },
+  { id: 1, title: 'Tax Preparation', subTitle: '& Filing', icon: AppIcons.file },
+  { id: 2, title: 'Financial', subTitle: 'Consulting', icon: AppIcons.dollar },
+  { id: 3, title: 'Bookkeeping &', subTitle: 'Accounting', icon: AppIcons.booking },
 ];
 
 const popularServices = [
@@ -76,7 +76,8 @@ const bookings = [
 const Home = () => {
   const nav = useNavigation();
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container>
+      <LineBreak space={2} />
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <HomeHeader />
         <LineBreak space={2} />
@@ -129,13 +130,16 @@ const Home = () => {
         <FlatList
           data={serviceCate}
           contentContainerStyle={{
-            justifyContent: 'center',
+            flex: 1,
+            justifyContent: 'space-between',
             alignItems: 'center',
+            paddingHorizontal: responsiveWidth(5),
           }}
           horizontal
           renderItem={({ item }) => (
             <ServiceCategory
               title={item.title}
+              subTitle={item.subTitle}
               icon={item.icon}
               onPress={() => nav.navigate('Services')}
             />
@@ -176,7 +180,7 @@ const Home = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            gap: responsiveWidth(3),
+            gap: 12,
             paddingHorizontal: responsiveWidth(5),
           }}
           renderItem={({ item }) => (

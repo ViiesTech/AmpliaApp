@@ -1,10 +1,9 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react'
 import { View, Image, TouchableOpacity } from 'react-native'
-import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils'
+import { AppColors, responsiveHeight, responsiveWidth } from '../utils'
 import AppText from './AppText'
 import LineBreak from './LineBreak'
-import Icon from 'react-native-vector-icons/Entypo';
 import { useNavigation } from '@react-navigation/native'
 import RatingView from './RatingView'
 
@@ -25,7 +24,9 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                 paddingBottom: responsiveHeight(1.5),
                 borderRadius: 15,
             }} onPress={() => nav.navigate("ServiceDetails")}>
-            <Image source={image} />
+            <Image source={image} style={{
+                width: responsiveWidth(45),
+            }} />
             <LineBreak space={1.5} />
             <View style={{ paddingHorizontal: responsiveWidth(4) }}>
                 <AppText

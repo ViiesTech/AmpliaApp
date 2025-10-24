@@ -51,7 +51,7 @@ const Services = () => {
   const [selectedTab, setSelectedTab] = useState(0);
 
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader
           onBackPress={true}
@@ -120,7 +120,7 @@ const Services = () => {
           ItemSeparatorComponent={<LineBreak space={2} />}
           showsHorizontalScrollIndicator={false}
           columnWrapperStyle={{
-            gap: responsiveWidth(3),
+            gap: 12,
           }}
           renderItem={({ item }) => (
             <PopularService

@@ -23,7 +23,7 @@ const Container = ({ children, scrollEnabled = true, showScrollBar, paddingBotto
             locations={[0, 0.1, 1]} // smooth transition
             style={styles.container}
         >
-            <SafeAreaView style={{ flex: 1, ...safeAreaViewStyle }}>
+            <SafeAreaView style={{ flex: 1, ...safeAreaViewStyle, }}>
                 <KeyboardAvoidingView style={{flex: 1}} behavior='padding'>
                 <ScrollView contentContainerStyle={{flex: scrollEnabled ? null : 1, paddingBottom: responsiveHeight(paddingBottom) }} showsVerticalScrollIndicator={showScrollBar} scrollEnabled={scrollEnabled} style={styles.container}>
                     {children}

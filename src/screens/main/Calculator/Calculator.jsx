@@ -14,7 +14,7 @@ import AppButton from '../../../components/AppButton';
 
 const Calculator = () => {
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container >
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader
           onBackPress={false}

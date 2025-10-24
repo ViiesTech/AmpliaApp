@@ -26,7 +26,7 @@ const ServiceCategories = () => {
   const nav = useNavigation();
 
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container >
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader onBackPress={true} heading={'Service Category'} />
 

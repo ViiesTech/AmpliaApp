@@ -72,7 +72,7 @@ const ServiceDetails = () => {
 
   return (
     <>
-      <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+      <Container >
         <ImageBackground
           source={AppImages.service_bg}
           imageStyle={{
@@ -394,7 +394,7 @@ const ServiceDetails = () => {
           handlePress={() => nav.navigate('ScheduleService')}
         />
       </View>
-      <LineBreak space={6} />
+      <LineBreak space={2} />
     </>
   );
 };

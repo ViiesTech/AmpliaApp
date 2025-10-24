@@ -50,30 +50,30 @@ const activeData = [
   },
 ];
 
-const seheduleData = [
+const scheduleData = [
   {
     id: 1,
     title: 'Bookkeeping and Accounting',
     subTitle: 'Standard Plan ID#54654',
-    status: 'Sehedule',
+    status: 'Schedule',
   },
   {
     id: 2,
     title: 'Bookkeeping and Accounting',
     subTitle: 'Standard Plan ID#54654',
-    status: 'Sehedule',
+    status: 'Schedule',
   },
   {
     id: 3,
     title: 'Bookkeeping and Accounting',
     subTitle: 'Standard Plan ID#54654',
-    status: 'Sehedule',
+    status: 'Schedule',
   },
   {
     id: 4,
     title: 'Bookkeeping and Accounting',
     subTitle: 'Standard Plan ID#54654',
-    status: 'Sehedule',
+    status: 'Schedule',
   },
 ];
 
@@ -109,7 +109,7 @@ const BookingsScreens = () => {
   const nav = useNavigation();
 
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container >
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader onBackPress={false} heading={'Manage Bookings'} />
         <AppTextInput
@@ -181,7 +181,7 @@ const BookingsScreens = () => {
         )}
         {selectedTab == 1 && (
           <FlatList
-            data={seheduleData}
+            data={scheduleData}
             ItemSeparatorComponent={<LineBreak space={2} />}
             renderItem={({ item }) => (
               <ManageBookingsCard

@@ -7,14 +7,15 @@ import LineBreak from './LineBreak'
 import SVGXml from '../assets/icons/SVGXML'
 
 type Prop = {
-    title?:any,
-    icon?:any,
-    onPress?:any,
+    title?: any,
+    icon?: any,
+    onPress?: any,
+    subTitle?: any,
 }
 
-const ServiceCategory = ({title, icon, onPress}:Prop) => {
+const ServiceCategory = ({ title, icon, onPress, subTitle }: Prop) => {
     return (
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPress}>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPress}>
             <View
                 style={{
                     backgroundColor: AppColors.app_light,
@@ -32,7 +33,13 @@ const ServiceCategory = ({title, icon, onPress}:Prop) => {
                 textColor={AppColors.ThemeColor}
                 textFontWeight
                 textAlignment={'center'}
-                textwidth={30}
+            />
+            <AppText
+                title={subTitle}
+                textSize={1.6}
+                textColor={AppColors.ThemeColor}
+                textFontWeight
+                textAlignment={'center'}
             />
         </TouchableOpacity>
     )

@@ -15,6 +15,7 @@ import BookingsScreens from './../screens/main/Bookings/BookingsScreens';
 import Calculator from './../screens/main/Calculator/Calculator';
 import MyFiles from './../screens/main/MyFiles/MyFiles';
 import MyProfile from './../screens/main/MyProfile/MyProfile';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
@@ -114,8 +115,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     marginHorizontal: responsiveWidth(4),
-    marginBottom: responsiveHeight(5),
     paddingVertical: responsiveHeight(1),
+    marginBottom: 20,
     borderRadius: 30,
     shadowColor: '#000',
     shadowOpacity: 0.1,

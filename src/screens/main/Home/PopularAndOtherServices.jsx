@@ -46,7 +46,7 @@ const PopularAndOtherServices = () => {
           ItemSeparatorComponent={<LineBreak space={2} />}
           showsHorizontalScrollIndicator={false}
           columnWrapperStyle={{
-            gap: responsiveWidth(3),
+            gap: 12,
           }}
           renderItem={({ item }) => (
             <PopularService
@@ -74,7 +74,7 @@ const PopularAndOtherServices = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            gap: responsiveWidth(3),
+            gap: 12,
             paddingHorizontal: responsiveWidth(5),
           }}
           renderItem={({ item }) => (

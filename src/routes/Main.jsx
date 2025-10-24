@@ -19,6 +19,8 @@ import EmailUs from './../screens/main/MyProfile/EmailUs';
 import BillingHistory from './../screens/main/MyProfile/BillingHistory';
 import Faqs from './../screens/main/MyProfile/Faqs';
 import BookingChat from './../screens/main/Bookings/BookingChat';
+import { View } from 'react-native';
+import { AppColors } from '../utils';
 
 const Stack = createStackNavigator();
 const Main = () => {
@@ -33,7 +35,10 @@ const Main = () => {
       <Stack.Screen name="ServiceCategories" component={ServiceCategories} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ReviewsAndRatings" component={ReviewsAndRatings} />
-      <Stack.Screen name="PopularAndOtherServices" component={PopularAndOtherServices} />
+      <Stack.Screen
+        name="PopularAndOtherServices"
+        component={PopularAndOtherServices}
+      />
       <Stack.Screen name="LiveChat" component={LiveChat} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
       <Stack.Screen name="Payment" component={Payment} />
@@ -52,7 +57,7 @@ const Main = () => {
 };
 
 const TabBar = () => {
-    return <CustomBottomTabs />
-}
+  return <CustomBottomTabs />;
+};
 
 export default Main;

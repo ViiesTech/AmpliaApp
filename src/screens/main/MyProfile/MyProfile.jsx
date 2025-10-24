@@ -34,7 +34,7 @@ const data = [
 const MyProfile = () => {
   const nav = useNavigation();
   return (
-    <Container safeAreaViewStyle={{ marginBottom: responsiveHeight(-6) }}>
+    <Container >
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
         <AppHeader heading={'Profile'} />
         <View>

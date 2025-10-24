@@ -35,7 +35,6 @@ const SignUp = () => {
       showScrollBar={false}
       safeAreaViewStyle={{
         paddingHorizontal: responsiveWidth(5),
-        marginBottom: responsiveHeight(-6)
       }}
     >
       <Image source={AppImages.horizontal_logo} style={styles.image} />
