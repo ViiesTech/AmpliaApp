@@ -1,13 +1,18 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
 
 const CELL_COUNT = 4;
 
-const FieldCode = () => {
-    const [value, setValue] = useState('');
+interface otpProps {
+    value: string;
+    setValue: (value: string) => void;
+}
+
+const FieldCode = ({value,setValue}: otpProps) => {
+    // const [value, setValue] = useState('');
     const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
         value,

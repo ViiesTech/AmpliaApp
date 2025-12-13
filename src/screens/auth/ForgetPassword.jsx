@@ -1,8 +1,7 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import Container from '../../components/Container';
-import { AppColors, responsiveHeight, responsiveWidth } from '../../utils';
+import { AppColors, responsiveHeight, responsiveWidth, ShowToast } from '../../utils';
 import { useNavigation } from '@react-navigation/native';
 import LineBreak from '../../components/LineBreak';
 import BackIcon from '../../components/BackIcon';
@@ -10,10 +9,39 @@ import { AppIcons } from '../../assets/icons';
 import SVGXml from '../../assets/icons/SVGXML';
 import AppTextInput from '../../components/AppTextInput';
 import AppButton from '../../components/AppButton';
+import { useForgotPasswordMutation } from '../../redux/services/authService';
 
 const ForgetPassword = () => {
   const nav = useNavigation();
   const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [email,setEmail] = useState('');
+  const [forgotPassword,{isLoading}] = useForgotPasswordMutation();
+
+  const onForgetPasswordPress = async () => {
+    if(!email) {
+      ShowToast('Please enter your email')
+      return;
+    }
+
+    let data = {
+      email
+    }
+
+   await forgotPassword(data)
+      .unwrap()
+      .then(res => {
+        console.log('forgot password response ===>',res)
+        if(res.success) {
+          ShowToast(res.message)
+          nav.navigate('EnterOtp',{email,type: 'forget'})
+        }
+      })
+      .catch(err => {
+        console.log('error while forgot password', err);
+        return ShowToast(err?.data?.message || 'Some problem occured')
+      });
+ 
+  }
 
   return (
     <Container
@@ -36,6 +64,8 @@ const ForgetPassword = () => {
         <AppTextInput
           inputPlaceHolder={'Write Your Email'}
           borderWidth={1}
+          value={email}
+          onChangeText={text => setEmail(text)}
           borderColor={AppColors.LIGHTGRAY}
           isFocused={isEmailFocused}
           onFocus={() => setIsEmailFocused(true)}
@@ -44,7 +74,8 @@ const ForgetPassword = () => {
         <LineBreak space={2} />
         <AppButton
           title={'Continue'}
-          handlePress={() => nav.navigate('CreateNewPassword')}
+          indicator={isLoading}
+          handlePress={onForgetPasswordPress}
         />
       </View>
     </Container>

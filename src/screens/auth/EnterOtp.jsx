@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Container from '../../components/Container';
 import {
@@ -7,6 +7,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../utils';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LineBreak from '../../components/LineBreak';
@@ -17,9 +18,50 @@ import AppButton from '../../components/AppButton';
 import { useNavigation } from '@react-navigation/native';
 import AppText from '../../components/AppText';
 import BackIcon from '../../components/BackIcon';
+import { useSignupVerifyOTPMutation, useVerifyOTPMutation } from '../../redux/services/authService';
 
-const EnterOtp = () => {
+const EnterOtp = ({ route }) => {
   const nav = useNavigation();
+  const [code, setCode] = useState('');
+  const [verifyOTP, { isLoading }] = useVerifyOTPMutation();
+  const [signupVerifyOTP,{isLoading: signupVerifyLoading}] = useSignupVerifyOTPMutation();
+
+  const { email, type } = route?.params;
+
+  console.log(email,type)
+
+  const onVerifyPress = async () => {
+    if (!code) {
+      ShowToast('Please enter the OTP');
+      return;
+    }
+
+    let data = {
+      email: email,
+      otp: code,
+    };
+   if(type === 'forget'){
+      await verifyOTP(data).unwrap().then(res => {
+        console.log('resend otp response', res);
+        ShowToast(res?.message || 'OTP verified successfully');
+        nav.navigate('CreateNewPassword', { email: email,type });
+      })
+      .catch(err => {
+        console.log('verify otp error', err);
+        ShowToast(err?.data?.message || 'Failed to verify OTP');
+      });
+   } else {
+    await signupVerifyOTP(data).unwrap().then(res => {
+      console.log('signup verify otp response', res);
+      ShowToast(res?.message || 'OTP verified successfully');
+      // nav.navigate('SignIn');
+    })
+    .catch(err => {
+      console.log('signup verify otp error', err);
+      ShowToast(err?.data?.message || 'Failed to verify OTP');
+    });
+   }
+  };
 
   return (
     <Container
@@ -40,12 +82,9 @@ const EnterOtp = () => {
             height={responsiveHeight(10)}
           />
         </View>
-        <FieldCode />
+        <FieldCode value={code} setValue={setCode} />
         <LineBreak space={2} />
-        <AppButton
-          title={'Continue'}
-          handlePress={() => nav.navigate('SignIn')}
-        />
+        <AppButton indicator={type === 'register' ? isLoading : signupVerifyLoading} title={'Continue'} handlePress={() => onVerifyPress()} />
         <LineBreak space={1} />
         <View
           style={{

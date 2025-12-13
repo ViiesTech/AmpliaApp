@@ -4,6 +4,7 @@ import { TouchableOpacity } from 'react-native';
 import { AppColors, responsiveWidth } from '../utils/index';
 import AppText from './AppText';
 import LinearGradient from 'react-native-linear-gradient';
+import Loader from './Loader';
 
 type props = {
   title?: any;
@@ -19,6 +20,7 @@ type props = {
   borderRadius?: any;
   leftIcon?: any;
   activeOpacity?: any;
+  indicator?: any
 };
 const AppButton = ({
   title,
@@ -34,6 +36,7 @@ const AppButton = ({
   textFontWeight = true,
   textSize = 2.2,
   activeOpacity,
+  indicator
 }: props) => {
   return (
     <TouchableOpacity
@@ -59,13 +62,19 @@ const AppButton = ({
           backgroundColor: btnBackgroundColor,
         }}
       >
-        {leftIcon && leftIcon}
+        {indicator ?
+          <Loader />
+          :
+          <>
+        {leftIcon && leftIcon} 
         <AppText
           textColor={textColor ?? AppColors.WHITE}
           textSize={textSize ?? 2}
           title={title}
           textFontWeight={textFontWeight}
         />
+        </>
+        }
       </LinearGradient>
     </TouchableOpacity>
 

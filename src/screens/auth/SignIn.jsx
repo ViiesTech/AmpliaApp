@@ -8,6 +8,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../utils';
 import LineBreak from '../../components/LineBreak';
 import SVGXml from '../../assets/icons/SVGXML';
@@ -18,13 +19,46 @@ import CheckBox from '@react-native-community/checkbox';
 import AppText from '../../components/AppText';
 import AppButton from '../../components/AppButton';
 import { useNavigation } from '@react-navigation/native';
+import { useLoginMutation } from '../../redux/services/authService';
 
 const SignIn = () => {
-  const [isShow, setIsShow] = useState(false);
+  const [isShow, setIsShow] = useState(true);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isDefinitionChecked, setIsDefinitionChecked] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [login, { isLoading }] = useLoginMutation();
   const nav = useNavigation();
+
+  const onLoginPress = async () => {
+    if (!email) {
+      ShowToast('Please enter your email')
+      return;
+    }
+    if (!password) {
+      ShowToast('Please enter your password')
+      return;
+    }
+
+    let data = {
+      email,
+      password
+    }
+
+    await login(data)
+      .unwrap()
+      .then(res => {
+        console.log('login response ===>',res)
+        if(res.success) {
+          ShowToast(res.message)
+        }
+      })
+      .catch(err => {
+        console.log('error while login', err);
+        return ShowToast(err?.data?.message || 'Some problem occured')
+      });
+  };
 
   return (
     <Container
@@ -40,6 +74,8 @@ const SignIn = () => {
         <AppTextInput
           inputPlaceHolder={'Email'}
           borderWidth={1}
+          value={email}
+          onChangeText={text => setEmail(text)}
           borderColor={AppColors.LIGHTGRAY}
           isFocused={isEmailFocused}
           onFocus={() => setIsEmailFocused(true)}
@@ -49,6 +85,8 @@ const SignIn = () => {
         <AppTextInput
           inputPlaceHolder={'Password'}
           borderWidth={1}
+          value={password}
+          onChangeText={text => setPassword(text)}
           isFocused={isPasswordFocused}
           onFocus={() => setIsPasswordFocused(true)}
           onBlur={() => setIsPasswordFocused(false)}
@@ -57,7 +95,7 @@ const SignIn = () => {
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
               <Ionicons
-                name={isShow ? 'eye' : 'eye-off'}
+                name={isShow ? 'eye-off' : 'eye'}
                 size={responsiveFontSize(2.5)}
                 color={
                   isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY
@@ -107,7 +145,7 @@ const SignIn = () => {
           </TouchableOpacity>
         </View>
         <LineBreak space={1} />
-        <AppButton title={'Sign In'} handlePress={() => nav.navigate('Main')} />
+        <AppButton indicator={isLoading} title={'Sign In'} handlePress={() => onLoginPress()} />
         <LineBreak space={1} />
         <View
           style={{

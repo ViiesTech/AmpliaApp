@@ -1,4 +1,5 @@
 import { Dimensions } from "react-native";
+import Toast from "react-native-toast-message";
 
 const percentageCalculation = (max: number, val: number) => max * (val / 100);
 
@@ -65,9 +66,9 @@ export const AppColors = {
     Dark_themeColor: '#001F27',
 };
 
-// export const ShowToast = (message: string) => {
-//   return Toast.show({
-//     type: 'success',
-//     text1: message
-//   })
-// }
+export const ShowToast = (message: string) => {
+  return Toast.show({
+    type: 'success',
+    text1: message
+  })
+}

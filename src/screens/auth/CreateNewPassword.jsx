@@ -7,6 +7,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../utils';
 import { useNavigation } from '@react-navigation/native';
 import LineBreak from '../../components/LineBreak';
@@ -16,14 +17,63 @@ import SVGXml from '../../assets/icons/SVGXML';
 import AppTextInput from '../../components/AppTextInput';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AppButton from '../../components/AppButton';
+import { useResetPasswordMutation } from '../../redux/services/authService';
 
-const CreateNewPassword = () => {
+const CreateNewPassword = ({ route }) => {
   const nav = useNavigation();
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] =
     useState(false);
-  const [isShow, setIsShow] = useState(false);
-  const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
+  const [isShow, setIsShow] = useState(true);
+  const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(true);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetPassword,{isLoading}] = useResetPasswordMutation();
+
+  const { email, type } = route?.params;
+
+  // console.log(email,type)
+
+  const onContinuePress = async () => {
+    if (type === 'forget') {
+      if (!password) {
+        ShowToast('Please enter password');
+        return;
+      }
+
+      if (password.length < 6) {
+        ShowToast('Password must be at least 6 characters long');
+        return;
+      }
+      if (password !== confirmPassword) {
+        ShowToast('Password doesn\'t match');
+        return;
+      } 
+
+      let data = {
+        email,
+        password,
+        confirmPassword
+      }
+
+      await resetPassword(data).unwrap().then(res => {
+        console.log('reset password response ===>',res)
+        if(res.success) {
+          ShowToast(res.message)
+          nav.navigate('SignIn')
+        }
+      })
+      .catch(err => {
+        console.log('error while reset password', err);
+        return ShowToast(err?.data?.message || 'Some problem occured')
+      }); 
+
+    } else {
+      nav.goBack();
+    }
+
+    // nav.navigate('SignIn');
+  };
 
   return (
     <Container
@@ -47,6 +97,9 @@ const CreateNewPassword = () => {
         <AppTextInput
           inputPlaceHolder={'Password'}
           borderWidth={1}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={isShow}
           isFocused={isPasswordFocused}
           onFocus={() => setIsPasswordFocused(true)}
           onBlur={() => setIsPasswordFocused(false)}
@@ -54,7 +107,7 @@ const CreateNewPassword = () => {
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
               <Ionicons
-                name={!isShow ? 'eye' : 'eye-off'}
+                name={isShow ? 'eye-off' : 'eye'}
                 size={responsiveFontSize(2.5)}
                 color={
                   isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY
@@ -68,6 +121,9 @@ const CreateNewPassword = () => {
         <AppTextInput
           inputPlaceHolder={'Confirm Password'}
           borderWidth={1}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={isShowConfirmPassword}
           isFocused={isConfirmPasswordFocused}
           onFocus={() => setIsConfirmPasswordFocused(true)}
           onBlur={() => setIsConfirmPasswordFocused(false)}
@@ -77,7 +133,7 @@ const CreateNewPassword = () => {
               onPress={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
             >
               <Ionicons
-                name={!isShowConfirmPassword ? 'eye' : 'eye-off'}
+                name={isShowConfirmPassword ? 'eye-off' : 'eye'}
                 size={responsiveFontSize(2.5)}
                 color={
                   isConfirmPasswordFocused
@@ -90,10 +146,7 @@ const CreateNewPassword = () => {
           borderColor={AppColors.LIGHTGRAY}
         />
         <LineBreak space={1} />
-        <AppButton
-          title={'Continue'}
-          handlePress={() => nav.navigate('SignIn')}
-        />
+        <AppButton indicator={isLoading} title={'Continue'} handlePress={() => onContinuePress()} />
         <LineBreak space={1} />
       </View>
     </Container>
