@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import Container from '../../../components/Container';
 import {
@@ -21,11 +21,23 @@ import { AppImages } from '../../../assets/images';
 import Bookings from '../../../components/Bookings';
 import OurConsultants from '../../../components/OurConsultants';
 import { useNavigation } from '@react-navigation/native';
+import { useLazyGetAllCategoriesQuery } from '../../../redux/services/mainService';
+import Loader from '../../../components/Loader';
 
 const serviceCate = [
-  { id: 1, title: 'Tax Preparation', subTitle: '& Filing', icon: AppIcons.file },
+  {
+    id: 1,
+    title: 'Tax Preparation',
+    subTitle: '& Filing',
+    icon: AppIcons.file,
+  },
   { id: 2, title: 'Financial', subTitle: 'Consulting', icon: AppIcons.dollar },
-  { id: 3, title: 'Bookkeeping &', subTitle: 'Accounting', icon: AppIcons.booking },
+  {
+    id: 3,
+    title: 'Bookkeeping &',
+    subTitle: 'Accounting',
+    icon: AppIcons.booking,
+  },
 ];
 
 const popularServices = [
@@ -74,7 +86,18 @@ const bookings = [
 ];
 
 const Home = () => {
+  const [
+    getAllCategories,
+    { data: categoriesData, isLoading: categoryLoader },
+  ] = useLazyGetAllCategoriesQuery();
   const nav = useNavigation();
+
+  console.log('categories ===>', categoriesData);
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
+
   return (
     <Container>
       <LineBreak space={2} />
@@ -116,7 +139,7 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity onPress={() => nav.navigate('ServiceCategories')}>
+          <TouchableOpacity onPress={() => nav.navigate('ServiceCategories',{data:categoriesData})}>
             <AppText
               title={'View More'}
               textSize={1.8}
@@ -127,24 +150,37 @@ const Home = () => {
         </View>
         <LineBreak space={2} />
 
-        <FlatList
-          data={serviceCate}
-          contentContainerStyle={{
-            flex: 1,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: responsiveWidth(5),
-          }}
-          horizontal
-          renderItem={({ item }) => (
-            <ServiceCategory
-              title={item.title}
-              subTitle={item.subTitle}
-              icon={item.icon}
-              onPress={() => nav.navigate('Services')}
-            />
-          )}
-        />
+        {categoryLoader ? (
+          <View style={{ marginTop: responsiveHeight(3) }}>
+            <Loader color={AppColors.ThemeColor} />
+          </View>
+        ) : (
+          <FlatList
+            data={categoriesData?.categories.slice(0,2)}
+            ListEmptyComponent={() => (
+              <AppText
+                textSize={1.8}
+                textAlignment={'center'}
+                title={categoriesData?.message || 'No Categories Found'}
+              />
+            )}
+            contentContainerStyle={{
+              flex: 1,
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: responsiveWidth(5),
+            }}
+            horizontal
+            renderItem={({ item }) => (
+              <ServiceCategory
+                title={item.name}
+                subTitle={item.description}
+                icon={AppIcons.file} // image will appear when server will live
+                onPress={() => nav.navigate('Services')}
+              />
+            )}
+          />
+        )}
         <LineBreak space={3} />
 
         <View
@@ -161,7 +197,9 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity onPress={() => nav.navigate("PopularAndOtherServices")}>
+          <TouchableOpacity
+            onPress={() => nav.navigate('PopularAndOtherServices')}
+          >
             <AppText
               title={'View More'}
               textSize={1.8}

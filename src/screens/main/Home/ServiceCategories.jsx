@@ -22,8 +22,11 @@ const serviceCate = [
   { id: 3, title: 'Bookkeeping & Accounting', icon: AppIcons.file_white },
 ];
 
-const ServiceCategories = () => {
+const ServiceCategories = ({route}) => {
   const nav = useNavigation();
+
+  const {data} = route?.params;
+  console.log('all categories ===>',data)
 
   return (
     <Container >
@@ -31,7 +34,8 @@ const ServiceCategories = () => {
         <AppHeader onBackPress={true} heading={'Service Category'} />
 
         <FlatList
-          data={serviceCate}
+          data={data?.categories}
+          ListEmptyComponent={() => <AppText textSize={1.8} textAlignment={'center'} title={data?.message || 'No Categories Found'} />}
           ItemSeparatorComponent={<LineBreak space={2} />}
           renderItem={({ item }) => (
             <View
@@ -55,10 +59,11 @@ const ServiceCategories = () => {
                   backgroundColor: AppColors.ThemeColor,
                 }}
               >
-                <SVGXml icon={item.icon} width={20} height={20} />
+                {/* image will appear here in future */}
+                <SVGXml icon={AppIcons.file_white} width={20} height={20} />      
               </View>
               <AppText
-                title={item.title}
+                title={item.name}
                 textSize={2}
                 textColor={AppColors.ThemeColor}
                 textFontWeight

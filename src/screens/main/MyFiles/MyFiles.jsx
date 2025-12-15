@@ -1,6 +1,4 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, FlatList, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import {
@@ -8,6 +6,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import LinearGradient from 'react-native-linear-gradient';
@@ -15,14 +14,17 @@ import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import PdfCard from '../../../components/PdfCard';
 import Feather from 'react-native-vector-icons/Feather';
+import { useLazyGetFilesQuery } from '../../../redux/services/mainService';
+import Loader from '../../../components/Loader';
 
 const topTabsData = [
   { id: 1, title: 'All' },
-  { id: 2, title: '2020' },
-  { id: 3, title: '2021' },
-  { id: 4, title: '2022' },
-  { id: 5, title: '2023' },
-  { id: 6, title: '2024' },
+  { id: 2, title: '2021' },
+  { id: 3, title: '2022' },
+  { id: 4, title: '2023' },
+  { id: 5, title: '2024' },
+  { id: 6, title: '2025' },
+  { id: 6, title: '2026' },
 ];
 
 const pdfData = [
@@ -35,11 +37,32 @@ const pdfData = [
 ];
 
 const MyFiles = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState('All');
+  const [getFiles, { data, isLoading }] = useLazyGetFilesQuery();
+
+  console.log('all files ===>', data);
+
+  useEffect(() => {
+    if (selectedTab === 'All') {
+      getFiles();
+    }
+  }, [selectedTab]);
+
+  const onSelectYear = async year => {
+    setSelectedTab(year);
+    if (year !== 'All') {
+      try {
+        await getFiles(year).unwrap();
+      } catch (error) {
+        ShowToast(error?.data?.message || 'Error fetching files');
+        console.log('error fetching files by year:', error);
+      }
+    }
+  };
 
   return (
     <>
-      <Container >
+      <Container>
         <View style={{ marginHorizontal: responsiveWidth(5) }}>
           <AppHeader onBackPress={false} heading={'My Files'} />
 
@@ -49,10 +72,10 @@ const MyFiles = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: responsiveWidth(3) }}
             renderItem={({ item, index }) => (
-              <TouchableOpacity onPress={() => setSelectedTab(index)}>
+              <TouchableOpacity onPress={() => onSelectYear(item.title)}>
                 <LinearGradient
                   colors={
-                    selectedTab == index
+                    selectedTab === item.title
                       ? ['#003C46', '#007C91']
                       : [AppColors.app_light, AppColors.app_light]
                   }
@@ -66,7 +89,7 @@ const MyFiles = () => {
                 >
                   <AppText
                     textColor={
-                      selectedTab == index
+                      selectedTab === item.title
                         ? AppColors.WHITE
                         : AppColors.ThemeColor
                     }
@@ -81,16 +104,23 @@ const MyFiles = () => {
           <LineBreak space={2} />
 
           <View style={{ alignItems: 'center' }}>
+           {isLoading ?
+              <View style={{marginTop: responsiveHeight(5)}}>
+                <Loader  color={AppColors.ThemeColor} />
+                </View> 
+              :
             <FlatList
-              data={pdfData}
+              data={data?.files}
               numColumns={2}
               ItemSeparatorComponent={<LineBreak space={2} />}
+              ListEmptyComponent={() => <AppText textSize={1.8} textAlignment={'center'} title={data?.message || 'No Files Found'} />}
               showsHorizontalScrollIndicator={false}
               columnWrapperStyle={{
                 gap: responsiveWidth(3),
               }}
-              renderItem={({ item }) => <PdfCard title={item.title} />}
+              renderItem={({ item }) => <PdfCard title={item.name} />}
             />
+            } 
           </View>
           <LineBreak space={10} />
         </View>
@@ -104,7 +134,7 @@ const MyFiles = () => {
           paddingVertical: responsiveHeight(2),
         }}
       >
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <LinearGradient
             colors={['#003C46', '#007C91']}
             start={{ x: 0, y: 0 }}
@@ -124,7 +154,7 @@ const MyFiles = () => {
               color={AppColors.WHITE}
             />
           </LinearGradient>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </>
   );

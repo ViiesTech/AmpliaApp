@@ -3,12 +3,14 @@ import React from 'react';
 import { View, FlatList, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
-import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
+import { AppColors, responsiveHeight, responsiveWidth, ShowToast } from '../../../utils';
 import { AppIcons } from '../../../assets/icons';
 import SVGXml from '../../../assets/icons/SVGXML';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../../redux/slices';
 
 const data = [
   { id: 1, icon: AppIcons.account, title: 'My Account', navTo: 'MyAccount' },
@@ -28,11 +30,12 @@ const data = [
     title: 'Frequently Asked Questions',
     navTo: 'Faqs',
   },
-  { id: 8, icon: AppIcons.logout, title: 'Logout', navTo: 'Auth' },
+  { id: 8, icon: AppIcons.logout, title: 'Logout' },
 ];
 
 const MyProfile = () => {
   const nav = useNavigation();
+  const dispatch = useDispatch()
   return (
     <Container >
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
@@ -53,7 +56,11 @@ const MyProfile = () => {
                   borderRadius: 10,
                 }}
                 onPress={() => {
-                  if (item.navTo) {
+                  if(!item.navTo) {
+                    dispatch(logout())
+                    ShowToast('Logged out successfully');
+                  }
+                 else  {
                     nav.navigate(item.navTo);
                   }
                 }}
