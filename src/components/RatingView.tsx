@@ -6,13 +6,14 @@ import { AppColors, responsiveWidth } from '../utils'
 type Prop = {
     starSize?:any,
     width?:any,
+    rating?: number
 }
 
-const RatingView = ({starSize, width}: Prop) => {
+const RatingView = ({starSize, width,rating}: Prop) => {
     return (
         <View style={{marginLeft: responsiveWidth(-1.5)}}>
             <StarRating
-                rating={4.5}
+                rating={rating}
                 onChange={() => { }}
                 starStyle={{ width: width ? responsiveWidth(width) : responsiveWidth(3) }}
                 starSize={starSize ? starSize : 20}

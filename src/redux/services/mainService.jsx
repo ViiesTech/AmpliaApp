@@ -20,10 +20,35 @@ export const mainApis = createApi({
         method: 'GET',
       }),
     }),
+     getAllServices: builder.query({
+      query: ({search,categoryId} = {}) => ({
+        url: endpoints.GET_ALL_SERVICES(search,categoryId),
+        method: 'GET',
+      }),
+    }),
     getFiles: builder.query({
       query: (year) => ({
         url: endpoints.GET_ALL_FILES(year),
         method: 'GET',
+      }),
+    }),
+      getUserDetail: builder.query({
+      query: () => ({
+        url: endpoints.GET_USER_DETAIL,
+        method: 'GET',
+      }),
+    }),
+    deleteUser: builder.mutation({
+      query: () => ({
+        url: endpoints.DELETE_USER,
+        method: 'DELETE',
+      }),
+    }),
+        changePassword: builder.mutation({
+      query: (data) => ({
+        url: endpoints.CHANGE_PASSWORD,
+        method: 'POST',
+        body: data
       }),
     }),
   }),
@@ -31,4 +56,8 @@ export const mainApis = createApi({
 export const {
   useLazyGetFilesQuery,
   useLazyGetAllCategoriesQuery,
+  useLazyGetUserDetailQuery,
+  useDeleteUserMutation,
+  useChangePasswordMutation,
+  useLazyGetAllServicesQuery
 } = mainApis;

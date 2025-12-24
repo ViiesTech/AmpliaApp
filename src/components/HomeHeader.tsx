@@ -23,7 +23,7 @@ const HomeHeader = () => {
                         textFontWeight
                     />
                     <AppText
-                        title={`#${user?._id.slice(-4)}`}
+                        title={`#${user?._id?.slice(-4)}`}
                         textSize={1.5}
                         textColor={AppColors.ThemeColor}
                     />

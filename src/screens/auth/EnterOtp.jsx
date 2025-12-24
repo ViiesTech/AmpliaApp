@@ -67,7 +67,7 @@ const EnterOtp = ({ route }) => {
         .then(res => {
           console.log('signup verify otp response', res);
           ShowToast(res?.message || 'OTP verified successfully');
-          // nav.navigate('SignIn');
+          nav.navigate('SignIn');
         })
         .catch(err => {
           console.log('signup verify otp error', err);
@@ -139,7 +139,7 @@ const onResendCode = async () => {
         <FieldCode value={code} setValue={setCode} />
         <LineBreak space={2} />
         <AppButton
-          indicator={type === 'register' ? isLoading : signupVerifyLoading}
+          indicator={type === 'forget' ? isLoading : signupVerifyLoading}
           title={'Continue'}
           handlePress={() => onVerifyPress()}
         />

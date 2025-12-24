@@ -237,7 +237,7 @@ const ServiceDetails = () => {
                 alignItems: 'center',
               }}
             >
-              <RatingView />
+              <RatingView rating={4.5} />
               <AppText
                 title={'4.5'}
                 textSize={1.8}

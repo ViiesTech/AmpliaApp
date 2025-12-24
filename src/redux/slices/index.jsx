@@ -1,5 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit';
 import { authApis } from '../services/authService';
+import { mainApis } from '../services/mainService';
 const initialState = {
   token: null,
   user: {},
@@ -38,16 +39,16 @@ export const Slice = createSlice({
       //     }
       //   },
       // )
-      // .addMatcher(
-      //   Apis.endpoints.deleteAccount.matchFulfilled,
-      //   (state, action) => {
-      //     console.log('action',action.payload)
-      //     if (action.payload?.success) {
-      //       state.user = {};
-      //       state.token = null;
-      //     }
-      //   },
-      // );
+      .addMatcher(
+        mainApis.endpoints.deleteUser.matchFulfilled,
+        (state, action) => {
+          console.log('action',action.payload)
+          if (action.payload?.success) {
+            state.user = {};
+            state.token = null;
+          }
+        },
+      );
   },
 });
 export const {logout} = Slice.actions;

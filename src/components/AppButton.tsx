@@ -36,7 +36,8 @@ const AppButton = ({
   textFontWeight = true,
   textSize = 2.2,
   activeOpacity,
-  indicator
+  indicator,
+  indicatorColor
 }: props) => {
   return (
     <TouchableOpacity
@@ -63,7 +64,7 @@ const AppButton = ({
         }}
       >
         {indicator ?
-          <Loader />
+          <Loader color={indicatorColor} />
           :
           <>
         {leftIcon && leftIcon} 

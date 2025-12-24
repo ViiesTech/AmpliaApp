@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react'
-import { TouchableOpacity, View } from 'react-native'
-import { AppColors, responsiveWidth } from '../utils'
+import { Image, TouchableOpacity, View } from 'react-native'
+import { AppColors, responsiveHeight, responsiveWidth } from '../utils'
 import AppText from './AppText'
 import LineBreak from './LineBreak'
 import SVGXml from '../assets/icons/SVGXML'
@@ -24,7 +24,8 @@ const ServiceCategory = ({ title, icon, onPress, subTitle }: Prop) => {
                     borderRadius: 100,
                     justifyContent: 'center', alignItems: 'center'
                 }}>
-                <SVGXml icon={icon} width={30} height={30} />
+                    <Image style={{height: responsiveHeight(6),width: responsiveHeight(6),borderRadius: 10}} resizeMode='cover' source={icon} />
+                {/* <SVGXml icon={icon} width={30} height={30} /ß> */}
             </View>
             <LineBreak space={1} />
             <AppText

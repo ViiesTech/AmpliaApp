@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://kathern-malapportioned-alva.ngrok-free.dev/';
+export const BASE_URL = 'https://apiforapp.link/Amplia/';
 
 export const endpoints = {
   REGISTER: 'auth/signup/requestOtp',
@@ -10,5 +10,8 @@ export const endpoints = {
   RESET_PASSWORD: 'auth/resetPassword',
   GET_ALL_FILES: year => (year ? `file?year=${year}` : 'file'),
   GET_ALL_CATEGORIES: 'category',
-  GET_ALL_SERVICES: () => 'service',
+  GET_ALL_SERVICES: (search,categoryId) => search ? `search?search=${search}` : categoryId ? `search?category=${categoryId}` : 'service',
+  GET_USER_DETAIL: 'user',
+  DELETE_USER: 'user',
+  CHANGE_PASSWORD: 'user/updatePassword'
 };

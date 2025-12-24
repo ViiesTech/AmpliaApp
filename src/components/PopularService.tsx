@@ -12,9 +12,10 @@ type Props = {
     title?: any,
     rating?: any,
     price?: any,
+    onPress?: () => void
 }
 
-const PopularService = ({ image, title, rating, price }: Props) => {
+const PopularService = ({ image, title, rating, price, onPress }: Props) => {
     const nav = useNavigation();
     return (
         <TouchableOpacity
@@ -23,9 +24,12 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                 width: responsiveWidth(45),
                 paddingBottom: responsiveHeight(1.5),
                 borderRadius: 15,
-            }} onPress={() => nav.navigate("ServiceDetails")}>
+            }} onPress={onPress}>
             <Image source={image} style={{
                 width: responsiveWidth(45),
+                borderRadius: 10,
+                resizeMode: 'cover',
+                height: responsiveHeight(10)
             }} />
             <LineBreak space={1.5} />
             <View style={{ paddingHorizontal: responsiveWidth(4) }}>
@@ -37,7 +41,7 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                     numberOfLines={1}
                 />
                 <View style={{ flexDirection: 'row', gap: responsiveWidth(2) }}>
-                    <RatingView />
+                    <RatingView rating={rating} />
                     <AppText
                         title={rating}
                         textSize={1.8}
@@ -46,12 +50,16 @@ const PopularService = ({ image, title, rating, price }: Props) => {
                     />
                 </View>
                 <LineBreak space={0.5} />
-                <AppText
-                    title={price}
-                    textSize={1.8}
-                    textColor={AppColors.GRAY}
-                    textFontWeight
-                />
+                {price?.map((item) => {
+                    return (
+                        <AppText
+                            title={`$${item.price}`}
+                            textSize={1.8}
+                            textColor={AppColors.GRAY}
+                            textFontWeight
+                        />
+                    )
+                })}
             </View>
         </TouchableOpacity>
     )

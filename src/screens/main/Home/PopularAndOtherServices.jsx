@@ -8,6 +8,7 @@ import AppHeader from '../../../components/AppHeader';
 import PopularService from '../../../components/PopularService';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppText';
+import { useNavigation } from '@react-navigation/native';
 
 const popularServices = [
   {
@@ -33,7 +34,10 @@ const popularServices = [
   },
 ];
 
-const PopularAndOtherServices = () => {
+const PopularAndOtherServices = ({ route }) => {
+  const nav = useNavigation()
+  const { servicesData } = route?.params;
+  console.log(servicesData);
   return (
     <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
@@ -41,8 +45,11 @@ const PopularAndOtherServices = () => {
       </View>
       <View style={{ alignItems: 'center' }}>
         <FlatList
-          data={popularServices}
+          data={servicesData}
           numColumns={2}
+          ListEmptyComponent={() => (
+            <AppText textAlignment={'center'} title={'No Service Found'} />
+          )}
           ItemSeparatorComponent={<LineBreak space={2} />}
           showsHorizontalScrollIndicator={false}
           columnWrapperStyle={{
@@ -50,16 +57,17 @@ const PopularAndOtherServices = () => {
           }}
           renderItem={({ item }) => (
             <PopularService
-              title={item.title}
-              image={item.image}
-              price={item.price}
-              rating={item.rating}
+              title={item.name}
+              image={{ uri: item.cover }}
+              price={item.plans}
+              onPress={() => nav.navigate('ServiceDetails')}
+              rating={item.averageRating}
             />
           )}
         />
       </View>
       <LineBreak space={3} />
-      <View>
+      {/* <View>
         <View style={{ marginHorizontal: responsiveWidth(5) }}>
           <AppText
             textColor={AppColors.BLACK}
@@ -86,7 +94,7 @@ const PopularAndOtherServices = () => {
             />
           )}
         />
-      </View>
+      </View> */}
       <LineBreak space={2} />
     </Container>
   );

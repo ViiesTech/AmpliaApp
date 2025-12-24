@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, TouchableOpacity, View } from 'react-native';
 import Container from '../../../components/Container';
 import {
   AppColors,
@@ -35,7 +35,7 @@ const ServiceCategories = ({route}) => {
 
         <FlatList
           data={data?.categories}
-          ListEmptyComponent={() => <AppText textSize={1.8} textAlignment={'center'} title={data?.message || 'No Categories Found'} />}
+          ListEmptyComponent={() => <AppText textSize={1.8} textAlignment={'center'} title={'No Categories Found'} />}
           ItemSeparatorComponent={<LineBreak space={2} />}
           renderItem={({ item }) => (
             <View
@@ -60,7 +60,8 @@ const ServiceCategories = ({route}) => {
                 }}
               >
                 {/* image will appear here in future */}
-                <SVGXml icon={AppIcons.file_white} width={20} height={20} />      
+                <Image source={{uri: item.cover}} style={{height: responsiveHeight(5),width: responsiveHeight(5),borderRadius: 100}} />
+                {/* <SVGXml icon={AppIcons.file_white} width={20} height={20} />       */}
               </View>
               <AppText
                 title={item.name}

@@ -21,7 +21,10 @@ import { AppImages } from '../../../assets/images';
 import Bookings from '../../../components/Bookings';
 import OurConsultants from '../../../components/OurConsultants';
 import { useNavigation } from '@react-navigation/native';
-import { useLazyGetAllCategoriesQuery } from '../../../redux/services/mainService';
+import {
+  useLazyGetAllCategoriesQuery,
+  useLazyGetAllServicesQuery,
+} from '../../../redux/services/mainService';
 import Loader from '../../../components/Loader';
 
 const serviceCate = [
@@ -90,12 +93,16 @@ const Home = () => {
     getAllCategories,
     { data: categoriesData, isLoading: categoryLoader },
   ] = useLazyGetAllCategoriesQuery();
+  const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
+    useLazyGetAllServicesQuery();
   const nav = useNavigation();
 
   console.log('categories ===>', categoriesData);
+  console.log('services ===>', servicesData);
 
   useEffect(() => {
     getAllCategories();
+    getAllServices();
   }, []);
 
   return (
@@ -139,7 +146,11 @@ const Home = () => {
             textFontWeight
           />
 
-          <TouchableOpacity onPress={() => nav.navigate('ServiceCategories',{data:categoriesData})}>
+          <TouchableOpacity
+            onPress={() =>
+              nav.navigate('ServiceCategories', { data: categoriesData })
+            }
+          >
             <AppText
               title={'View More'}
               textSize={1.8}
@@ -156,13 +167,15 @@ const Home = () => {
           </View>
         ) : (
           <FlatList
-            data={categoriesData?.categories.slice(0,2)}
+            data={categoriesData?.categories.slice(0, 2)}
             ListEmptyComponent={() => (
-              <AppText
-                textSize={1.8}
-                textAlignment={'center'}
-                title={categoriesData?.message || 'No Categories Found'}
-              />
+              <View style={{ flex: 1 }}>
+                <AppText
+                  textSize={1.8}
+                  textAlignment={'center'}
+                  title={'No Categories Found'}
+                />
+              </View>
             )}
             contentContainerStyle={{
               flex: 1,
@@ -175,7 +188,7 @@ const Home = () => {
               <ServiceCategory
                 title={item.name}
                 subTitle={item.description}
-                icon={AppIcons.file} // image will appear when server will live
+                icon={{ uri: item.cover }} // image will appear when server will live
                 onPress={() => nav.navigate('Services')}
               />
             )}
@@ -198,7 +211,7 @@ const Home = () => {
           />
 
           <TouchableOpacity
-            onPress={() => nav.navigate('PopularAndOtherServices')}
+            onPress={() => nav.navigate('PopularAndOtherServices',{servicesData: servicesData?.services})}
           >
             <AppText
               title={'View More'}
@@ -212,10 +225,16 @@ const Home = () => {
 
       <LineBreak space={1.5} />
 
-      <View>
+      {/* <View> */}
+      {serviceLoader ? (
+        <View style={{ marginTop: responsiveHeight(3) }}>
+          <Loader color={AppColors.ThemeColor} />
+        </View>
+      ) : (
         <FlatList
-          data={popularServices}
+          data={servicesData?.services?.slice(0,2)}
           horizontal
+          ListEmptyComponent={() => <View style={{flex: 1}}><AppText textAlignment={'center'} title={'No Service Found'} /></View> }
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             gap: 12,
@@ -223,14 +242,16 @@ const Home = () => {
           }}
           renderItem={({ item }) => (
             <PopularService
-              title={item.title}
-              image={item.image}
-              price={item.price}
-              rating={item.rating}
+              title={item.name}
+              image={{uri: item.cover}}
+              onPress={() => nav.navigate("ServiceDetails")}
+              price={item.plans}
+              rating={item.averageRating}
             />
           )}
         />
-      </View>
+      )}
+      {/* </View> */}
 
       <LineBreak space={2} />
 

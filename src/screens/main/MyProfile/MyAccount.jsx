@@ -1,34 +1,92 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import { View, Image, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { View, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import Container from '../../../components/Container';
 import {
   AppColors,
-  responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
-import Entypo from 'react-native-vector-icons/Entypo';
 import { AppImages } from '../../../assets/images';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import SVGXml from '../../../assets/icons/SVGXML';
 import { AppIcons } from '../../../assets/icons';
 import AppButton from '../../../components/AppButton';
-import { useSelector } from 'react-redux';
-
+import {
+  useDeleteUserMutation,
+  useLazyGetUserDetailQuery,
+} from '../../../redux/services/mainService';
+import Loader from '../../../components/Loader';
 
 const MyAccount = () => {
-  
-  const {user} = useSelector(state => state.persistedData)
-  
-  const data = [
-    { id: 1, title: 'Email', subTitle: `${user?.email || ''}`, isShowBadge: true },
-    { id: 2, title: 'Phone number', subTitle: '65998794454654' },
-    { id: 3, title: 'Unique ID', subTitle: `#${user?._id.slice(-4)}` },
-  ];
-  console.log(user)
+  const [getUserDetail, { data: userData, isLoading }] =
+    useLazyGetUserDetailQuery();
+  const [deleteUser, { isLoading: deleteLoader }] = useDeleteUserMutation();
+
+  const data = useMemo(() => {
+    if (!userData?.user) return [];
+
+    return [
+      {
+        id: 1,
+        title: 'Email',
+        subTitle: userData.user.email,
+        isShowBadge: true,
+      },
+      {
+        id: 2,
+        title: 'Phone number',
+        subTitle: userData.user.phone || '202290292',
+      },
+      {
+        id: 3,
+        title: 'Unique ID',
+        subTitle: `#${userData.user._id.slice(-4)}`,
+      },
+    ];
+  }, [userData]);
+  // console.log(userData);
+
+  useEffect(() => {
+    getUserDetail();
+  }, []);
+
+  const deleteAccount = async () => {
+    await deleteUser()
+      .unwrap()
+      .then(res => {
+        console.log('delete account response ===>', res);
+        ShowToast(res?.message);
+      })
+      .catch(error => {
+        ShowToast(error?.data?.message || 'Some problem occured');
+        console.log('error while deleting the account ===>', error);
+      });
+  };
+
+  const onConfirmation = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteAccount();
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
 
   return (
     <Container>
@@ -44,110 +102,124 @@ const MyAccount = () => {
           //   />
           // }
         />
-
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: responsiveWidth(3),
-            alignItems: 'center',
-            backgroundColor: AppColors.app_light,
-            paddingHorizontal: responsiveWidth(3),
-            paddingVertical: responsiveHeight(2),
-            borderRadius: 15,
-          }}
-        >
-          <Image
-            source={{uri: user?.profile} || AppImages.userprofile}
-            style={{ width: 45, height: 45, borderRadius: 100 }}
-          />
-          <View>
-            <AppText
-              title={`${user?.firstName || ''} ${user?.lastName || ''}`}
-              textSize={2}
-              textColor={AppColors.ThemeColor}
-              textFontWeight
-            />
-            <AppText
-              title={`#${user?._id.slice(-4)}`}
-              textSize={1.6}
-              textColor={AppColors.ThemeColor}
-            />
+        {isLoading ? (
+          <View style={{ marginVertical: responsiveHeight(4) }}>
+            <Loader color={AppColors.ThemeColor} />
           </View>
-
-          <View style={{  alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: AppColors.ThemeColor,
-                paddingHorizontal: responsiveWidth(4),
-                paddingVertical: responsiveHeight(1),
-                borderRadius: 100,
-              }}
-            >
-              <AppText
-                title={'Change Image'}
-                textSize={1.6}
-                textColor={AppColors.ThemeColor}
-                textFontWeight
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <LineBreak space={2} />
-        <FlatList
-          data={data}
-          renderItem={({ item }) => (
+        ) : (
+          <>
             <View
               style={{
-                borderBottomWidth: 1,
-                borderBottomColor: AppColors.LIGHTGRAY,
-                paddingVertical: responsiveHeight(2),
                 flexDirection: 'row',
+                gap: responsiveWidth(3),
+                alignItems: 'center',
+                backgroundColor: AppColors.app_light,
+                paddingHorizontal: responsiveWidth(3),
+                paddingVertical: responsiveHeight(2),
+                borderRadius: 15,
               }}
             >
+              <Image
+                source={
+                  { uri: userData?.user.profile } || AppImages.userprofile
+                }
+                style={{ width: 45, height: 45, borderRadius: 100 }}
+              />
               <View>
                 <AppText
-                  title={item.title}
+                  title={`${userData?.user.firstName || ''} ${
+                    userData?.user.lastName || ''
+                  }`}
                   textSize={2}
-                  textColor={AppColors.BLACK}
+                  textColor={AppColors.ThemeColor}
                   textFontWeight
                 />
                 <AppText
-                  title={item.subTitle}
+                  title={`#${userData?.user._id.slice(-4)}`}
                   textSize={1.6}
-                  textColor={AppColors.BLACK}
+                  textColor={AppColors.ThemeColor}
                 />
               </View>
-              {item.isShowBadge && (
-                <View
+
+              <View style={{ alignItems: 'flex-end' }}>
+                <TouchableOpacity
                   style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    gap: responsiveWidth(2),
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: AppColors.ThemeColor,
+                    paddingHorizontal: responsiveWidth(4),
+                    paddingVertical: responsiveHeight(1),
+                    borderRadius: 100,
                   }}
                 >
-                  <SVGXml icon={AppIcons.correct} width={15} height={15} />
                   <AppText
-                    title={'Verified User'}
+                    title={'Change Image'}
                     textSize={1.6}
                     textColor={AppColors.ThemeColor}
+                    textFontWeight
                   />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <LineBreak space={2} />
+            <FlatList
+              data={data}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: AppColors.LIGHTGRAY,
+                    paddingVertical: responsiveHeight(2),
+                    flexDirection: 'row',
+                  }}
+                >
+                  <View>
+                    <AppText
+                      title={item.title}
+                      textSize={2}
+                      textColor={AppColors.BLACK}
+                      textFontWeight
+                    />
+                    <AppText
+                      title={item.subTitle}
+                      textSize={1.6}
+                      textColor={AppColors.BLACK}
+                    />
+                  </View>
+                  {item.isShowBadge && (
+                    <View
+                      style={{
+                        flex: 1,
+                        flexDirection: 'row',
+                        gap: responsiveWidth(2),
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <SVGXml icon={AppIcons.correct} width={15} height={15} />
+                      <AppText
+                        title={'Verified User'}
+                        textSize={1.6}
+                        textColor={AppColors.ThemeColor}
+                      />
+                    </View>
+                  )}
                 </View>
               )}
-            </View>
-          )}
-        />
-        <LineBreak space={2} />
+            />
+            <LineBreak space={2} />
 
-        <AppButton
-          title={'Delete Account'}
-          borderWidth={2}
-          borderColor={AppColors.RED_COLOR}
-          textColor={AppColors.RED_COLOR}
-          btnBackgroundColor={AppColors.WHITE}
-        />
+            <AppButton
+              title={'Delete Account'}
+              borderWidth={2}
+              borderColor={AppColors.RED_COLOR}
+              textColor={AppColors.RED_COLOR}
+              indicator={deleteLoader}
+              handlePress={() => onConfirmation()}
+              indicatorColor={AppColors.RED_COLOR}
+              btnBackgroundColor={AppColors.WHITE}
+            />
+          </>
+        )}
       </View>
     </Container>
   );
