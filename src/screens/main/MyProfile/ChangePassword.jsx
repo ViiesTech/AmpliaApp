@@ -19,9 +19,9 @@ const ChangePassword = () => {
     currentPassword: '',
     newPassword: '',
     confirmNewPassword: '',
-    current: false,
-    newPass: false,
-    confirm: false,
+    current: true,
+    newPass: true,
+    confirm: true,
   });
   const [changePassword, { isLoading }] = useChangePasswordMutation();
 
@@ -65,12 +65,12 @@ const ChangePassword = () => {
       confirmNewPassword: visible.confirmNewPassword,
     };
     await changePassword(data)
-      .unwrap()
-      .then(res => {
+      ?.unwrap()
+      ?.then(res => {
         console.log('password change response ===>', res);
         ShowToast(res?.message || 'Password updated successfully');
       })
-      .catch(error => {
+      ?.catch(error => {
         ShowToast(error?.data?.message || 'Failed to change your password');
         console.log('failed to change your password ===>', error);
       });
@@ -100,7 +100,9 @@ const ChangePassword = () => {
               </TouchableOpacity>
             }
           />
+
           <LineBreak space={1} />
+
           <AppTextInput
             inputPlaceHolder={'Enter New Password'}
             borderWidth={1}
@@ -119,7 +121,9 @@ const ChangePassword = () => {
               </TouchableOpacity>
             }
           />
+
           <LineBreak space={1} />
+
           <AppTextInput
             inputPlaceHolder={'Confirm New Password'}
             borderWidth={1}
@@ -138,7 +142,9 @@ const ChangePassword = () => {
               </TouchableOpacity>
             }
           />
+
           <LineBreak space={1} />
+
           <AppButton
             handlePress={onSaveChanges}
             indicator={isLoading}

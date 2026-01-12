@@ -3,7 +3,12 @@ import React from 'react';
 import { View, FlatList, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
-import { AppColors, responsiveHeight, responsiveWidth, ShowToast } from '../../../utils';
+import {
+  AppColors,
+  responsiveHeight,
+  responsiveWidth,
+  ShowToast,
+} from '../../../utils';
 import { AppIcons } from '../../../assets/icons';
 import SVGXml from '../../../assets/icons/SVGXML';
 import AppText from '../../../components/AppText';
@@ -20,10 +25,30 @@ const data = [
     title: 'Change Password',
     navTo: 'ChangePassword',
   },
-  { id: 3, icon: AppIcons.privacy, title: 'Privacy Policy', navTo: 'PrivacyPolicy' },
-  { id: 4, icon: AppIcons.privacy, title: 'Terms & Conditions', navTo: 'TermsCondition' },
-  { id: 5, icon: AppIcons.help, title: 'Help & Feedback', navTo: 'HelpAndFeedback' },
-  { id: 6, icon: AppIcons.billing, title: 'Billing History', navTo: 'BillingHistory' },
+  {
+    id: 3,
+    icon: AppIcons.privacy,
+    title: 'Privacy Policy',
+    navTo: 'PrivacyPolicy',
+  },
+  {
+    id: 4,
+    icon: AppIcons.privacy,
+    title: 'Terms & Conditions',
+    navTo: 'TermsCondition',
+  },
+  {
+    id: 5,
+    icon: AppIcons.help,
+    title: 'Help & Feedback',
+    navTo: 'HelpAndFeedback',
+  },
+  {
+    id: 6,
+    icon: AppIcons.billing,
+    title: 'Billing History',
+    navTo: 'BillingHistory',
+  },
   {
     id: 7,
     icon: AppIcons.question,
@@ -35,9 +60,9 @@ const data = [
 
 const MyProfile = () => {
   const nav = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   return (
-    <Container >
+    <Container>
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
         <AppHeader heading={'Profile'} />
         <View>
@@ -56,11 +81,10 @@ const MyProfile = () => {
                   borderRadius: 10,
                 }}
                 onPress={() => {
-                  if(!item.navTo) {
-                    dispatch(logout())
+                  if (!item.navTo) {
+                    dispatch(logout());
                     ShowToast('Logged out successfully');
-                  }
-                 else  {
+                  } else {
                     nav.navigate(item.navTo);
                   }
                 }}

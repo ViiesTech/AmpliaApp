@@ -39,7 +39,7 @@ const MyAccount = () => {
       {
         id: 2,
         title: 'Phone number',
-        subTitle: userData.user.phone || '202290292',
+        subTitle: userData.user.phone || '090078601',
       },
       {
         id: 3,
@@ -48,7 +48,6 @@ const MyAccount = () => {
       },
     ];
   }, [userData]);
-  // console.log(userData);
 
   useEffect(() => {
     getUserDetail();
@@ -88,6 +87,7 @@ const MyAccount = () => {
     );
   };
 
+  console.log('userData:-', userData);
   return (
     <Container>
       <View style={{ paddingHorizontal: responsiveWidth(5) }}>
@@ -123,7 +123,12 @@ const MyAccount = () => {
                 source={
                   { uri: userData?.user.profile } || AppImages.userprofile
                 }
-                style={{ width: 45, height: 45, borderRadius: 100 }}
+                style={{
+                  width: 45,
+                  height: 45,
+                  borderRadius: 45,
+                  backgroundColor: AppColors.light_themeColor,
+                }}
               />
               <View>
                 <AppText
@@ -160,7 +165,9 @@ const MyAccount = () => {
                 </TouchableOpacity>
               </View>
             </View>
+
             <LineBreak space={2} />
+            
             <FlatList
               data={data}
               renderItem={({ item }) => (

@@ -6,20 +6,15 @@ import { useSelector } from 'react-redux';
 
 const Stack = createStackNavigator();
 const Routes = () => {
-
-  const {token} = useSelector(state => state.persistedData)
-
-  console.log(token)
+  const { token } = useSelector(state => state.persistedData);
 
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false }}
-    >
-      {!token ?
-      <Stack.Screen name="Auth" component={Auth} />
-        :
-      <Stack.Screen name="Main" component={Main} />
-      }
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!token ? (
+        <Stack.Screen name="Auth" component={Auth} />
+      ) : (
+        <Stack.Screen name="Main" component={Main} />
+      )}
     </Stack.Navigator>
   );
 };
