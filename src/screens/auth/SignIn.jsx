@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import { AppImages } from '../../assets/images';
@@ -20,73 +20,117 @@ import AppText from '../../components/AppText';
 import AppButton from '../../components/AppButton';
 import { useNavigation } from '@react-navigation/native';
 import { useLoginMutation } from '../../redux/services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/* -------------------- STORAGE KEYS -------------------- */
+
+const REMEMBER_ME_KEY = 'REMEMBER_ME';
+const USER_CREDENTIALS_KEY = 'USER_CREDENTIALS';
 
 const SignIn = () => {
   const [isShow, setIsShow] = useState(true);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-  const [isDefinitionChecked, setIsDefinitionChecked] = useState(false);
+  const [checked, setChecked] = useState(false);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [login, { isLoading }] = useLoginMutation();
   const nav = useNavigation();
 
+  /* -------------------- LOAD REMEMBERED USER -------------------- */
+
+  useEffect(() => {
+    const loadRememberedUser = async () => {
+      try {
+        const rememberMe = await AsyncStorage.getItem(REMEMBER_ME_KEY);
+        const credentials = await AsyncStorage.getItem(USER_CREDENTIALS_KEY);
+
+        if (rememberMe === 'true' && credentials) {
+          const parsed = JSON.parse(credentials);
+          setEmail(parsed.email);
+          setPassword(parsed.password);
+          setChecked(true);
+        }
+      } catch (error) {
+        console.log('Error loading remembered user:', error);
+      }
+    };
+
+    loadRememberedUser();
+  }, []);
+
+  /* -------------------- LOGIN -------------------- */
+
   const onLoginPress = async () => {
     if (!email) {
-      ShowToast('Please enter your email')
+      ShowToast('Please enter your email');
       return;
     }
     if (!password) {
-      ShowToast('Please enter your password')
+      ShowToast('Please enter your password');
       return;
     }
 
-    let data = {
-      email,
-      password
-    }
+    const data = { email, password };
 
-    await login(data)
-      .unwrap()
-      .then(res => {
-        console.log('login response ===>',res)
-        if(res.success) {
-          ShowToast(res.message)
+    try {
+      const res = await login(data).unwrap();
+
+      if (res.success) {
+        ShowToast(res.message);
+
+        if (checked) {
+          await AsyncStorage.setItem(REMEMBER_ME_KEY, 'true');
+          await AsyncStorage.setItem(
+            USER_CREDENTIALS_KEY,
+            JSON.stringify({ email, password }),
+          );
+        } else {
+          await AsyncStorage.removeItem(REMEMBER_ME_KEY);
+          await AsyncStorage.removeItem(USER_CREDENTIALS_KEY);
         }
-      })
-      .catch(err => {
-        console.log('error while login', err);
-        return ShowToast(err?.data?.message || 'Some problem occured')
-      });
+
+        // Navigate after successful login
+        // nav.reset({ index: 0, routes: [{ name: 'Home' }] });
+      }
+    } catch (err) {
+      console.log('Login error:', err);
+      ShowToast(err?.data?.message || 'Some problem occurred');
+    }
   };
 
   return (
     <Container
       showScrollBar={false}
-      safeAreaViewStyle={{
-        paddingHorizontal: responsiveWidth(5),
-      }}
+      safeAreaViewStyle={{ paddingHorizontal: responsiveWidth(5) }}
     >
       <Image source={AppImages.horizontal_logo} style={styles.image} />
       <LineBreak space={1} />
       <SVGXml icon={AppIcons.sign_in} width={90} height={90} />
+
       <View>
+        {/* -------------------- EMAIL -------------------- */}
         <AppTextInput
-          inputPlaceHolder={'Email'}
+          inputPlaceHolder="Email"
           borderWidth={1}
           value={email}
-          onChangeText={text => setEmail(text)}
+          onChangeText={setEmail}
           borderColor={AppColors.LIGHTGRAY}
           isFocused={isEmailFocused}
           onFocus={() => setIsEmailFocused(true)}
           onBlur={() => setIsEmailFocused(false)}
         />
+
         <LineBreak space={1} />
+
+        {/* -------------------- PASSWORD -------------------- */}
         <AppTextInput
-          inputPlaceHolder={'Password'}
+          inputPlaceHolder="Password"
           borderWidth={1}
           value={password}
-          onChangeText={text => setPassword(text)}
+          onChangeText={setPassword}
           isFocused={isPasswordFocused}
           onFocus={() => setIsPasswordFocused(true)}
           onBlur={() => setIsPasswordFocused(false)}
@@ -105,63 +149,54 @@ const SignIn = () => {
           }
           borderColor={AppColors.LIGHTGRAY}
         />
+
         <LineBreak space={1} />
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              gap: responsiveWidth(2),
-              alignItems: 'center',
-            }}
-          >
+        {/* -------------------- REMEMBER ME -------------------- */}
+        <View style={styles.rememberRow}>
+          <View style={styles.rememberLeft}>
             <CheckBox
-              role="definition"
-              onAnimationType="stroke"
-              value={isDefinitionChecked}
-              onValueChange={newValue => setIsDefinitionChecked(newValue)}
+              value={checked}
+              onValueChange={setChecked}
               tintColors={{ true: AppColors.ThemeColor, false: '#C0C0C0' }}
               style={styles.checkbox}
             />
             <AppText
-              title={'Remember Me'}
+              title="Remember Me"
               textSize={1.8}
               textColor={AppColors.ThemeColor}
             />
           </View>
+
           <TouchableOpacity onPress={() => nav.navigate('ForgetPassword')}>
             <AppText
-              title={'Forget Password?'}
+              title="Forget Password?"
               textSize={1.8}
-              textColor={AppColors.ThemeColor}
               textFontWeight
+              textColor={AppColors.ThemeColor}
             />
           </TouchableOpacity>
         </View>
+
         <LineBreak space={1} />
-        <AppButton indicator={isLoading} title={'Sign In'} handlePress={() => onLoginPress()} />
+
+        <AppButton
+          indicator={isLoading}
+          title="Sign In"
+          handlePress={onLoginPress}
+        />
+
         <LineBreak space={1} />
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+
+        <View style={styles.signupRow}>
           <AppText
-            title={"Don't have an account?"}
+            title="Don't have an account?"
             textSize={1.8}
             textColor={AppColors.Dark_themeColor}
           />
           <TouchableOpacity onPress={() => nav.navigate('SignUp')}>
             <AppText
-              title={' Sign Up'}
+              title=" Sign Up"
               textSize={1.8}
               textFontWeight
               textColor={AppColors.ThemeColor}
@@ -172,24 +207,19 @@ const SignIn = () => {
 
       <LineBreak space={20} />
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View style={styles.termsRow}>
         <AppText
-          title={'By signing in, you agree to our'}
+          title="By signing in, you agree to our"
           textSize={1.5}
           textColor={AppColors.Dark_themeColor}
         />
         <AppText
-          title={' Terms & Conditions'}
+          title=" Terms & Conditions"
           textSize={1.5}
           textColor={AppColors.ThemeColor}
         />
       </View>
+
       <LineBreak space={3} />
     </Container>
   );
@@ -197,6 +227,7 @@ const SignIn = () => {
 
 export default SignIn;
 
+/* -------------------- STYLES -------------------- */
 const styles = StyleSheet.create({
   image: {
     width: responsiveWidth(49),
@@ -204,17 +235,27 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: responsiveHeight(20),
   },
-  checkboxWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 14, // makes it rounded
-    borderWidth: 2,
-    borderColor: '#C0C0C0',
+  checkbox: {
+    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+  },
+  rememberRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rememberLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: responsiveWidth(2),
+  },
+  signupRow: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkbox: {
-    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }], // scales size
-    borderRadius: 100,
+  termsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
