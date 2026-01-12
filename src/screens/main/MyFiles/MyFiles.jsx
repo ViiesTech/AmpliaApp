@@ -70,7 +70,7 @@ const MyFiles = () => {
             data={topTabsData}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: responsiveWidth(3) }}
+            contentContainerStyle={{ gap: responsiveWidth(3), flexGrow: 1 }}
             renderItem={({ item, index }) => (
               <TouchableOpacity onPress={() => onSelectYear(item.title)}>
                 <LinearGradient
@@ -104,23 +104,29 @@ const MyFiles = () => {
           <LineBreak space={2} />
 
           <View style={{ alignItems: 'center' }}>
-           {isLoading ?
-              <View style={{marginTop: responsiveHeight(5)}}>
-                <Loader  color={AppColors.ThemeColor} />
-                </View> 
-              :
-            <FlatList
-              data={data?.files}
-              numColumns={2}
-              ItemSeparatorComponent={<LineBreak space={2} />}
-              ListEmptyComponent={() => <AppText textSize={1.8} textAlignment={'center'} title={data?.message || 'No Files Found'} />}
-              showsHorizontalScrollIndicator={false}
-              columnWrapperStyle={{
-                gap: responsiveWidth(3),
-              }}
-              renderItem={({ item }) => <PdfCard title={item.name} />}
-            />
-            } 
+            {isLoading ? (
+              <View style={{ marginTop: responsiveHeight(5) }}>
+                <Loader color={AppColors.ThemeColor} />
+              </View>
+            ) : (
+              <FlatList
+                data={data?.files}
+                numColumns={2}
+                ItemSeparatorComponent={<LineBreak space={2} />}
+                ListEmptyComponent={() => (
+                  <AppText
+                    textSize={1.8}
+                    textAlignment={'center'}
+                    title={data?.message || 'No Files Found'}
+                  />
+                )}
+                showsHorizontalScrollIndicator={false}
+                columnWrapperStyle={{
+                  gap: responsiveWidth(3),
+                }}
+                renderItem={({ item }) => <PdfCard title={item.name} />}
+              />
+            )}
           </View>
           <LineBreak space={10} />
         </View>

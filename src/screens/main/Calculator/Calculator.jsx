@@ -14,7 +14,7 @@ import AppButton from '../../../components/AppButton';
 
 const Calculator = () => {
   return (
-    <Container >
+    <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader
           onBackPress={false}
@@ -77,7 +77,9 @@ const Calculator = () => {
             borderColor={AppColors.LIGHTGRAY}
           />
           <LineBreak space={1} />
+
           <AppDropDown />
+
           <LineBreak space={1} />
           <AppButton title={'Calculate'} />
         </View>

@@ -18,7 +18,7 @@ const AppDropDown = () => {
                 setValue={setValue}
                 setItems={setItems}
                 placeholder="Choose year"
-                placeholderStyle={{color: AppColors.GRAY}}
+                placeholderStyle={{ color: AppColors.GRAY }}
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropdownContainer}
             />
