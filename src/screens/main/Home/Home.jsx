@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useEffect } from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Container from '../../../components/Container';
 import {
   AppColors,
@@ -97,14 +97,13 @@ const Home = () => {
     useLazyGetAllServicesQuery();
   const nav = useNavigation();
 
-  console.log('categories ===>', categoriesData);
-  console.log('services ===>', servicesData);
-
   useEffect(() => {
     getAllCategories();
     getAllServices();
   }, []);
 
+  console.log('categories ===>', categoriesData);
+  console.log('services ===>', servicesData);
   return (
     <Container>
       <LineBreak space={2} />
@@ -132,13 +131,7 @@ const Home = () => {
         <HomeBanner />
         <LineBreak space={3} />
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <View style={styles.serviceCategoryContainer}>
           <AppText
             title={'Service Category'}
             textSize={2.4}
@@ -159,6 +152,7 @@ const Home = () => {
             />
           </TouchableOpacity>
         </View>
+
         <LineBreak space={2} />
 
         {categoryLoader ? (
@@ -167,9 +161,9 @@ const Home = () => {
           </View>
         ) : (
           <FlatList
-            data={categoriesData?.categories.slice(0, 2)}
+            data={categoriesData?.categories?.slice(0, 2)}
             ListEmptyComponent={() => (
-              <View style={{ flex: 1 }}>
+              <View style={styles.flex}>
                 <AppText
                   textSize={1.8}
                   textAlignment={'center'}
@@ -186,9 +180,9 @@ const Home = () => {
             horizontal
             renderItem={({ item }) => (
               <ServiceCategory
-                title={item.name}
-                subTitle={item.description}
-                icon={{ uri: item.cover }} // image will appear when server will live
+                title={item?.name}
+                subTitle={item?.description}
+                icon={{ uri: item?.cover }} // image will appear when server will live
                 onPress={() => nav.navigate('Services')}
               />
             )}
@@ -211,7 +205,11 @@ const Home = () => {
           />
 
           <TouchableOpacity
-            onPress={() => nav.navigate('PopularAndOtherServices',{servicesData: servicesData?.services})}
+            onPress={() =>
+              nav.navigate('PopularAndOtherServices', {
+                servicesData: servicesData?.services,
+              })
+            }
           >
             <AppText
               title={'View More'}
@@ -225,16 +223,19 @@ const Home = () => {
 
       <LineBreak space={1.5} />
 
-      {/* <View> */}
       {serviceLoader ? (
         <View style={{ marginTop: responsiveHeight(3) }}>
           <Loader color={AppColors.ThemeColor} />
         </View>
       ) : (
         <FlatList
-          data={servicesData?.services?.slice(0,2)}
+          data={servicesData?.services?.slice(0, 2)}
           horizontal
-          ListEmptyComponent={() => <View style={{flex: 1}}><AppText textAlignment={'center'} title={'No Service Found'} /></View> }
+          ListEmptyComponent={() => (
+            <View style={{ flex: 1 }}>
+              <AppText textAlignment={'center'} title={'No Service Found'} />
+            </View>
+          )}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             gap: 12,
@@ -242,16 +243,15 @@ const Home = () => {
           }}
           renderItem={({ item }) => (
             <PopularService
-              title={item.name}
-              image={{uri: item.cover}}
-              onPress={() => nav.navigate("ServiceDetails")}
-              price={item.plans}
-              rating={item.averageRating}
+              title={item?.name}
+              image={{ uri: item?.cover }}
+              onPress={() => nav.navigate('ServiceDetails')}
+              price={item?.plans}
+              rating={item?.averageRating}
             />
           )}
         />
       )}
-      {/* </View> */}
 
       <LineBreak space={2} />
 
@@ -328,3 +328,12 @@ const Home = () => {
 };
 
 export default Home;
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  serviceCategoryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+});

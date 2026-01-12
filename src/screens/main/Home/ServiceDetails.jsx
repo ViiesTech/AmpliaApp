@@ -72,7 +72,7 @@ const ServiceDetails = () => {
 
   return (
     <>
-      <Container >
+      <Container>
         <ImageBackground
           source={AppImages.service_bg}
           imageStyle={{
@@ -99,7 +99,9 @@ const ServiceDetails = () => {
             />
           </View>
         </ImageBackground>
+
         <LineBreak space={1.5} />
+
         <View style={{ paddingHorizontal: responsiveWidth(6) }}>
           <AppText
             title={'Individual Tax Filing'}
@@ -107,6 +109,7 @@ const ServiceDetails = () => {
             textColor={AppColors.BLACK}
             textFontWeight
           />
+
           <View
             style={{
               flexDirection: 'row',
@@ -114,7 +117,8 @@ const ServiceDetails = () => {
               alignItems: 'center',
             }}
           >
-            <RatingView />
+            <RatingView rating={4.5} />
+
             <AppText
               title={'4.5'}
               textSize={1.8}
@@ -122,14 +126,18 @@ const ServiceDetails = () => {
               textFontWeight
             />
           </View>
+
           <LineBreak space={2} />
+
           <AppText
             title={'About the Service'}
             textSize={2}
             textColor={AppColors.BLACK}
             textFontWeight
           />
+
           <LineBreak space={1} />
+
           <AppText
             title={
               'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
@@ -137,14 +145,18 @@ const ServiceDetails = () => {
             textSize={1.8}
             textColor={AppColors.GRAY}
           />
+
           <LineBreak space={3} />
+
           <AppText
             title={'Packages'}
             textSize={2}
             textColor={AppColors.BLACK}
             textFontWeight
           />
+
           <LineBreak space={1} />
+
           <View>
             <FlatList
               data={tabsData}
@@ -156,7 +168,7 @@ const ServiceDetails = () => {
               renderItem={({ item, index }) => (
                 <TouchableOpacity onPress={() => setSelectedTab(index)}>
                   <AppText
-                    title={item.title}
+                    title={item?.title}
                     textSize={2}
                     textColor={AppColors.ThemeColor}
                     textFontWeight
@@ -174,6 +186,7 @@ const ServiceDetails = () => {
               )}
             />
           </View>
+
           <View
             style={{
               backgroundColor: AppColors.app_light,
@@ -194,12 +207,12 @@ const ServiceDetails = () => {
                   }}
                 >
                   <AppText
-                    title={item.title}
+                    title={item?.title}
                     textSize={1.8}
                     textColor={AppColors.GRAY}
                   />
                   <AppText
-                    title={item.option}
+                    title={item?.option}
                     textSize={1.8}
                     textColor={AppColors.GRAY}
                   />
@@ -207,7 +220,9 @@ const ServiceDetails = () => {
               )}
             />
           </View>
+
           <LineBreak space={2} />
+
           <AppText
             title={'Rating & Reviews'}
             textSize={2}
@@ -246,7 +261,9 @@ const ServiceDetails = () => {
               />
             </View>
           </View>
+
           <LineBreak space={2} />
+
           <View>
             <FlatList
               data={ratingData}
@@ -267,7 +284,7 @@ const ServiceDetails = () => {
                     }}
                   >
                     <AppText
-                      title={item.rating}
+                      title={item?.rating}
                       textSize={1.8}
                       textColor={AppColors.ThemeColor}
                     />
@@ -278,15 +295,15 @@ const ServiceDetails = () => {
                     />
                   </View>
                   <RatingWithProgressbar
-                    progress={item.progress}
+                    progress={item?.progress}
                     animated
                     style={{ width: '80%' }}
                   />
                   <AppText
                     title={
-                      item.progress < 10
-                        ? `0${item.progress}%`
-                        : `${item.progress}%`
+                      item?.progress < 10
+                        ? `0${item?.progress}%`
+                        : `${item?.progress}%`
                     }
                     textSize={1.8}
                     textColor={AppColors.ThemeColor}
@@ -295,7 +312,9 @@ const ServiceDetails = () => {
               )}
             />
           </View>
+
           <LineBreak space={2} />
+
           <AppText
             title={'Reviews'}
             textSize={2}
@@ -303,6 +322,8 @@ const ServiceDetails = () => {
             textFontWeight
           />
         </View>
+
+        {/* HELLO */}
 
         <LineBreak space={2} />
 
@@ -314,71 +335,75 @@ const ServiceDetails = () => {
             paddingHorizontal: responsiveWidth(6),
             gap: responsiveWidth(6),
           }}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                backgroundColor: AppColors.appBgColor,
-                paddingHorizontal: responsiveWidth(4),
-                paddingVertical: responsiveHeight(2),
-                borderRadius: 20,
-                width: responsiveWidth(80),
-              }}
-            >
-              <View style={{ flexDirection: 'row', gap: responsiveWidth(2) }}>
-                <Image
-                  source={item.image}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 100,
-                    borderWidth: 1,
-                    borderColor: AppColors.ThemeColor,
-                  }}
-                />
-                <View>
-                  <AppText
-                    title={item.name}
-                    textSize={1.8}
-                    textColor={AppColors.Dark_themeColor}
-                    textFontWeight
-                  />
-                  <View
+          renderItem={({ item }) => {
+            // console.log('item:-', item);
+            return (
+              <View
+                style={{
+                  backgroundColor: AppColors.appBgColor,
+                  paddingHorizontal: responsiveWidth(4),
+                  paddingVertical: responsiveHeight(2),
+                  borderRadius: 20,
+                  width: responsiveWidth(80),
+                }}
+              >
+                <View style={{ flexDirection: 'row', gap: responsiveWidth(2) }}>
+                  <Image
+                    source={item?.image}
                     style={{
-                      flexDirection: 'row',
-                      gap: responsiveWidth(2),
-                      alignItems: 'center',
+                      width: 40,
+                      height: 40,
+                      borderRadius: 100,
+                      borderWidth: 1,
+                      borderColor: AppColors.ThemeColor,
                     }}
-                  >
-                    <RatingView width={2} starSize={18} />
+                  />
+                  <View>
                     <AppText
-                      title={'4.5'}
+                      title={item?.name}
                       textSize={1.8}
-                      textColor={AppColors.GRAY}
+                      textColor={AppColors.Dark_themeColor}
                       textFontWeight
+                    />
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: responsiveWidth(2),
+                        alignItems: 'center',
+                      }}
+                    >
+                      <RatingView rating={4.5} width={2} starSize={18} />
+                      <AppText
+                        title={'4.5'}
+                        textSize={1.8}
+                        textColor={AppColors.GRAY}
+                        textFontWeight
+                      />
+                    </View>
+                  </View>
+                  <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                    <AppText
+                      title={item?.time}
+                      textSize={1.6}
+                      textColor={AppColors.Dark_themeColor}
                     />
                   </View>
                 </View>
-                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                  <AppText
-                    title={item.time}
-                    textSize={1.6}
-                    textColor={AppColors.Dark_themeColor}
-                  />
-                </View>
+                <LineBreak space={1} />
+                <AppText
+                  title={item?.desc}
+                  textSize={1.8}
+                  textwidth={75}
+                  textColor={AppColors.Dark_themeColor}
+                />
               </View>
-              <LineBreak space={1} />
-              <AppText
-                title={item.desc}
-                textSize={1.8}
-                textwidth={75}
-                textColor={AppColors.Dark_themeColor}
-              />
-            </View>
-          )}
+            );
+          }}
         />
 
         <LineBreak space={2} />
       </Container>
+
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
         <AppButton
           title={'Book Service'}

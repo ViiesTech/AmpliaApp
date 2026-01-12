@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, TouchableOpacity, FlatList } from 'react-native';
 import Container from '../../../components/Container';
 import {
   AppColors,
@@ -16,30 +16,6 @@ import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 
-const popularServices = [
-  {
-    id: 1,
-    image: AppImages.service_one,
-    title: 'Individual Tax Filing',
-    rating: '4.5',
-    price: '$200.00',
-  },
-  {
-    id: 2,
-    image: AppImages.service_two,
-    title: 'NTN Registration',
-    rating: '4.5',
-    price: '$200.00',
-  },
-  {
-    id: 3,
-    image: AppImages.service_three,
-    title: 'Business Incorporation',
-    rating: '4.5',
-    price: '$200.00',
-  },
-];
-
 const topTabsData = [
   { id: 1, title: 'All' },
   { id: 2, title: 'Tax Preparation & Filing' },
@@ -47,9 +23,42 @@ const topTabsData = [
   { id: 4, title: 'Bookkeeping & Accounting' },
 ];
 
+const popularServices = [
+  {
+    id: 1,
+    image: AppImages.service_one,
+    title: 'Individual Tax Filing',
+    rating: '4.5',
+    price: [
+      { id: 1, price: '$200.00' },
+      { id: 2, price: '$200.00' },
+    ],
+  },
+  {
+    id: 2,
+    image: AppImages.service_two,
+    title: 'NTN Registration',
+    rating: '4.5',
+    price: [
+      { id: 1, price: '$200.00' },
+      { id: 2, price: '$200.00' },
+    ],
+  },
+  {
+    id: 3,
+    image: AppImages.service_three,
+    title: 'Business Incorporation',
+    rating: '4.5',
+    price: [
+      { id: 1, price: '$200.00' },
+      { id: 2, price: '$200.00' },
+    ],
+  },
+];
+
 const Services = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-
+  console.log('selectedTab:-', selectedTab);
   return (
     <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
@@ -104,7 +113,7 @@ const Services = () => {
                       : AppColors.ThemeColor
                   }
                   textSize={1.6}
-                  title={item.title}
+                  title={item?.title}
                   textFontWeight
                 />
               </LinearGradient>
@@ -124,10 +133,10 @@ const Services = () => {
           }}
           renderItem={({ item }) => (
             <PopularService
-              title={item.title}
-              image={item.image}
-              price={item.price}
-              rating={item.rating}
+              title={item?.title}
+              image={item?.image}
+              price={item?.price}
+              rating={item?.rating}
             />
           )}
         />

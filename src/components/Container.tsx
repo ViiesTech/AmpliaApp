@@ -24,13 +24,13 @@ const Container = ({ children, scrollEnabled = true, showScrollBar, paddingBotto
             style={styles.container}
         >
             <SafeAreaView style={{ flex: 1, ...safeAreaViewStyle, }}>
-                <KeyboardAvoidingView style={{flex: 1}} behavior='padding'>
-                <ScrollView contentContainerStyle={{flex: scrollEnabled ? null : 1, paddingBottom: responsiveHeight(paddingBottom) }} showsVerticalScrollIndicator={showScrollBar} scrollEnabled={scrollEnabled} style={styles.container}>
-                    {children}
-                </ScrollView>
+                <KeyboardAvoidingView style={{ flex: 1 }} behavior='height'>
+                    <ScrollView contentContainerStyle={{ flex: scrollEnabled ? null : 1, paddingBottom: responsiveHeight(paddingBottom) }} showsVerticalScrollIndicator={showScrollBar} scrollEnabled={scrollEnabled} style={styles.container}>
+                        {children}
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
-        </LinearGradient>
+        </LinearGradient >
     )
 }
 

@@ -16,7 +16,7 @@ type Props = {
 }
 
 const PopularService = ({ image, title, rating, price, onPress }: Props) => {
-    const nav = useNavigation();
+
     return (
         <TouchableOpacity
             style={{

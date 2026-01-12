@@ -4,14 +4,14 @@ import StarRating from 'react-native-star-rating-widget'
 import { AppColors, responsiveWidth } from '../utils'
 
 type Prop = {
-    starSize?:any,
-    width?:any,
+    starSize?: any,
+    width?: any,
     rating?: number
 }
 
-const RatingView = ({starSize, width,rating}: Prop) => {
+const RatingView = ({ starSize, width, rating }: Prop) => {
     return (
-        <View style={{marginLeft: responsiveWidth(-1.5)}}>
+        <View style={{ marginLeft: responsiveWidth(-1.5) }}>
             <StarRating
                 rating={rating}
                 onChange={() => { }}

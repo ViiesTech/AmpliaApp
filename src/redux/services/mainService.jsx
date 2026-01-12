@@ -6,7 +6,7 @@ export const mainApis = createApi({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = getState().persistedData.token;
-      console.log('state ===>', token);
+      console.log('<--:TOKEN:-->', token);
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -20,19 +20,19 @@ export const mainApis = createApi({
         method: 'GET',
       }),
     }),
-     getAllServices: builder.query({
-      query: ({search,categoryId} = {}) => ({
-        url: endpoints.GET_ALL_SERVICES(search,categoryId),
+    getAllServices: builder.query({
+      query: ({ search, categoryId } = {}) => ({
+        url: endpoints.GET_ALL_SERVICES(search, categoryId),
         method: 'GET',
       }),
     }),
     getFiles: builder.query({
-      query: (year) => ({
+      query: year => ({
         url: endpoints.GET_ALL_FILES(year),
         method: 'GET',
       }),
     }),
-      getUserDetail: builder.query({
+    getUserDetail: builder.query({
       query: () => ({
         url: endpoints.GET_USER_DETAIL,
         method: 'GET',
@@ -44,11 +44,11 @@ export const mainApis = createApi({
         method: 'DELETE',
       }),
     }),
-        changePassword: builder.mutation({
-      query: (data) => ({
+    changePassword: builder.mutation({
+      query: data => ({
         url: endpoints.CHANGE_PASSWORD,
         method: 'POST',
-        body: data
+        body: data,
       }),
     }),
   }),
@@ -59,5 +59,5 @@ export const {
   useLazyGetUserDetailQuery,
   useDeleteUserMutation,
   useChangePasswordMutation,
-  useLazyGetAllServicesQuery
+  useLazyGetAllServicesQuery,
 } = mainApis;
