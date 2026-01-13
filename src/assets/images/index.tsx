@@ -13,4 +13,5 @@ export const AppImages = {
     service_bg: require('./service_bg.png'),
     file: require('./dummy.png'),
     userprofile: require('./userProfile.jpeg'),
+    userPH: require('./userPH.png'),
 };

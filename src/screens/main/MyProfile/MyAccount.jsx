@@ -121,13 +121,15 @@ const MyAccount = () => {
             >
               <Image
                 source={
-                  { uri: userData?.user.profile } || AppImages.userprofile
+                  userData?.user?.profile
+                    ? { uri: userData?.user.profile }
+                    : AppImages.userprofile
                 }
                 style={{
                   width: 45,
                   height: 45,
                   borderRadius: 45,
-                  backgroundColor: AppColors.light_themeColor,
+                  // backgroundColor: AppColors.light_themeColor,
                 }}
               />
               <View>
@@ -167,7 +169,7 @@ const MyAccount = () => {
             </View>
 
             <LineBreak space={2} />
-            
+
             <FlatList
               data={data}
               renderItem={({ item }) => (
