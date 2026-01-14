@@ -4,7 +4,6 @@ import { View, Image, TouchableOpacity } from 'react-native'
 import { AppColors, responsiveHeight, responsiveWidth } from '../utils'
 import AppText from './AppText'
 import LineBreak from './LineBreak'
-import { useNavigation } from '@react-navigation/native'
 import RatingView from './RatingView'
 
 type Props = {
@@ -50,16 +49,24 @@ const PopularService = ({ image, title, rating, price, onPress }: Props) => {
                     />
                 </View>
                 <LineBreak space={0.5} />
-                {price?.map((item) => {
+
+                <AppText
+                    title={price?.[0]?.price}
+                    textSize={1.8}
+                    textColor={AppColors.GRAY}
+                    textFontWeight
+                />
+
+                {/* {price?.map((item) => {
                     return (
                         <AppText
-                            title={`$${item.price}`}
+                            title={`${item.price}`}
                             textSize={1.8}
                             textColor={AppColors.GRAY}
                             textFontWeight
                         />
                     )
-                })}
+                })} */}
             </View>
         </TouchableOpacity>
     )

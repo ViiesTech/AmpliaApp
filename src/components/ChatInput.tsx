@@ -8,7 +8,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/Entypo';
 
-const ChatInput = () => {
+type props = {
+    value?: any
+    onChangeText?: any
+    micPress?: any
+    galleryPress?: any
+    sendPress?: any
+}
+const ChatInput = ({ value, onChangeText = () => { }, micPress = () => { }, galleryPress = () => { }, sendPress = () => { } }: props) => {
+
     return (
         <View>
             <AppTextInput
@@ -16,6 +24,8 @@ const ChatInput = () => {
                 borderWidth={1}
                 inputWidth={55}
                 borderColor={AppColors.LIGHTGRAY}
+                value={value}
+                onChangeText={onChangeText}
                 rightIcon={
                     <View
                         style={{
@@ -24,21 +34,23 @@ const ChatInput = () => {
                             gap: responsiveWidth(3),
                         }}
                     >
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={micPress}>
                             <Icon
                                 name="attachment"
                                 size={responsiveFontSize(2.2)}
                                 color={AppColors.Dark_themeColor}
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity>
+
+                        <TouchableOpacity onPress={galleryPress}>
                             <FontAwesome
                                 name="image"
                                 size={responsiveFontSize(2.2)}
                                 color={AppColors.Dark_themeColor}
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity>
+
+                        <TouchableOpacity onPress={sendPress}>
                             <LinearGradient
                                 colors={['#003C46', '#007C91']}
                                 start={{ x: 0, y: 0 }}

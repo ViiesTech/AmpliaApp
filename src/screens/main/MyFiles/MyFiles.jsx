@@ -28,19 +28,19 @@ const topTabsData = [
 ];
 
 const pdfData = [
-  { id: 1, title: 'Individual Tax Filing File 1.pdf' },
-  { id: 2, title: 'Individual Tax Filing File 1.pdf' },
-  { id: 3, title: 'Individual Tax Filing File 1.pdf' },
-  { id: 4, title: 'Individual Tax Filing File 1.pdf' },
-  { id: 5, title: 'Individual Tax Filing File 1.pdf' },
-  { id: 6, title: 'Individual Tax Filing File 1.pdf' },
+  { id: 1, name: 'Individual Tax Filing File 1.pdf' },
+  { id: 2, name: 'Individual Tax Filing File 2.pdf' },
+  { id: 3, name: 'Individual Tax Filing File 3.pdf' },
+  { id: 4, name: 'Individual Tax Filing File 4.pdf' },
+  { id: 5, name: 'Individual Tax Filing File 5.pdf' },
+  { id: 6, name: 'Individual Tax Filing File 6.pdf' },
 ];
 
 const MyFiles = () => {
   const [selectedTab, setSelectedTab] = useState('All');
   const [getFiles, { data, isLoading }] = useLazyGetFilesQuery();
 
-  console.log('all files ===>', data);
+  console.log('all files:-', data);
 
   useEffect(() => {
     if (selectedTab === 'All') {
@@ -60,6 +60,15 @@ const MyFiles = () => {
     }
   };
 
+  const listEmptyComponent = () => {
+    return (
+      <AppText
+        textSize={1.8}
+        textAlignment={'center'}
+        title={data?.message || 'No Files Found'}
+      />
+    );
+  };
   return (
     <>
       <Container>
@@ -71,6 +80,7 @@ const MyFiles = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: responsiveWidth(3), flexGrow: 1 }}
+            keyExtractor={item => `ID-${item.id.toString()}`}
             renderItem={({ item, index }) => (
               <TouchableOpacity onPress={() => onSelectYear(item.title)}>
                 <LinearGradient
@@ -110,21 +120,17 @@ const MyFiles = () => {
               </View>
             ) : (
               <FlatList
-                data={data?.files}
+                // data={data?.files}
+                data={pdfData}
                 numColumns={2}
                 ItemSeparatorComponent={<LineBreak space={2} />}
-                ListEmptyComponent={() => (
-                  <AppText
-                    textSize={1.8}
-                    textAlignment={'center'}
-                    title={data?.message || 'No Files Found'}
-                  />
-                )}
+                keyExtractor={item => `PDF-${item.id.toString()}`}
+                ListEmptyComponent={listEmptyComponent}
                 showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => <PdfCard title={item.name} />}
                 columnWrapperStyle={{
                   gap: responsiveWidth(3),
                 }}
-                renderItem={({ item }) => <PdfCard title={item.name} />}
               />
             )}
           </View>

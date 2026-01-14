@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
 
-const LiveChatScreen = () => {
+const LiveChatScreen = ({ data = [] }: any) => {
     const messages = [
         {
             id: '1',
@@ -72,7 +72,7 @@ const LiveChatScreen = () => {
     return (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
             <FlatList
-                data={messages}
+                data={data}
                 keyExtractor={item => item.id}
                 renderItem={renderMessage}
                 contentContainerStyle={styles.contentContainer}

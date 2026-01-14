@@ -1,8 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
-import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
+import {
+  AppColors,
+  calculateTax,
+  responsiveHeight,
+  responsiveWidth,
+  ShowToast,
+} from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import SVGXml from '../../../assets/icons/SVGXML';
 import { AppIcons } from '../../../assets/icons';
@@ -13,6 +19,31 @@ import AppDropDown from '../../../components/AppDropDown';
 import AppButton from '../../../components/AppButton';
 
 const Calculator = () => {
+  const [state, setState] = useState({
+    totalTax: '0.00',
+    monthlyIncome: '',
+    year: '',
+  });
+
+  const handleCalculate = () => {
+    if (!state?.monthlyIncome) {
+      ShowToast('Monthly Income is missing.');
+      return;
+    }
+
+    if (!state?.year) {
+      ShowToast('Year is missing.');
+      return;
+    }
+
+    const tax = calculateTax(state.monthlyIncome, state.year);
+
+    setState(prev => ({
+      ...prev,
+      totalTax: `Rs. ${tax}`,
+    }));
+  };
+
   return (
     <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
@@ -54,7 +85,7 @@ const Calculator = () => {
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={4}
-            title={'$2105.00'}
+            title={state?.totalTax}
             textFontWeight
           />
         </View>
@@ -75,13 +106,21 @@ const Calculator = () => {
             inputPlaceHolder={'Monthly Income'}
             borderWidth={1}
             borderColor={AppColors.LIGHTGRAY}
+            keyboardType={'numeric'}
+            value={state.monthlyIncome}
+            onChangeText={t => setState({ ...state, monthlyIncome: t })}
           />
           <LineBreak space={1} />
 
-          <AppDropDown />
+          <AppDropDown
+            value={state?.year}
+            setValue={val => {
+              setState({ ...state, year: val });
+            }}
+          />
 
           <LineBreak space={1} />
-          <AppButton title={'Calculate'} />
+          <AppButton title={'Calculate'} handlePress={handleCalculate} />
         </View>
       </View>
     </Container>

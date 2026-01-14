@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {Text} from 'react-native';
+import { Text } from 'react-native';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
 
 type textProps = {
@@ -10,15 +10,15 @@ type textProps = {
   textFontWeight?: boolean;
   textAlignment?: any;
   textwidth?: any;
-  lineHeight?:any;
-  numberOfLines?:any;
-  borderBottomColor?:any;
-  borderBottomWidth?:any;
-  paddingBottom?:any;
-  textTransform?:any;
+  lineHeight?: any;
+  numberOfLines?: any;
+  borderBottomColor?: any;
+  borderBottomWidth?: any;
+  paddingBottom?: any;
+  textTransform?: any;
   children?: React.ReactNode;
-  textDecorationLine?:any;
-  paddingHorizontal?:any;
+  textDecorationLine?: any;
+  paddingHorizontal?: any;
 };
 
 const AppText = ({
@@ -34,7 +34,7 @@ const AppText = ({
   borderBottomWidth,
   paddingBottom,
   textTransform,
-  children,
+  // children,
   textDecorationLine,
   paddingHorizontal,
 }: textProps) => {
@@ -59,7 +59,7 @@ const AppText = ({
         paddingHorizontal: responsiveWidth(paddingHorizontal),
       }}>
       {title}
-      {children}
+      {/* {children} */}
     </Text>
   );
 };

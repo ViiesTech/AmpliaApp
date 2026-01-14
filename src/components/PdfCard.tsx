@@ -12,7 +12,7 @@ type Prop = {
 
 const PdfCard = ({ title }: Prop) => {
     return (
-        <TouchableOpacity style={{
+        <TouchableOpacity activeOpacity={0.7} style={{
             backgroundColor: AppColors.app_light,
             width: responsiveWidth(42),
             paddingBottom: responsiveHeight(1.5),

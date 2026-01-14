@@ -48,7 +48,7 @@ const AppButton = ({
       }}
     >
       <LinearGradient
-        colors={ btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
+        colors={btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
@@ -67,14 +67,14 @@ const AppButton = ({
           <Loader color={indicatorColor} />
           :
           <>
-        {leftIcon && leftIcon} 
-        <AppText
-          textColor={textColor ?? AppColors.WHITE}
-          textSize={textSize ?? 2}
-          title={title}
-          textFontWeight={textFontWeight}
-        />
-        </>
+            {leftIcon && leftIcon}
+            <AppText
+              textColor={textColor ?? AppColors.WHITE}
+              textSize={textSize ?? 2}
+              title={title}
+              textFontWeight={textFontWeight}
+            />
+          </>
         }
       </LinearGradient>
     </TouchableOpacity>

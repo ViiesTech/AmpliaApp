@@ -1,5 +1,6 @@
 import { Dimensions } from "react-native";
 import Toast from "react-native-toast-message";
+import { TAX_SLABS } from '../redux/constant/index';
 
 const percentageCalculation = (max: number, val: number) => max * (val / 100);
 
@@ -8,14 +9,17 @@ const fontCalculation = (height: number, width: number, val: number) => {
     const aspectRatioBasedHeight = (16 / 9) * widthDimension;
     return percentageCalculation(Math.sqrt(Math.pow(aspectRatioBasedHeight, 2) + Math.pow(widthDimension, 2)), val);
 };
+
 export const responsiveFontSize = (f: number) => {
     const { height, width } = Dimensions.get("window");
     return fontCalculation(height, width, f);
 };
+
 export const responsiveHeight = (h: number) => {
     const { height } = Dimensions.get("window");
     return height * (h / 100)
 }
+
 export const responsiveWidth = (w: number) => {
     const { width } = Dimensions.get("window");
     return width * (w / 100)
@@ -67,8 +71,31 @@ export const AppColors = {
 };
 
 export const ShowToast = (message: string) => {
-  return Toast.show({
-    type: 'success',
-    text1: message
-  })
+    return Toast.show({
+        type: 'success',
+        text1: message
+    })
 }
+
+export const calculateTax = (monthlyIncome, year) => {
+    if (!monthlyIncome || !year || !TAX_SLABS[year]) return 0;
+
+    const annualIncome = Number(monthlyIncome) * 12;
+
+    let annualTax = 0;
+    let previousLimit = 0;
+
+    for (const slab of TAX_SLABS[year]) {
+        if (annualIncome > slab.upto) {
+            annualTax += (slab.upto - previousLimit) * slab.rate;
+            previousLimit = slab.upto;
+        } else {
+            annualTax += (annualIncome - previousLimit) * slab.rate;
+            break;
+        }
+    }
+
+    return Number((annualTax / 12).toFixed(2));
+};
+
+

@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import Container from '../../../components/Container';
 import {
@@ -20,8 +20,10 @@ import {
   useLazyGetUserDetailQuery,
 } from '../../../redux/services/mainService';
 import Loader from '../../../components/Loader';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const MyAccount = () => {
+  const [image, setImage] = useState('');
   const [getUserDetail, { data: userData, isLoading }] =
     useLazyGetUserDetailQuery();
   const [deleteUser, { isLoading: deleteLoader }] = useDeleteUserMutation();
@@ -87,6 +89,21 @@ const MyAccount = () => {
     );
   };
 
+  const selectImage = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+    })
+      ?.then(res => {
+        console.log('res in selectImage:-', res);
+        // setImage(res);
+      })
+      ?.catch(err => {
+        console.log('err in selectImage', err);
+      });
+  };
+
   console.log('userData:-', userData);
   return (
     <Container>
@@ -150,6 +167,7 @@ const MyAccount = () => {
 
               <View style={{ alignItems: 'flex-end' }}>
                 <TouchableOpacity
+                  onPress={() => selectImage()}
                   style={{
                     borderWidth: 1,
                     borderColor: AppColors.ThemeColor,
