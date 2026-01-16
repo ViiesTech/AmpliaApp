@@ -3,9 +3,10 @@ import React from 'react'
 import { View } from 'react-native'
 import SVGXml from '../assets/icons/SVGXML'
 import { AppIcons } from '../assets/icons'
-import { AppColors, responsiveHeight, responsiveWidth } from '../utils'
+import { AppColors, capitalizeFirstLetter, responsiveHeight, responsiveWidth } from '../utils'
 import AppText from './AppText'
 import LineBreak from './LineBreak'
+import moment from 'moment'
 
 type Props = {
     title?: any,
@@ -67,12 +68,13 @@ const Bookings = ({ title, date, status }: Props) => {
                             textColor={AppColors.ThemeColor}
                         >{" "}
                             <AppText
-                                title={date}
+                                title={moment(date).format('DD/MM/YY')}
                                 textSize={1.7}
                                 textColor={AppColors.ThemeColor}
                                 textFontWeight
                             />
                         </AppText>
+
                     </View>
                 </View>
             </View>
@@ -82,7 +84,7 @@ const Bookings = ({ title, date, status }: Props) => {
                 paddingVertical: responsiveHeight(0.5), borderRadius: 100
             }}>
                 <AppText
-                    title={status}
+                    title={capitalizeFirstLetter(status)}
                     textSize={1.2}
                     textColor={status === 'Active' ? AppColors.darkYellow : status === 'Completed' ? AppColors.darkGreen : AppColors.darkest}
                 />

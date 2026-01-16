@@ -61,6 +61,16 @@ export const mainApis = createApi({
         };
       },
     }),
+    getBookings: builder.query({
+      query: userId => {
+        console.log('getBookings userId:-', userId);
+
+        return {
+          url: endpoints.GET_BOOKINGS(userId),
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 export const {
@@ -71,4 +81,5 @@ export const {
   useChangePasswordMutation,
   useLazyGetAllServicesQuery,
   useLazyGetSingleServiceQuery,
+  useLazyGetBookingsQuery,
 } = mainApis;

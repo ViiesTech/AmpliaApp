@@ -109,7 +109,7 @@ const BookingsScreens = () => {
   const nav = useNavigation();
 
   return (
-    <Container >
+    <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader onBackPress={false} heading={'Manage Bookings'} />
         <AppTextInput

@@ -34,7 +34,7 @@ const AppText = ({
   borderBottomWidth,
   paddingBottom,
   textTransform,
-  // children,
+  children,
   textDecorationLine,
   paddingHorizontal,
 }: textProps) => {
@@ -59,7 +59,7 @@ const AppText = ({
         paddingHorizontal: responsiveWidth(paddingHorizontal),
       }}>
       {title}
-      {/* {children} */}
+      {children}
     </Text>
   );
 };

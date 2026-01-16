@@ -24,7 +24,9 @@ import {
 import {
   useLazyGetAllCategoriesQuery,
   useLazyGetAllServicesQuery,
+  useLazyGetBookingsQuery,
 } from '../../../redux/services/mainService';
+import { useSelector } from 'react-redux';
 
 const bookings = [
   {
@@ -49,7 +51,7 @@ const bookings = [
 
 const Home = () => {
   const navigation = useNavigation();
-
+  const { user } = useSelector(state => state.persistedData);
   const [
     getAllCategories,
     { data: categoriesData, isLoading: categoryLoader },
@@ -58,10 +60,24 @@ const Home = () => {
   const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
     useLazyGetAllServicesQuery();
 
+  const [getBookings, { data: bookingsData, isLoading: bookingsLoader }] =
+    useLazyGetBookingsQuery();
+
   useEffect(() => {
     getAllCategories();
     getAllServices();
-  }, [getAllCategories, getAllServices]);
+    _getBookigs(user?._id);
+  }, [getAllCategories, getAllServices, user?._id]);
+
+  const _getBookigs = async userId => {
+    await getBookings(userId)
+      ?.unwrap()
+      ?.then(res => {
+        console.log('res in _getBookigs', res?.bookings);
+        // setData(res?.service);
+      })
+      ?.catch(err => console.log('err in _getBookigs', err));
+  };
 
   const renderCategory = useCallback(
     ({ item }) => (
@@ -95,6 +111,7 @@ const Home = () => {
     [navigation],
   );
 
+  // console.log('user:-', user?._id);
   return (
     <Container>
       <LineBreak space={2} />
@@ -154,7 +171,7 @@ const Home = () => {
           <FlatList
             data={categoriesData?.categories?.slice(0, 2) || []}
             horizontal
-            keyExtractor={item => String(item.id)}
+            keyExtractor={item => String(item?._id)}
             renderItem={renderCategory}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryList}
@@ -194,7 +211,7 @@ const Home = () => {
         <FlatList
           data={servicesData?.services?.slice(0, 2) || []}
           horizontal
-          keyExtractor={item => String(item.id)}
+          keyExtractor={item => String(item?._id)}
           renderItem={renderService}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.serviceList}
@@ -224,13 +241,23 @@ const Home = () => {
 
         <LineBreak space={2} />
 
-        <View style={styles.bookingContainer}>
-          <FlatList
-            data={bookings}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => <Bookings {...item} />}
-          />
-        </View>
+        {bookingsLoader ? (
+          <Loader color={AppColors.ThemeColor} />
+        ) : (
+          <View style={styles.bookingContainer}>
+            <FlatList
+              data={bookingsData?.bookings || []}
+              keyExtractor={item => item?._id}
+              renderItem={({ item }) => (
+                <Bookings
+                  title={item?.service?.name}
+                  date={item?.scheduledDate}
+                  status={item?.status}
+                />
+              )}
+            />
+          </View>
+        )}
 
         <LineBreak space={4} />
 

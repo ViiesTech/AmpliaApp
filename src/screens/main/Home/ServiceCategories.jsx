@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -20,10 +20,29 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
+import { useLazyGetAllCategoriesQuery } from '../../../redux/services/mainService';
 
 const ServiceCategories = ({ route }) => {
   const navigation = useNavigation();
+  const [getAllCategories, { isLoading }] = useLazyGetAllCategoriesQuery();
+  const [data, setData] = useState([]);
   const categories = route?.params?.data?.categories ?? [];
+
+  useEffect(() => {
+    _getAllCategories();
+  }, []);
+
+  const _getAllCategories = async () => {
+    await getAllCategories()
+      ?.unwrap()
+      ?.then(res => {
+        console.log('res in _getAllCategories', res);
+        setData(res?.categories || []);
+      })
+      ?.catch(err => console.log('err in _getAllCategories', err));
+  };
+
+  console.log('categories:-', categories);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -68,7 +87,7 @@ const ServiceCategories = ({ route }) => {
         <AppHeader onBackPress heading="Service Category" />
 
         <FlatList
-          data={categories}
+          data={data}
           keyExtractor={item => String(item.id)}
           renderItem={renderItem}
           ItemSeparatorComponent={() => <LineBreak space={2} />}

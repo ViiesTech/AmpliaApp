@@ -107,7 +107,6 @@ const ServiceDetails = props => {
       })
       ?.catch(err => console.log('err in _getSingleService', err));
   };
-  console.log('plans', plans);
 
   /* -------------------- RENDER FUNCTIONS -------------------- */
 
@@ -200,7 +199,7 @@ const ServiceDetails = props => {
       </View>
     );
   }
-
+  console.log('selectedTab', selectedTab);
   /* -------------------- UI -------------------- */
 
   return (

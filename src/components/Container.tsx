@@ -17,7 +17,7 @@ type props = {
 const Container = ({ children, scrollEnabled = true, showScrollBar, paddingBottom, safeAreaViewStyle }: props) => {
     return (
         <LinearGradient
-            colors={['#C8D4D7', '#F3F6F8', '#FFFFFF']} // Top gray → middle fade → white
+            colors={['#C8D4D7', '#F3F6F8', '#FFFFFF',]} // Top gray → middle fade → white
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             locations={[0, 0.1, 1]} // smooth transition

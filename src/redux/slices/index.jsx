@@ -25,7 +25,7 @@ export const Slice = createSlice({
       //   }
       // })
       .addMatcher(authApis.endpoints.login.matchFulfilled, (state, action) => {
-        console.log('actttt', action);
+        console.log('action:-', action);
         if (action.payload?.user) {
           state.user = action.payload.user;
           state.token = action.payload.token;
@@ -42,7 +42,7 @@ export const Slice = createSlice({
       .addMatcher(
         mainApis.endpoints.deleteUser.matchFulfilled,
         (state, action) => {
-          console.log('action',action.payload)
+          console.log('action:-',action.payload)
           if (action.payload?.success) {
             state.user = {};
             state.token = null;

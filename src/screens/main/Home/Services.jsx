@@ -30,8 +30,8 @@ const popularServices = [
     title: 'Individual Tax Filing',
     rating: '4.5',
     price: [
-      { id: 1, price: '200.00' },
-      { id: 2, price: '200.00' },
+      { id: 1, price: 200 },
+      { id: 2, price: 200 },
     ],
   },
   {
@@ -41,8 +41,8 @@ const popularServices = [
     title: 'NTN Registration',
     rating: '4.5',
     price: [
-      { id: 1, price: '200.00' },
-      { id: 2, price: '200.00' },
+      { id: 1, price: 200 },
+      { id: 2, price: 200 },
     ],
   },
   {
@@ -52,8 +52,8 @@ const popularServices = [
     title: 'Business Incorporation',
     rating: '4.5',
     price: [
-      { id: 1, price: '200.00' },
-      { id: 2, price: '200.00' },
+      { id: 1, price: 200 },
+      { id: 2, price: 200 },
     ],
   },
 ];
