@@ -51,6 +51,16 @@ export const mainApis = createApi({
         body: data,
       }),
     }),
+    getSingleService: builder.query({
+      query: id => {
+        console.log('getSingleService ID:-', id);
+
+        return {
+          url: endpoints.GET_SINGLE_SERVICE(id),
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 export const {
@@ -60,4 +70,5 @@ export const {
   useDeleteUserMutation,
   useChangePasswordMutation,
   useLazyGetAllServicesQuery,
+  useLazyGetSingleServiceQuery,
 } = mainApis;

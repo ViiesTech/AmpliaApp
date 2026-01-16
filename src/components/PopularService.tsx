@@ -18,6 +18,7 @@ const PopularService = ({ image, title, rating, price, onPress }: Props) => {
 
     return (
         <TouchableOpacity
+            activeOpacity={0.7}
             style={{
                 backgroundColor: AppColors.app_light,
                 width: responsiveWidth(45),
@@ -51,7 +52,7 @@ const PopularService = ({ image, title, rating, price, onPress }: Props) => {
                 <LineBreak space={0.5} />
 
                 <AppText
-                    title={price?.[0]?.price}
+                    title={`$${price?.[0]?.price?.toFixed()}`}
                     textSize={1.8}
                     textColor={AppColors.GRAY}
                     textFontWeight

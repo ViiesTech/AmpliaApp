@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react'
 import { KeyboardAvoidingView, ScrollView, StyleProp, StyleSheet, ViewStyle } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { responsiveHeight } from '../utils'
+import { AppColors, responsiveHeight } from '../utils'
 import LinearGradient from 'react-native-linear-gradient';
 
 type props = {
@@ -39,6 +39,7 @@ export default Container
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        // backgroundColor: AppColors.WHITE,
     },
     imageStyle: {
         height: responsiveHeight(40),

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import Container from '../../../components/Container';
 import { responsiveWidth } from '../../../utils';
@@ -9,17 +9,30 @@ import LineBreak from '../../../components/LineBreak';
 import AppButton from '../../../components/AppButton';
 
 const ScheduleService = () => {
+  const [selectedRange, setSelectedRange] = useState({
+    start: null,
+    end: null,
+  });
+
   const nav = useNavigation();
+
+  console.log('selectedRange:', selectedRange);
+
+  const isRangeComplete = selectedRange.start && selectedRange.end;
 
   return (
     <Container>
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
-        <AppHeader onBackPress={true} heading={'Schedule Service'} />
-        <CustomRangeCalendar />
+        <AppHeader onBackPress heading="Schedule Service" />
+
+        <CustomRangeCalendar onChange={setSelectedRange} />
+
         <LineBreak space={2} />
+
         <AppButton
-          title={'Continue'}
-          handlePress={() => nav.navigate('Payment')}
+          title="Continue"
+          disabled={!isRangeComplete}
+          handlePress={() => nav.navigate('Payment', { selectedRange })}
         />
       </View>
     </Container>

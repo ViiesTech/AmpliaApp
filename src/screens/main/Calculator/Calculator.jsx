@@ -5,6 +5,7 @@ import Container from '../../../components/Container';
 import {
   AppColors,
   calculateTax,
+  thousandsSeprator,
   responsiveHeight,
   responsiveWidth,
   ShowToast,
@@ -20,7 +21,7 @@ import AppButton from '../../../components/AppButton';
 
 const Calculator = () => {
   const [state, setState] = useState({
-    totalTax: '0.00',
+    totalTax: '0',
     monthlyIncome: '',
     year: '',
   });
@@ -40,7 +41,7 @@ const Calculator = () => {
 
     setState(prev => ({
       ...prev,
-      totalTax: `Rs. ${tax}`,
+      totalTax: `${tax}`,
     }));
   };
 
@@ -85,7 +86,7 @@ const Calculator = () => {
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={4}
-            title={state?.totalTax}
+            title={`Rs.${thousandsSeprator(state?.totalTax)}`}
             textFontWeight
           />
         </View>
@@ -106,10 +107,14 @@ const Calculator = () => {
             inputPlaceHolder={'Monthly Income'}
             borderWidth={1}
             borderColor={AppColors.LIGHTGRAY}
-            keyboardType={'numeric'}
-            value={state.monthlyIncome}
-            onChangeText={t => setState({ ...state, monthlyIncome: t })}
+            keyboardType="numeric"
+            value={thousandsSeprator(state.monthlyIncome)}
+            onChangeText={text => {
+              const rawValue = text.replace(/[^0-9]/g, '');
+              setState({ ...state, monthlyIncome: rawValue });
+            }}
           />
+
           <LineBreak space={1} />
 
           <AppDropDown

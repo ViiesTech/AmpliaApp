@@ -68,6 +68,7 @@ export const AppColors = {
     light_themeColor: '#B0C1C6',
     app_light: '#F1F7F8',
     Dark_themeColor: '#001F27',
+    containerColor: 'rgba(241, 247, 248, 1)',
 };
 
 export const ShowToast = (message: string) => {
@@ -77,7 +78,7 @@ export const ShowToast = (message: string) => {
     })
 }
 
-export const calculateTax = (monthlyIncome, year) => {
+export const calculateTax = (monthlyIncome: any, year: any) => {
     if (!monthlyIncome || !year || !TAX_SLABS[year]) return 0;
 
     const annualIncome = Number(monthlyIncome) * 12;
@@ -97,5 +98,20 @@ export const calculateTax = (monthlyIncome, year) => {
 
     return Number((annualTax / 12).toFixed(2));
 };
+
+export const thousandsSeprator = (value: number) => {
+    if (!value) return '';
+
+    // Remove anything that's not a number
+    const numericValue = value?.replace(/[^0-9]/g, '');
+
+    // Add thousand separators
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+export const capitalizeFirstLetter = (text: string) =>
+    text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+
+
 
 

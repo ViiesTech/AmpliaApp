@@ -35,11 +35,12 @@ const popularServices = [
 ];
 
 const PopularAndOtherServices = ({ route }) => {
-  const nav = useNavigation()
+  const nav = useNavigation();
   const { servicesData } = route?.params;
-  console.log(servicesData);
+  // console.log(servicesData);
+
   return (
-    <Container>
+    <View style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader onBackPress={true} heading={'Popular Services'} />
       </View>
@@ -60,7 +61,11 @@ const PopularAndOtherServices = ({ route }) => {
               title={item.name}
               image={{ uri: item.cover }}
               price={item.plans}
-              onPress={() => nav.navigate('ServiceDetails')}
+              onPress={() =>
+                nav.navigate('ServiceDetails', {
+                  serviceId: item?._id,
+                })
+              }
               rating={item.averageRating}
             />
           )}
@@ -96,7 +101,7 @@ const PopularAndOtherServices = ({ route }) => {
         />
       </View> */}
       <LineBreak space={2} />
-    </Container>
+    </View>
   );
 };
 

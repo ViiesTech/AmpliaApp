@@ -1,87 +1,46 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Feather';
 import Container from '../../../components/Container';
+import HomeHeader from '../../../components/HomeHeader';
+import LineBreak from '../../../components/LineBreak';
+import AppTextInput from '../../../components/AppTextInput';
+import HomeBanner from '../../../components/HomeBanner';
+import AppText from '../../../components/AppText';
+import ServiceCategory from '../../../components/ServiceCategory';
+import PopularService from '../../../components/PopularService';
+import Bookings from '../../../components/Bookings';
+import OurConsultants from '../../../components/OurConsultants';
+import Loader from '../../../components/Loader';
+
 import {
   AppColors,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import HomeHeader from '../../../components/HomeHeader';
-import LineBreak from '../../../components/LineBreak';
-import AppTextInput from '../../../components/AppTextInput';
-import Icon from 'react-native-vector-icons/Feather';
-import HomeBanner from '../../../components/HomeBanner';
-import AppText from '../../../components/AppText';
-import ServiceCategory from '../../../components/ServiceCategory';
-import { AppIcons } from '../../../assets/icons';
-import PopularService from '../../../components/PopularService';
-import { AppImages } from '../../../assets/images';
-import Bookings from '../../../components/Bookings';
-import OurConsultants from '../../../components/OurConsultants';
-import { useNavigation } from '@react-navigation/native';
+
 import {
   useLazyGetAllCategoriesQuery,
   useLazyGetAllServicesQuery,
 } from '../../../redux/services/mainService';
-import Loader from '../../../components/Loader';
-
-const serviceCate = [
-  {
-    id: 1,
-    title: 'Tax Preparation',
-    subTitle: '& Filing',
-    icon: AppIcons.file,
-  },
-  { id: 2, title: 'Financial', subTitle: 'Consulting', icon: AppIcons.dollar },
-  {
-    id: 3,
-    title: 'Bookkeeping &',
-    subTitle: 'Accounting',
-    icon: AppIcons.booking,
-  },
-];
-
-const popularServices = [
-  {
-    id: 1,
-    image: AppImages.service_one,
-    title: 'Individual Tax Filing',
-    rating: '4.5',
-    price: '$200.00',
-  },
-  {
-    id: 2,
-    image: AppImages.service_two,
-    title: 'NTN Registration',
-    rating: '4.5',
-    price: '$200.00',
-  },
-  {
-    id: 3,
-    image: AppImages.service_three,
-    title: 'Business Incorporation',
-    rating: '4.5',
-    price: '$200.00',
-  },
-];
 
 const bookings = [
   {
-    id: 1,
+    id: '1',
     title: 'Bookkeeping and Accounting',
     date: '24/12/24',
     status: 'Active',
   },
   {
-    id: 2,
+    id: '2',
     title: 'Bookkeeping and Accounting',
     date: '24/12/24',
     status: 'Completed',
   },
   {
-    id: 3,
+    id: '3',
     title: 'Bookkeeping and Accounting',
     date: '24/12/24',
     status: 'Schedule',
@@ -89,29 +48,64 @@ const bookings = [
 ];
 
 const Home = () => {
+  const navigation = useNavigation();
+
   const [
     getAllCategories,
     { data: categoriesData, isLoading: categoryLoader },
   ] = useLazyGetAllCategoriesQuery();
+
   const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
     useLazyGetAllServicesQuery();
-  const nav = useNavigation();
 
   useEffect(() => {
     getAllCategories();
     getAllServices();
-  }, []);
+  }, [getAllCategories, getAllServices]);
 
-  console.log('categories ===>', categoriesData);
-  console.log('services ===>', servicesData);
+  const renderCategory = useCallback(
+    ({ item }) => (
+      <ServiceCategory
+        title={item?.name}
+        subTitle={item?.description}
+        icon={{ uri: item?.cover }}
+        onPress={() => navigation.navigate('Services')}
+      />
+    ),
+    [navigation],
+  );
+
+  const renderService = useCallback(
+    ({ item }) => {
+      // console.log('serviceId:-', item?._id);
+      return (
+        <PopularService
+          title={item?.name}
+          image={{ uri: item?.cover }}
+          price={item?.plans}
+          rating={item?.averageRating}
+          onPress={() =>
+            navigation.navigate('ServiceDetails', {
+              serviceId: item?._id,
+            })
+          }
+        />
+      );
+    },
+    [navigation],
+  );
+
   return (
     <Container>
       <LineBreak space={2} />
-      <View style={{ marginHorizontal: responsiveWidth(5) }}>
+
+      <View style={styles.screenPadding}>
         <HomeHeader />
+
         <LineBreak space={2} />
+
         <AppTextInput
-          inputPlaceHolder={'Search Services'}
+          inputPlaceHolder="Search Services"
           borderWidth={1}
           borderColor={AppColors.LIGHTGRAY}
           containerBg={AppColors.WHITE}
@@ -119,7 +113,7 @@ const Home = () => {
           rightIcon={
             <TouchableOpacity>
               <Icon
-                name={'search'}
+                name="search"
                 size={responsiveFontSize(2.5)}
                 color={AppColors.LIGHTGRAY}
               />
@@ -128,24 +122,23 @@ const Home = () => {
         />
 
         <LineBreak space={5} />
+
         <HomeBanner />
+
         <LineBreak space={3} />
 
-        <View style={styles.serviceCategoryContainer}>
-          <AppText
-            title={'Service Category'}
-            textSize={2.4}
-            textColor={AppColors.BLACK}
-            textFontWeight
-          />
-
+        {/* Service Categories Header */}
+        <View style={styles.rowBetween}>
+          <AppText title="Service Category" textSize={2.4} textFontWeight />
           <TouchableOpacity
             onPress={() =>
-              nav.navigate('ServiceCategories', { data: categoriesData })
+              navigation.navigate('ServiceCategories', {
+                data: categoriesData?.categories || [],
+              })
             }
           >
             <AppText
-              title={'View More'}
+              title="View More"
               textSize={1.8}
               textColor={AppColors.ThemeColor}
               textFontWeight
@@ -156,63 +149,35 @@ const Home = () => {
         <LineBreak space={2} />
 
         {categoryLoader ? (
-          <View style={{ marginTop: responsiveHeight(3) }}>
-            <Loader color={AppColors.ThemeColor} />
-          </View>
+          <Loader color={AppColors.ThemeColor} />
         ) : (
           <FlatList
-            data={categoriesData?.categories?.slice(0, 2)}
-            ListEmptyComponent={() => (
-              <View style={styles.flex}>
-                <AppText
-                  textSize={1.8}
-                  textAlignment={'center'}
-                  title={'No Categories Found'}
-                />
-              </View>
-            )}
-            contentContainerStyle={{
-              flex: 1,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: responsiveWidth(5),
-            }}
+            data={categoriesData?.categories?.slice(0, 2) || []}
             horizontal
-            renderItem={({ item }) => (
-              <ServiceCategory
-                title={item?.name}
-                subTitle={item?.description}
-                icon={{ uri: item?.cover }} // image will appear when server will live
-                onPress={() => nav.navigate('Services')}
-              />
-            )}
+            keyExtractor={item => String(item.id)}
+            renderItem={renderCategory}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryList}
+            ListEmptyComponent={
+              <AppText title="No Categories Found" textAlignment="center" />
+            }
           />
         )}
+
         <LineBreak space={3} />
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <AppText
-            title={'Popular Service'}
-            textSize={2.4}
-            textColor={AppColors.BLACK}
-            textFontWeight
-          />
-
+        {/* Popular Services Header */}
+        <View style={styles.rowBetween}>
+          <AppText title="Popular Service" textSize={2.4} textFontWeight />
           <TouchableOpacity
             onPress={() =>
-              nav.navigate('PopularAndOtherServices', {
-                servicesData: servicesData?.services,
+              navigation.navigate('PopularAndOtherServices', {
+                servicesData: servicesData?.services || [],
               })
             }
           >
             <AppText
-              title={'View More'}
+              title="View More"
               textSize={1.8}
               textColor={AppColors.ThemeColor}
               textFontWeight
@@ -224,101 +189,62 @@ const Home = () => {
       <LineBreak space={1.5} />
 
       {serviceLoader ? (
-        <View style={{ marginTop: responsiveHeight(3) }}>
-          <Loader color={AppColors.ThemeColor} />
-        </View>
+        <Loader color={AppColors.ThemeColor} />
       ) : (
         <FlatList
-          data={servicesData?.services?.slice(0, 2)}
+          data={servicesData?.services?.slice(0, 2) || []}
           horizontal
-          ListEmptyComponent={() => (
-            <View style={{ flex: 1 }}>
-              <AppText textAlignment={'center'} title={'No Service Found'} />
-            </View>
-          )}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderService}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: 12,
-            paddingHorizontal: responsiveWidth(5),
-          }}
-          renderItem={({ item }) => (
-            <PopularService
-              title={item?.name}
-              image={{ uri: item?.cover }}
-              onPress={() => nav.navigate('ServiceDetails')}
-              price={item?.plans}
-              rating={item?.averageRating}
-            />
-          )}
+          contentContainerStyle={styles.serviceList}
+          ListEmptyComponent={
+            <AppText title="No Service Found" textAlignment="center" />
+          }
         />
       )}
 
       <LineBreak space={2} />
 
-      <View style={{ paddingHorizontal: responsiveWidth(5) }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <AppText
-            title={'Bookings'}
-            textSize={2.4}
-            textColor={AppColors.BLACK}
-            textFontWeight
-          />
-
+      {/* Bookings */}
+      <View style={styles.screenPadding}>
+        <View style={styles.rowBetween}>
+          <AppText title="Bookings" textSize={2.4} textFontWeight />
           <TouchableOpacity
-            onPress={() => nav.navigate('Main', { screen: 'Bookings' })}
+            onPress={() => navigation.navigate('Main', { screen: 'Bookings' })}
           >
             <AppText
-              title={'View All'}
+              title="View All"
               textSize={1.8}
               textColor={AppColors.ThemeColor}
               textFontWeight
             />
           </TouchableOpacity>
         </View>
+
         <LineBreak space={2} />
 
-        <View
-          style={{
-            backgroundColor: AppColors.app_light,
-            paddingVertical: responsiveHeight(2),
-            paddingHorizontal: responsiveWidth(4),
-          }}
-        >
+        <View style={styles.bookingContainer}>
           <FlatList
             data={bookings}
-            renderItem={({ item }) => (
-              <Bookings
-                title={item.title}
-                date={item.date}
-                status={item.status}
-              />
-            )}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => <Bookings {...item} />}
           />
         </View>
 
         <LineBreak space={4} />
 
-        <AppText
-          title={'Our Consultants'}
-          textSize={2.4}
-          textColor={AppColors.BLACK}
-          textFontWeight
-        />
+        {/* Consultants */}
+        <AppText title="Our Consultants" textSize={2.4} textFontWeight />
 
         <LineBreak space={2} />
 
         <FlatList
-          data={[{ id: '1' }, { id: '2' }, { id: '4' }, { id: '3' }]}
+          data={[1, 2, 3, 4]}
+          keyExtractor={item => String(item)}
           numColumns={2}
-          columnWrapperStyle={{ gap: responsiveWidth(3) }}
-          ItemSeparatorComponent={<LineBreak space={2} />}
-          renderItem={({ item }) => <OurConsultants />}
+          columnWrapperStyle={styles.consultantRow}
+          renderItem={() => <OurConsultants />}
         />
 
         <LineBreak space={3} />
@@ -330,10 +256,30 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  serviceCategoryContainer: {
+  screenPadding: {
+    paddingHorizontal: responsiveWidth(5),
+  },
+  rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  categoryList: {
+    flex: 1,
+    paddingHorizontal: responsiveWidth(5),
+    justifyContent: 'space-between',
+  },
+  serviceList: {
+    paddingHorizontal: responsiveWidth(5),
+    gap: 12,
+  },
+  bookingContainer: {
+    backgroundColor: AppColors.app_light,
+    paddingVertical: responsiveHeight(2),
+    paddingHorizontal: responsiveWidth(4),
+  },
+  consultantRow: {
+    gap: responsiveWidth(3),
+    marginBottom: 10,
   },
 });

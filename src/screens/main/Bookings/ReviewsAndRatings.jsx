@@ -14,7 +14,7 @@ const ReviewsAndRatings = () => {
   const [rating, setRating] = useState(0);
 
   return (
-    <Container >
+    <Container>
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <AppHeader onBackPress={true} heading={'Reviews & Ratings'} />
         <StarRating rating={rating} onChange={setRating} />

@@ -19,6 +19,7 @@ export const endpoints = {
   GET_USER_DETAIL: 'user',
   DELETE_USER: 'user',
   CHANGE_PASSWORD: 'user/updatePassword',
+  GET_SINGLE_SERVICE: id =>  `service/${id}`,
 };
 
 export const TAX_SLABS = {
