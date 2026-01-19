@@ -15,9 +15,11 @@ import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import ManageBookingsCard from '../../../components/ManageBookingsCard';
-import { useNavigation } from '@react-navigation/native';
+
 import { useLazyGetBookingsQuery } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
+import Loader from '../../../components/Loader';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 
 const topTabsData = [
   { id: 1, title: 'Active' },
@@ -25,99 +27,19 @@ const topTabsData = [
   { id: 3, title: 'Completed' },
 ];
 
-const activeData = [
-  {
-    id: 1,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Active',
-  },
-  {
-    id: 3,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Active',
-  },
-];
-
-const scheduleData = [
-  {
-    id: 1,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Schedule',
-  },
-  {
-    id: 2,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Schedule',
-  },
-  {
-    id: 3,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Schedule',
-  },
-  {
-    id: 4,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Schedule',
-  },
-];
-
-const completedData = [
-  {
-    id: 1,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Completed',
-  },
-  {
-    id: 2,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Completed',
-  },
-  {
-    id: 3,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Completed',
-  },
-  {
-    id: 4,
-    title: 'Bookkeeping and Accounting',
-    subTitle: 'Standard Plan ID#54654',
-    status: 'Completed',
-  },
-];
-
-const BookingsScreens = () => {
+const BookingsScreens = props => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [activeBookings, setActiveBookings] = useState([]);
   const [scheduleBookings, setScheduleBookings] = useState([]);
   const [completedBookings, setCompletedBookings] = useState([]);
-  const nav = useNavigation();
+  const navigation = useNavigation();
+  const isFocussed = useIsFocused();
   const { user } = useSelector(state => state.persistedData);
   const [getBookings, { isLoading }] = useLazyGetBookingsQuery();
 
   useEffect(() => {
     _getBookigs(user?._id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isFocussed, selectedTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const _getBookigs = async userId => {
     await getBookings(userId)
@@ -125,7 +47,7 @@ const BookingsScreens = () => {
       ?.then(res => {
         console.log('res in _getBookigs', res?.bookings);
         let bookings = res?.bookings;
-        let active = bookings.filter(item => item.status === 'active');
+        let active = bookings.filter(item => item.status === 'new');
         let schedule = bookings.filter(item => item.status === 'scheduled');
         let completed = bookings.filter(item => item.status === 'completed');
         setActiveBookings(active);
@@ -137,6 +59,112 @@ const BookingsScreens = () => {
       })
       ?.catch(err => console.log('err in _getBookigs', err));
   };
+
+  const renderTabItem = ({ item, index }) => {
+    return (
+      <TouchableOpacity onPress={() => setSelectedTab(index)}>
+        <LinearGradient
+          colors={
+            selectedTab == index
+              ? ['#003C46', '#007C91']
+              : [AppColors.app_light, AppColors.app_light]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            paddingHorizontal: responsiveWidth(7.5),
+            paddingVertical: responsiveHeight(0.6),
+            borderRadius: 100,
+            borderWidth: 2,
+            borderColor:
+              selectedTab == index ? AppColors.ThemeColor : AppColors.LIGHTGRAY,
+          }}
+        >
+          <AppText
+            textColor={selectedTab == index ? AppColors.WHITE : AppColors.GRAY}
+            textSize={1.6}
+            title={item.title}
+          />
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderActiveItem = ({ item }) => {
+    // console.log('item:-----', item);
+    return (
+      <ManageBookingsCard
+        title={item?.service?.name}
+        subTitle={item?.service?.plan?.name}
+        status={item.status}
+        fromDate={item?.scheduledDate}
+        toDate={item?.scheduledDate}
+        amount={item?.service?.plan?.price}
+        navigation={navigation}
+        OnPressCard={() =>
+          navigation.navigate('BookingChat', {
+            data: { ...item },
+          })
+        }
+      />
+    );
+  };
+
+  const renderScheduleItem = ({ item }) => {
+    // console.log('item:-----', item);
+    return (
+      <ManageBookingsCard
+        title={item?.service?.name}
+        subTitle={item?.service?.plan?.name}
+        status={item.status}
+        fromDate={item?.scheduledDate}
+        toDate={item?.scheduledDate}
+        amount={item?.service?.plan?.price}
+        navigation={navigation}
+        OnPressCard={() =>
+          navigation.navigate('BookingChat', {
+            data: { ...item },
+          })
+        }
+      />
+    );
+  };
+
+  const renderCompletedItem = ({ item }) => {
+    // console.log('item:-----', item);
+    return (
+      <ManageBookingsCard
+        title={item?.service?.name}
+        subTitle={item?.service?.plan?.name}
+        status={item.status}
+        fromDate={item?.scheduledDate}
+        toDate={item?.scheduledDate}
+        amount={item?.service?.plan?.price}
+        navigation={navigation}
+        OnPressCard={() => {}}
+      />
+    );
+  };
+
+  const listEmptyComponent = type => {
+    return (
+      <View style={{ marginTop: responsiveHeight(10), alignItems: 'center' }}>
+        <AppText
+          textColor={AppColors.GRAY}
+          textSize={2}
+          title={`No ${type} Bookings`}
+        />
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Loader color={AppColors.ThemeColor} />
+      </View>
+    );
+  }
 
   return (
     <Container>
@@ -157,84 +185,42 @@ const BookingsScreens = () => {
             </TouchableOpacity>
           }
         />
+
         <LineBreak space={2} />
+
         <FlatList
           data={topTabsData}
           horizontal
           contentContainerStyle={{ flex: 1, justifyContent: 'space-between' }}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity onPress={() => setSelectedTab(index)}>
-              <LinearGradient
-                colors={
-                  selectedTab == index
-                    ? ['#003C46', '#007C91']
-                    : [AppColors.app_light, AppColors.app_light]
-                }
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{
-                  paddingHorizontal: responsiveWidth(7.5),
-                  paddingVertical: responsiveHeight(0.6),
-                  borderRadius: 100,
-                  borderWidth: 2,
-                  borderColor:
-                    selectedTab == index
-                      ? AppColors.ThemeColor
-                      : AppColors.LIGHTGRAY,
-                }}
-              >
-                <AppText
-                  textColor={
-                    selectedTab == index ? AppColors.WHITE : AppColors.GRAY
-                  }
-                  textSize={1.6}
-                  title={item.title}
-                />
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
+          renderItem={renderTabItem}
         />
+
         <LineBreak space={2} />
-        {selectedTab == 0 && (
+
+        {selectedTab === 0 && (
           <FlatList
-            data={activeData}
+            data={activeBookings}
             ItemSeparatorComponent={<LineBreak space={2} />}
-            renderItem={({ item }) => (
-              <ManageBookingsCard
-                title={item.title}
-                subTitle={item.subTitle}
-                status={item.status}
-                OnPressCard={() => nav.navigate('BookingChat')}
-              />
-            )}
+            renderItem={renderActiveItem}
+            ListEmptyComponent={() => listEmptyComponent('Active')}
           />
         )}
-        {selectedTab == 1 && (
+
+        {selectedTab === 1 && (
           <FlatList
             data={scheduleBookings}
             ItemSeparatorComponent={<LineBreak space={2} />}
-            renderItem={({ item }) => (
-              <ManageBookingsCard
-                title={item?.service?.name}
-                subTitle={item?.service?.plan?.name}
-                status={item.status}
-                OnPressCard={() => {}}
-              />
-            )}
+            renderItem={renderScheduleItem}
+            ListEmptyComponent={() => listEmptyComponent('Scheduled')}
           />
         )}
-        {selectedTab == 2 && (
+
+        {selectedTab === 2 && (
           <FlatList
-            data={completedData}
+            data={completedBookings}
             ItemSeparatorComponent={<LineBreak space={2} />}
-            renderItem={({ item }) => (
-              <ManageBookingsCard
-                title={item.title}
-                subTitle={item.subTitle}
-                status={item.status}
-                OnPressCard={() => {}}
-              />
-            )}
+            renderItem={renderCompletedItem}
+            ListEmptyComponent={() => listEmptyComponent('Completed')}
           />
         )}
         <LineBreak space={2} />

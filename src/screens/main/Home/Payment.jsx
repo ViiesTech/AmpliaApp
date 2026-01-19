@@ -76,7 +76,7 @@ const Payment = props => {
     let payload = {
       service: serviceId,
       planName: selectedPlan?.name,
-      status: 'active' || 'scheduled',
+      status: 'new' || 'scheduled',
       scheduledDate: new Date().toISOString(),
     };
     await createBooking(payload)

@@ -1,115 +1,132 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
-const CustomRangeCalendar = ({ onChange = () => { } }) => {
-    const [range, setRange] = useState({
-        start: null,
-        end: null,
-    });
+const CustomRangeCalendar = ({ onChange = () => {} }) => {
+  const [range, setRange] = useState({
+    start: null,
+    end: null,
+  });
 
-    useEffect(() => {
-        onChange?.(range);
-    }, [range, onChange]);
+  // Calculate LOCAL today's date (fixes timezone issues)
+  const today = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
 
-    const onDayPress = ({ dateString }: any) => {
-        // Start new range
-        if (!range.start || range.end) {
-            setRange({ start: dateString, end: null });
-            return;
-        }
+  useEffect(() => {
+    onChange?.(range);
+  }, [range, onChange]);
 
-        // If end date is before start, reset start
-        if (dateString < range.start) {
-            setRange({ start: dateString, end: null });
-            return;
-        }
+  const onDayPress = day => {
+    const { dateString } = day;
 
-        // Complete range
-        setRange(prev => ({ ...prev, end: dateString }));
-    };
+    // Functional block for past dates
+    if (dateString < today) return;
 
-    const getMarkedDates = () => {
-        if (!range.start) return {};
+    if (!range.start || range.end) {
+      setRange({ start: dateString, end: null });
+      return;
+    }
 
-        const marked = {};
-        const start = new Date(range.start);
-        const end = range.end ? new Date(range.end) : start;
+    if (dateString < range.start) {
+      setRange({ start: dateString, end: null });
+      return;
+    }
 
-        const current = new Date(start);
+    setRange(prev => ({ ...prev, end: dateString }));
+  };
 
-        while (current <= end) {
-            const dateStr = current.toISOString().split('T')[0];
+  const getMarkedDates = () => {
+    const marked = {};
 
-            marked[dateStr] = {
-                color: '#D7E7EB',
-                textColor: '#06283D',
-                startingDay: dateStr === range.start,
-                endingDay: dateStr === range.end,
-            };
+    // Add current range markings
+    if (range.start) {
+      const start = new Date(range.start);
+      const end = range.end ? new Date(range.end) : start;
+      const current = new Date(start);
 
-            current.setDate(current.getDate() + 1);
-        }
+      while (current <= end) {
+        const dateStr = current.toISOString().split('T')[0];
+        marked[dateStr] = {
+          color: '#D7E7EB',
+          textColor: '#06283D',
+          startingDay: dateStr === range.start,
+          endingDay: dateStr === range.end,
+        };
+        current.setDate(current.getDate() + 1);
+      }
+    }
 
-        return marked;
-    };
+    return marked;
+  };
 
-    return (
-        <View style={styles.container}>
-            <Calendar
-                markingType="period"
-                markedDates={getMarkedDates()}
-                onDayPress={onDayPress}
-                style={styles.calendarStyle}
-                theme={styles.calendarTheme}
-                renderArrow={(direction) => (
-                    <View style={styles.arrow}>
-                        <View style={styles.arrowTriangle(direction)} />
-                    </View>
-                )}
-            />
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Calendar
+        // 1. Disable dates before local today
+        minDate={today}
+        // 2. Ensure touch events are strictly disabled for past dates
+        disableAllTouchEventsForDisabledDays={true}
+        markingType="period"
+        markedDates={getMarkedDates()}
+        onDayPress={onDayPress}
+        style={styles.calendarStyle}
+        theme={{
+          ...styles.calendarTheme,
+          textDisabledColor: '#D3D3D3', // Visual cue for disabled dates
+        }}
+        renderArrow={direction => (
+          <View style={styles.arrow}>
+            <View style={styles.arrowTriangle(direction)} />
+          </View>
+        )}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: 'rgba(241, 247, 248, 1)',
-        borderRadius: 16,
-    },
-    calendarStyle: { borderRadius: 10 },
-    calendarTheme: {
-        textMonthFontWeight: '600',
-        textMonthFontSize: 18,
-        arrowColor: '#06283D',
-        monthTextColor: '#06283D',
-        textSectionTitleColor: '#A0A0A0',
-        calendarBackground: '#FFFFFF',
-        todayTextColor: '#06283D',
-    },
-    arrow: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#F0F4F5',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    arrowTriangle: direction => ({
-        height: 0,
-        width: 0,
-        borderLeftWidth: 6,
-        borderRightWidth: 6,
-        borderBottomWidth: 8,
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderBottomColor: '#06283D',
-        transform: [{ rotate: direction === 'left' ? '270deg' : '90deg' }]
-    }),
+  container: {
+    backgroundColor: 'rgba(241, 247, 248, 1)',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  calendarStyle: { borderRadius: 10 },
+  calendarTheme: {
+    textMonthFontWeight: '600',
+    textMonthFontSize: 18,
+    arrowColor: '#06283D',
+    monthTextColor: '#06283D',
+    textSectionTitleColor: '#A0A0A0',
+    calendarBackground: '#FFFFFF',
+    todayTextColor: '#00adf5',
+  },
+  arrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F0F4F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowTriangle: direction => ({
+    height: 0,
+    width: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderBottomWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#06283D',
+    transform: [{ rotate: direction === 'left' ? '270deg' : '90deg' }],
+  }),
 });
 
 export default CustomRangeCalendar;
-
 
 // import React, { useState } from 'react';
 // import { View, StyleSheet } from 'react-native';
