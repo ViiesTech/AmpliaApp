@@ -246,7 +246,7 @@ const Home = () => {
         ) : (
           <View style={styles.bookingContainer}>
             <FlatList
-              data={bookingsData?.bookings || []}
+              data={bookingsData?.bookings?.slice(0, 3) || []}
               keyExtractor={item => item?._id}
               renderItem={({ item }) => (
                 <Bookings

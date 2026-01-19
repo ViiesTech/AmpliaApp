@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, FlatList } from 'react-native';
 import Container from '../../../components/Container';
 import {
@@ -16,6 +16,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import ManageBookingsCard from '../../../components/ManageBookingsCard';
 import { useNavigation } from '@react-navigation/native';
+import { useLazyGetBookingsQuery } from '../../../redux/services/mainService';
+import { useSelector } from 'react-redux';
 
 const topTabsData = [
   { id: 1, title: 'Active' },
@@ -106,7 +108,35 @@ const completedData = [
 
 const BookingsScreens = () => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [activeBookings, setActiveBookings] = useState([]);
+  const [scheduleBookings, setScheduleBookings] = useState([]);
+  const [completedBookings, setCompletedBookings] = useState([]);
   const nav = useNavigation();
+  const { user } = useSelector(state => state.persistedData);
+  const [getBookings, { isLoading }] = useLazyGetBookingsQuery();
+
+  useEffect(() => {
+    _getBookigs(user?._id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const _getBookigs = async userId => {
+    await getBookings(userId)
+      ?.unwrap()
+      ?.then(res => {
+        console.log('res in _getBookigs', res?.bookings);
+        let bookings = res?.bookings;
+        let active = bookings.filter(item => item.status === 'active');
+        let schedule = bookings.filter(item => item.status === 'scheduled');
+        let completed = bookings.filter(item => item.status === 'completed');
+        setActiveBookings(active);
+        setScheduleBookings(schedule);
+        setCompletedBookings(completed);
+        console.log('active bookings:-', active);
+        console.log('schedule bookings:-', schedule);
+        console.log('completed bookings:-', completed);
+      })
+      ?.catch(err => console.log('err in _getBookigs', err));
+  };
 
   return (
     <Container>
@@ -181,12 +211,12 @@ const BookingsScreens = () => {
         )}
         {selectedTab == 1 && (
           <FlatList
-            data={scheduleData}
+            data={scheduleBookings}
             ItemSeparatorComponent={<LineBreak space={2} />}
             renderItem={({ item }) => (
               <ManageBookingsCard
-                title={item.title}
-                subTitle={item.subTitle}
+                title={item?.service?.name}
+                subTitle={item?.service?.plan?.name}
                 status={item.status}
                 OnPressCard={() => {}}
               />

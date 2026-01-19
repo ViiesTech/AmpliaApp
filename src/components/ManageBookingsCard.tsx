@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react'
 import { View, Image, FlatList, TouchableOpacity } from 'react-native'
-import { AppColors, responsiveHeight, responsiveWidth } from '../utils';
+import { AppColors, capitalizeFirstLetter, responsiveHeight, responsiveWidth } from '../utils';
 import { AppImages } from '../assets/images';
 import AppText from './AppText';
 import LineBreak from './LineBreak';
@@ -18,7 +18,7 @@ const data = [
 
 type Prop = {
     title?: string,
-    subTitle?: string,
+    subTitle?: any,
     status?: string,
     OnPressCard?: () => void,
 }
@@ -47,7 +47,7 @@ const ManageBookingsCard = ({ title, subTitle, status, OnPressCard }: Prop) => {
                     <AppText
                         textColor={AppColors.ThemeColor}
                         textSize={1.5}
-                        title={subTitle}
+                        title={`${capitalizeFirstLetter(subTitle)} Plan ID#A23456`}
                     />
                 </View>
                 <View style={{ flex: 1, alignItems: 'flex-end' }}>

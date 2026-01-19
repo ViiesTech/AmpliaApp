@@ -36,6 +36,7 @@ type props = {
   inputContainerPaddingHorizontal?: any;
   elevation?: any;
   keyboardType?: any;
+  maxLength?: any;
 };
 const AppTextInput = ({
   logo,
@@ -64,6 +65,7 @@ const AppTextInput = ({
   inputContainerPaddingHorizontal,
   elevation,
   keyboardType,
+  maxLength
 }: props) => {
   return (
     <View
@@ -110,6 +112,7 @@ const AppTextInput = ({
         multiline={multiline}
         onFocus={onFocus}
         onBlur={onBlur}
+        maxLength={maxLength}
       />
       {rightIcon}
     </View>

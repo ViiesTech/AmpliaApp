@@ -79,6 +79,7 @@ const reviewsData = [
 const ServiceDetails = props => {
   const navigation = useNavigation();
   const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [plans, setPlans] = useState([]);
   const [data, setData] = useState(null);
   let serviceId = props?.route?.params?.serviceId;
@@ -99,11 +100,14 @@ const ServiceDetails = props => {
         const formattedPlans =
           res?.service?.plans?.map((item, index) => ({
             id: index + 1,
-            title: `${item.name} $${item.price}`,
-            description: item.description,
+            name: item?.name,
+            price: item?.price,
+            title: `${item?.name} $${item?.price}`,
+            description: item?.description,
           })) || [];
 
         setPlans(formattedPlans);
+        setSelectedPlan(formattedPlans?.[0]);
       })
       ?.catch(err => console.log('err in _getSingleService', err));
   };
@@ -112,7 +116,12 @@ const ServiceDetails = props => {
 
   const renderPackageTab = useCallback(
     ({ item, index }) => (
-      <TouchableOpacity onPress={() => setSelectedTab(index)}>
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedTab(index);
+          setSelectedPlan(item);
+        }}
+      >
         <AppText
           title={capitalizeFirstLetter(item.title)}
           textSize={2}
@@ -192,6 +201,14 @@ const ServiceDetails = props => {
     </View>
   );
 
+  const handleBookService = () => {
+    navigation.navigate('Payment', {
+      serviceId: serviceId,
+      selectedPlan: selectedPlan,
+      serviceName: data?.name,
+    });
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loaderContainer}>
@@ -199,7 +216,7 @@ const ServiceDetails = props => {
       </View>
     );
   }
-  console.log('selectedTab', selectedTab);
+
   /* -------------------- UI -------------------- */
 
   return (
@@ -309,10 +326,7 @@ const ServiceDetails = props => {
 
       {/* FOOTER */}
       <View style={styles.footer}>
-        <AppButton
-          title="Book Service"
-          handlePress={() => navigation.navigate('Payment')}
-        />
+        <AppButton title="Book Service" handlePress={handleBookService} />
         <LineBreak space={1} />
         <AppButton
           title="Schedule For Later"

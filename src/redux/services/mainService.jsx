@@ -71,6 +71,13 @@ export const mainApis = createApi({
         };
       },
     }),
+    createBooking: builder.mutation({
+      query: data => ({
+        url: endpoints.createBooking,
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 export const {
@@ -82,4 +89,5 @@ export const {
   useLazyGetAllServicesQuery,
   useLazyGetSingleServiceQuery,
   useLazyGetBookingsQuery,
+  useCreateBookingMutation,
 } = mainApis;

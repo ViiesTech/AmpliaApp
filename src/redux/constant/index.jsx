@@ -21,6 +21,7 @@ export const endpoints = {
   CHANGE_PASSWORD: 'user/updatePassword',
   GET_SINGLE_SERVICE: id => `service/${id}`,
   GET_BOOKINGS: userId => `booking/?user=${userId}`,
+  createBooking: 'booking',
 };
 
 export const TAX_SLABS = {
