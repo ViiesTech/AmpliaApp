@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { cloneElement, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Container from '../../../components/Container';
@@ -30,6 +30,7 @@ const Payment = props => {
   let serviceId = props?.route?.params?.serviceId;
   let selectedPlan = props?.route?.params?.selectedPlan;
   let serviceName = props?.route?.params?.serviceName;
+  let selectedRange = props?.route?.params?.selectedRange;
 
   const handleCardNumberChange = text => {
     const formattedText =
@@ -76,7 +77,7 @@ const Payment = props => {
     let payload = {
       service: serviceId,
       planName: selectedPlan?.name,
-      status: 'new' || 'scheduled',
+      status: selectedRange ? 'scheduled' : 'new',
       scheduledDate: new Date().toISOString(),
     };
     await createBooking(payload)
@@ -91,6 +92,8 @@ const Payment = props => {
         ShowToast(err?.data?.message || 'Something went wrong');
       });
   };
+
+  // console.log('selectedRange:-', selectedRange)
 
   return (
     <Container>
@@ -187,7 +190,7 @@ const Payment = props => {
             value={cvc}
             onChangeText={setCvc}
             maxLength={3}
-            // secureTextEntry
+          // secureTextEntry
           />
         </View>
 

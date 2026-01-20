@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback, Fragment } from 'react';
+import { View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Feather from 'react-native-vector-icons/Feather';
+
 import Container from '../../../components/Container';
+import AppHeader from '../../../components/AppHeader';
+import AppText from '../../../components/AppText';
+import LineBreak from '../../../components/LineBreak';
+import PdfCard from '../../../components/PdfCard';
+import Loader from '../../../components/Loader';
+
 import {
   AppColors,
   responsiveFontSize,
@@ -8,14 +17,8 @@ import {
   responsiveWidth,
   ShowToast,
 } from '../../../utils';
-import AppHeader from '../../../components/AppHeader';
-import LinearGradient from 'react-native-linear-gradient';
-import AppText from '../../../components/AppText';
-import LineBreak from '../../../components/LineBreak';
-import PdfCard from '../../../components/PdfCard';
-import Feather from 'react-native-vector-icons/Feather';
+
 import { useLazyGetFilesQuery } from '../../../redux/services/mainService';
-import Loader from '../../../components/Loader';
 
 const topTabsData = [
   { id: 1, title: 'All' },
@@ -24,152 +27,167 @@ const topTabsData = [
   { id: 4, title: '2023' },
   { id: 5, title: '2024' },
   { id: 6, title: '2025' },
-  { id: 6, title: '2026' },
-];
-
-const pdfData = [
-  { id: 1, name: 'Individual Tax Filing File 1.pdf' },
-  { id: 2, name: 'Individual Tax Filing File 2.pdf' },
-  { id: 3, name: 'Individual Tax Filing File 3.pdf' },
-  { id: 4, name: 'Individual Tax Filing File 4.pdf' },
-  { id: 5, name: 'Individual Tax Filing File 5.pdf' },
-  { id: 6, name: 'Individual Tax Filing File 6.pdf' },
+  { id: 7, title: '2026' },
 ];
 
 const MyFiles = () => {
   const [selectedTab, setSelectedTab] = useState('All');
   const [getFiles, { data, isLoading }] = useLazyGetFilesQuery();
 
-  console.log('all files:-', data);
-
   useEffect(() => {
-    if (selectedTab === 'All') {
-      getFiles();
-    }
-  }, [selectedTab]);
+    getFiles();
+  }, [getFiles]);
 
-  const onSelectYear = async year => {
-    setSelectedTab(year);
-    if (year !== 'All') {
+  const onSelectYear = useCallback(
+    async year => {
+      setSelectedTab(year);
+
       try {
-        await getFiles(year).unwrap();
+        if (year === 'All') {
+          await getFiles().unwrap();
+        } else {
+          await getFiles(year).unwrap();
+        }
       } catch (error) {
         ShowToast(error?.data?.message || 'Error fetching files');
-        console.log('error fetching files by year:', error);
+        console.log('Fetch files error:', error);
       }
-    }
-  };
+    },
+    [getFiles],
+  );
 
-  const listEmptyComponent = () => {
+  const renderTabItem = ({ item }) => {
+    const isActive = selectedTab === item.title;
+
     return (
-      <AppText
-        textSize={1.8}
-        textAlignment={'center'}
-        title={data?.message || 'No Files Found'}
-      />
+      <TouchableOpacity onPress={() => onSelectYear(item.title)}>
+        <LinearGradient
+          colors={
+            isActive
+              ? ['#003C46', '#007C91']
+              : [AppColors.app_light, AppColors.app_light]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.tab}
+        >
+          <AppText
+            title={item.title}
+            textSize={1.6}
+            textColor={isActive ? AppColors.WHITE : AppColors.ThemeColor}
+          />
+        </LinearGradient>
+      </TouchableOpacity>
     );
   };
+
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <AppText
+        textSize={1.8}
+        textAlignment="center"
+        title={data?.message || 'No Files Found'}
+      />
+    </View>
+  );
+
   return (
-    <>
+    <Fragment>
       <Container>
-        <View style={{ marginHorizontal: responsiveWidth(5) }}>
-          <AppHeader onBackPress={false} heading={'My Files'} />
+        <View style={styles.container}>
+          <AppHeader onBackPress={false} heading="My Files" />
 
           <FlatList
             data={topTabsData}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: responsiveWidth(3), flexGrow: 1 }}
-            keyExtractor={item => `ID-${item.id.toString()}`}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity onPress={() => onSelectYear(item.title)}>
-                <LinearGradient
-                  colors={
-                    selectedTab === item.title
-                      ? ['#003C46', '#007C91']
-                      : [AppColors.app_light, AppColors.app_light]
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{
-                    paddingHorizontal: responsiveWidth(4),
-                    paddingVertical: responsiveHeight(0.8),
-                    borderRadius: 100,
-                  }}
-                >
-                  <AppText
-                    textColor={
-                      selectedTab === item.title
-                        ? AppColors.WHITE
-                        : AppColors.ThemeColor
-                    }
-                    textSize={1.6}
-                    title={item.title}
-                  />
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderTabItem}
+            contentContainerStyle={styles.tabsContainer}
           />
 
           <LineBreak space={2} />
 
-          <View style={{ alignItems: 'center' }}>
-            {isLoading ? (
-              <View style={{ marginTop: responsiveHeight(5) }}>
-                <Loader color={AppColors.ThemeColor} />
-              </View>
-            ) : (
-              <FlatList
-                // data={data?.files}
-                data={pdfData}
-                numColumns={2}
-                ItemSeparatorComponent={<LineBreak space={2} />}
-                keyExtractor={item => `PDF-${item.id.toString()}`}
-                ListEmptyComponent={listEmptyComponent}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => <PdfCard title={item.name} />}
-                columnWrapperStyle={{
-                  gap: responsiveWidth(3),
-                }}
-              />
-            )}
-          </View>
+          {isLoading ? (
+            <View style={styles.loaderContainer}>
+              <Loader color={AppColors.ThemeColor} />
+            </View>
+          ) : (
+            <FlatList
+              data={data?.files || []}
+              numColumns={2}
+              keyExtractor={(item, index) =>
+                item?._id ? item._id.toString() : `file-${index}`
+              }
+              renderItem={({ item }) => <PdfCard title={item.name} />}
+              ListEmptyComponent={renderEmptyComponent}
+              columnWrapperStyle={styles.columnWrapper}
+              ItemSeparatorComponent={() => <LineBreak space={2} />}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1 }}
+            />
+          )}
+
           <LineBreak space={10} />
         </View>
       </Container>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          right: 0,
-          paddingHorizontal: responsiveWidth(5),
-          paddingVertical: responsiveHeight(2),
-        }}
-      >
-        {/* <TouchableOpacity>
-          <LinearGradient
-            colors={['#003C46', '#007C91']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: 50,
-              height: 50,
-              borderRadius: 100,
-              backgroundColor: AppColors.ThemeColor,
-            }}
-          >
-            <Feather
-              name="plus"
-              size={responsiveFontSize(3)}
-              color={AppColors.WHITE}
-            />
-          </LinearGradient>
-        </TouchableOpacity> */}
-      </View>
-    </>
+
+      {/* Floating Action Button (optional) */}
+      {/* 
+      <TouchableOpacity style={styles.fab}>
+        <LinearGradient
+          colors={['#003C46', '#007C91']}
+          style={styles.fabGradient}
+        >
+          <Feather
+            name="plus"
+            size={responsiveFontSize(3)}
+            color={AppColors.WHITE}
+          />
+        </LinearGradient>
+      </TouchableOpacity> 
+      */}
+    </Fragment>
   );
 };
 
 export default MyFiles;
+
+const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: responsiveWidth(5),
+  },
+  tabsContainer: {
+    gap: responsiveWidth(3),
+    flexGrow: 1,
+  },
+  tab: {
+    paddingHorizontal: responsiveWidth(4),
+    paddingVertical: responsiveHeight(0.8),
+    borderRadius: 100,
+  },
+  loaderContainer: {
+    marginTop: responsiveHeight(5),
+    alignItems: 'center',
+  },
+  columnWrapper: {
+    gap: responsiveWidth(3),
+  },
+  fab: {
+    position: 'absolute',
+    bottom: responsiveHeight(2),
+    right: responsiveWidth(5),
+  },
+  fabGradient: {
+    width: 50,
+    height: 50,
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

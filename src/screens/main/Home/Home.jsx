@@ -28,27 +28,6 @@ import {
 } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 
-const bookings = [
-  {
-    id: '1',
-    title: 'Bookkeeping and Accounting',
-    date: '24/12/24',
-    status: 'Active',
-  },
-  {
-    id: '2',
-    title: 'Bookkeeping and Accounting',
-    date: '24/12/24',
-    status: 'Completed',
-  },
-  {
-    id: '3',
-    title: 'Bookkeeping and Accounting',
-    date: '24/12/24',
-    status: 'Schedule',
-  },
-];
-
 const Home = () => {
   const navigation = useNavigation();
   const { user } = useSelector(state => state.persistedData);
@@ -66,17 +45,17 @@ const Home = () => {
   useEffect(() => {
     getAllCategories();
     getAllServices();
-    _getBookigs(user?._id);
+    if (user?._id) {
+      _getBookings(user._id);
+    }
   }, [getAllCategories, getAllServices, user?._id]);
 
-  const _getBookigs = async userId => {
-    await getBookings(userId)
-      ?.unwrap()
-      ?.then(res => {
-        console.log('res in _getBookigs', res?.bookings);
-        // setData(res?.service);
-      })
-      ?.catch(err => console.log('err in _getBookigs', err));
+  const _getBookings = async userId => {
+    try {
+      await getBookings(userId).unwrap();
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+    }
   };
 
   const renderCategory = useCallback(
@@ -93,7 +72,6 @@ const Home = () => {
 
   const renderService = useCallback(
     ({ item }) => {
-      // console.log('serviceId:-', item?._id);
       return (
         <PopularService
           title={item?.name}
@@ -111,7 +89,6 @@ const Home = () => {
     [navigation],
   );
 
-  // console.log('user:-', user?._id);
   return (
     <Container>
       <LineBreak space={2} />
@@ -248,6 +225,7 @@ const Home = () => {
             <FlatList
               data={bookingsData?.bookings?.slice(0, 3) || []}
               keyExtractor={item => item?._id}
+              scrollEnabled={false}
               renderItem={({ item }) => (
                 <Bookings
                   title={item?.service?.name}
@@ -270,6 +248,7 @@ const Home = () => {
           data={[1, 2, 3, 4]}
           keyExtractor={item => String(item)}
           numColumns={2}
+          scrollEnabled={false}
           columnWrapperStyle={styles.consultantRow}
           renderItem={() => <OurConsultants />}
         />

@@ -86,7 +86,7 @@ const Calculator = () => {
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={4}
-            title={`Rs.${thousandsSeprator(state?.totalTax)}`}
+            title={`$${thousandsSeprator(state?.totalTax)}`}
             textFontWeight
           />
         </View>

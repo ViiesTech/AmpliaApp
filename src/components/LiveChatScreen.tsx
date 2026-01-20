@@ -1,40 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
 
 const LiveChatScreen = ({ data = [] }: any) => {
-    const messages = [
-        {
-            id: '1',
-            text: 'Lorem ipsum dolor sit amet, consectetur adipicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Lorem amet.',
-            time: '4 mins ago',
-            type: 'sent',
-        },
-        {
-            id: '2',
-            text: 'Lorem ipsum dolor sit amet, consectetur adipicing elit, sed do eiusmod tempor incididunt.',
-            time: '4 mins ago',
-            type: 'received',
-        },
-        {
-            id: '3',
-            text: 'Lorem ipsum dolor sit amet, consectetur',
-            time: '4 mins ago',
-            type: 'sent',
-        },
-        {
-            id: '4',
-            text: 'Lorem ipsum dolor sit amet, consectetur adipicing elit, sed do eiusmod tempor incididunt.',
-            time: '4 mins ago',
-            type: 'received',
-        },
-        {
-            id: '5',
-            text: 'Lorem ipsum dolor sit amet, consectetur',
-            time: '4 mins ago',
-            type: 'sent',
-        },
-    ];
 
     const renderMessage = ({ item }: any) => (
         <View
@@ -70,15 +38,16 @@ const LiveChatScreen = ({ data = [] }: any) => {
     );
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+        <View style={styles.container}>
             <FlatList
                 data={data}
                 keyExtractor={item => item.id}
                 renderItem={renderMessage}
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
+                inverted
             />
-        </ScrollView>
+        </View>
     );
 };
 
@@ -87,16 +56,16 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     contentContainer: {
-        // paddingVertical: 10,
+        paddingVertical: 10,
     },
     messageContainer: {
         marginVertical: responsiveHeight(1),
     },
     sentContainer: {
-        alignItems: 'flex-start',
+        alignItems: 'flex-end', // Changed to flex-end for sent messages (right side)
     },
     receivedContainer: {
-        alignItems: 'flex-end',
+        alignItems: 'flex-start', // Changed to flex-start for received messages (left side)
     },
     bubble: {
         maxWidth: responsiveWidth(80),
@@ -106,11 +75,13 @@ const styles = StyleSheet.create({
     },
     sentBubble: {
         backgroundColor: '#003B44',
-        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0, // Changed to match right alignment
+        borderTopLeftRadius: 15,
     },
     receivedBubble: {
         backgroundColor: '#F2F8F8',
-        borderTopRightRadius: 0,
+        borderTopLeftRadius: 0, // Changed to match left alignment
+        borderTopRightRadius: 15,
     },
     messageText: {
         fontSize: responsiveFontSize(1.7),
@@ -128,11 +99,11 @@ const styles = StyleSheet.create({
     },
     sentTime: {
         color: AppColors.WHITE,
-        marginLeft: responsiveWidth(1),
+        textAlign: 'right',
     },
     receivedTime: {
         color: '#7C9A9A',
-        marginRight: responsiveWidth(1),
+        textAlign: 'left',
     },
 });
 

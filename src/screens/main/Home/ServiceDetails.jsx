@@ -209,6 +209,14 @@ const ServiceDetails = props => {
     });
   };
 
+  const handleScheduleService = () => {
+    navigation.navigate('ScheduleService', {
+      serviceId: serviceId,
+      selectedPlan: selectedPlan,
+      serviceName: data?.name,
+    });
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loaderContainer}>
@@ -241,7 +249,7 @@ const ServiceDetails = props => {
           <AppText title={data?.name} textSize={3} textFontWeight />
 
           <View style={styles.inlineRating}>
-            <RatingView rating={data?.averageRating || 0.5} />
+            <RatingView rating={data?.averageRating || 0.0} />
             <AppText title={data?.averageRating} textSize={1.8} />
           </View>
 
@@ -334,7 +342,7 @@ const ServiceDetails = props => {
           borderColor={AppColors.ThemeColor}
           textColor={AppColors.ThemeColor}
           btnBackgroundColor={AppColors.WHITE}
-          handlePress={() => navigation.navigate('ScheduleService')}
+          handlePress={handleScheduleService}
         />
       </View>
 

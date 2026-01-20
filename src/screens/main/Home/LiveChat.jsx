@@ -16,7 +16,8 @@ const LiveChat = () => {
   const [inputText, setInputText] = useState('');
 
   useEffect(() => {
-    setMessages(messagesData);
+    // Reverse messages for inverted FlatList
+    setMessages([...messagesData].reverse());
   }, []);
 
   const selectImage = useCallback(() => {
@@ -27,7 +28,7 @@ const LiveChat = () => {
     })
       .then(res => {
         console.log('Selected image:', res);
-        // TODO: convert image into chat message
+        // TODO: Implement image message logic
       })
       .catch(err => {
         console.log('Image picker error:', err);
@@ -35,7 +36,9 @@ const LiveChat = () => {
   }, []);
 
   const handleSendMessage = useCallback(() => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim()) {
+      return;
+    }
 
     const newMessage = {
       id: Date.now().toString(),
@@ -44,7 +47,8 @@ const LiveChat = () => {
       type: 'sent',
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    // Prepend new message for inverted list
+    setMessages(prev => [newMessage, ...prev]);
     setInputText('');
   }, [inputText]);
 
