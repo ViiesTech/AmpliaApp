@@ -13,7 +13,6 @@ import AppTextInput from '../../../components/AppTextInput';
 import { SvgXml } from 'react-native-svg';
 import { AppIcons } from '../../../assets/icons';
 import LineBreak from '../../../components/LineBreak';
-import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import ManageBookingsCard from '../../../components/ManageBookingsCard';
 import { useNavigation } from '@react-navigation/native';
@@ -131,17 +130,11 @@ const BookingsScreens = () => {
           contentContainerStyle={{ flex: 1, justifyContent: 'space-between' }}
           renderItem={({ item, index }) => (
             <TouchableOpacity onPress={() => setSelectedTab(index)}>
-              <LinearGradient
-                colors={
-                  selectedTab == index
-                    ? ['#003C46', '#007C91']
-                    : [AppColors.app_light, AppColors.app_light]
-                }
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+              <View
                 style={{
-                  paddingHorizontal: responsiveWidth(7.5),
-                  paddingVertical: responsiveHeight(0.6),
+                  backgroundColor: selectedTab == index ? '#006570' : AppColors.app_light,
+                  paddingHorizontal: responsiveWidth(6),
+                  paddingVertical: responsiveHeight(1.2),
                   borderRadius: 100,
                   borderWidth: 2,
                   borderColor:
@@ -157,7 +150,7 @@ const BookingsScreens = () => {
                   textSize={1.6}
                   title={item.title}
                 />
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           )}
         />
