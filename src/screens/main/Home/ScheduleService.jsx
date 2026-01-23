@@ -6,7 +6,7 @@ import AppHeader from '../../../components/AppHeader';
 import CustomRangeCalendar from '../../../components/CustomRangeCalendar';
 import { useNavigation } from '@react-navigation/native';
 import LineBreak from '../../../components/LineBreak';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 
 const ScheduleService = () => {
   const nav = useNavigation();
@@ -17,9 +17,9 @@ const ScheduleService = () => {
         <AppHeader onBackPress={true} heading={'Schedule Service'} />
         <CustomRangeCalendar />
         <LineBreak space={2} />
-        <AppButton
+        <GradientButton
           title={'Continue'}
-          handlePress={() => nav.navigate('Payment')}
+          onPress={() => nav.navigate('Payment')}
         />
       </View>
     </Container>

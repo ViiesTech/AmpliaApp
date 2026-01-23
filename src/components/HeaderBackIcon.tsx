@@ -1,15 +1,16 @@
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import SVGXml from '../assets/icons/SVGXML';
+import { AppIcons } from '../assets/icons';
 import { AppColors, responsiveFontSize } from '../utils';
 
 const HeaderBackIcon = ({onBackPress, iconColor}: any) => {
   return (
     <TouchableOpacity onPress={onBackPress}>
-      <FontAwesome
-        name={'angle-left'}
-        size={responsiveFontSize(4)}
-        color={iconColor ? iconColor : AppColors.ThemeBlue}
+      <SVGXml
+        icon={AppIcons.chevron_left(iconColor ? iconColor : AppColors.ThemeBlue)}
+        width={responsiveFontSize(4)}
+        height={responsiveFontSize(4)}
       />
     </TouchableOpacity>
   );

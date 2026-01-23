@@ -14,7 +14,7 @@ import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import SVGXml from '../../../assets/icons/SVGXML';
 import { AppIcons } from '../../../assets/icons';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 import {
   useDeleteUserMutation,
   useLazyGetUserDetailQuery,
@@ -208,15 +208,13 @@ const MyAccount = () => {
             />
             <LineBreak space={2} />
 
-            <AppButton
+            <GradientButton
               title={'Delete Account'}
-              borderWidth={2}
+              outline={true}
               borderColor={AppColors.RED_COLOR}
               textColor={AppColors.RED_COLOR}
-              indicator={deleteLoader}
-              handlePress={() => onConfirmation()}
-              indicatorColor={AppColors.RED_COLOR}
-              btnBackgroundColor={AppColors.WHITE}
+              loading={deleteLoader}
+              onPress={() => onConfirmation()}
             />
           </>
         )}

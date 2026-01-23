@@ -14,8 +14,8 @@ import LineBreak from '../../components/LineBreak';
 import SVGXml from '../../assets/icons/SVGXML';
 import { AppIcons } from '../../assets/icons';
 import AppTextInput from '../../components/AppTextInput';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AppButton from '../../components/AppButton';
+
+import GradientButton from '../../components/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import AppText from '../../components/AppText';
 import { useRegisterMutation } from '../../redux/services/authService';
@@ -177,12 +177,10 @@ const SignUp = () => {
           inputWidth={72}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
-              <Ionicons
-                name={isShow ? 'eye-off' : 'eye'}
-                size={responsiveFontSize(2.5)}
-                color={
-                  isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY
-                }
+              <SVGXml
+                icon={isShow ? AppIcons.eye_closed(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY) : AppIcons.eye_open(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY)}
+                width={responsiveFontSize(2.5)}
+                height={responsiveFontSize(2.5)}
               />
             </TouchableOpacity>
           }
@@ -203,24 +201,20 @@ const SignUp = () => {
             <TouchableOpacity
               onPress={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
             >
-              <Ionicons
-                name={isShowConfirmPassword ? 'eye-off' : 'eye'}
-                size={responsiveFontSize(2.5)}
-                color={
-                  isConfirmPasswordFocused
-                    ? AppColors.ThemeColor
-                    : AppColors.DARKGRAY
-                }
+              <SVGXml
+                icon={isShowConfirmPassword ? AppIcons.eye_closed(isConfirmPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY) : AppIcons.eye_open(isConfirmPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY)}
+                width={responsiveFontSize(2.5)}
+                height={responsiveFontSize(2.5)}
               />
             </TouchableOpacity>
           }
           borderColor={AppColors.LIGHTGRAY}
         />
         <LineBreak space={1} />
-        <AppButton
+        <GradientButton
           title={'Sign Up'}
-          indicator={isLoading}
-          handlePress={() => onSignUpPress()}
+          loading={isLoading}
+          onPress={() => onSignUpPress()}
         />
         <LineBreak space={1} />
         <View

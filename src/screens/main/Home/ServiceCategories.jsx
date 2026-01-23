@@ -13,7 +13,6 @@ import { AppIcons } from '../../../assets/icons';
 import AppText from '../../../components/AppText';
 import SVGXml from '../../../assets/icons/SVGXML';
 import LineBreak from '../../../components/LineBreak';
-import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 
 const serviceCate = [
@@ -77,10 +76,10 @@ const ServiceCategories = ({route}) => {
                 }}
               >
                 <TouchableOpacity onPress={() => nav.navigate('Services')}>
-                  <Icon
-                    name={'arrow-right'}
-                    size={responsiveFontSize(2.5)}
-                    color={AppColors.Dark_themeColor}
+                  <SVGXml
+                    icon={AppIcons.chevron_right(AppColors.Dark_themeColor)}
+                    width={responsiveFontSize(2.5)}
+                    height={responsiveFontSize(2.5)}
                   />
                 </TouchableOpacity>
               </View>

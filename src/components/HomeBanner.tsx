@@ -3,7 +3,7 @@ import React from 'react';
 import { Image, View } from 'react-native';
 import { AppColors, responsiveHeight, responsiveWidth } from '../utils';
 import AppText from './AppText';
-import AppButton from './AppButton';
+import SmallButton from './SmallButton';
 import LineBreak from './LineBreak';
 import { AppImages } from '../assets/images';
 import { useNavigation } from '@react-navigation/native';
@@ -35,7 +35,7 @@ const HomeBanner = () => {
                     textFontWeight
                 />
                 <LineBreak space={1} />
-                <AppButton title={'Chat Now'} handlePress={() => nav.navigate("LiveChat")} btnWidth={22} textSize={1.8} btnPadding={8} />
+                <SmallButton title={'Chat Now'} onPress={() => nav.navigate("LiveChat")} />
             </View>
             <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
                 <Image source={AppImages.banner_img} />

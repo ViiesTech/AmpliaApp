@@ -5,7 +5,7 @@ import { AppColors, responsiveWidth } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import AppTextInput from '../../../components/AppTextInput';
 import LineBreak from '../../../components/LineBreak';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 
 const EmailUs = () => {
   return (
@@ -30,7 +30,7 @@ const EmailUs = () => {
             textAlignVertical={'top'}
           />
           <LineBreak space={1} />
-          <AppButton title={'Send Email'} />
+          <GradientButton title={'Send Email'} />
         </View>
       </View>
     </Container>

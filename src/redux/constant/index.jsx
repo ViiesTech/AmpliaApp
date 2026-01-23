@@ -1,4 +1,8 @@
-export const BASE_URL = 'https://apiforapp.link/Amplia/';
+// Production API
+// export const BASE_URL = 'https://apiforapp.link/Amplia/';
+
+// For local development with backend running on localhost:4006
+export const BASE_URL = 'http://localhost:4006/';
 
 export const endpoints = {
   REGISTER: 'auth/signup/requestOtp',

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import Container from '../../../components/Container';
 import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import AppTextInput from '../../../components/AppTextInput';
 import LineBreak from '../../../components/LineBreak';
@@ -29,10 +29,10 @@ const ReviewsAndRatings = () => {
           inputHeight={15}
         />
         <LineBreak space={2} />
-        <AppButton
+        <GradientButton
           title={'Submit'}
           textFontWeight={false}
-          handlePress={() => nav.goBack()}
+          onPress={() => nav.goBack()}
         />
       </View>
     </Container>

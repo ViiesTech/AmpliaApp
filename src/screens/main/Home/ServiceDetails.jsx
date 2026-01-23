@@ -23,8 +23,7 @@ import { AppIcons } from '../../../assets/icons';
 import AppText from '../../../components/AppText';
 import RatingView from '../../../components/RatingView';
 import RatingWithProgressbar from '../../../components/RatingWithProgressbar';
-import Entypo from 'react-native-vector-icons/Entypo';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 
 const tabsData = [
   { id: 1, title: 'Standard Plan $250' },
@@ -271,10 +270,10 @@ const ServiceDetails = () => {
                       textSize={1.8}
                       textColor={AppColors.ThemeColor}
                     />
-                    <Entypo
-                      name="star"
-                      size={responsiveFontSize(2)}
-                      color={AppColors.ThemeColor}
+                    <SVGXml
+                      icon={AppIcons.star_icon(AppColors.ThemeColor)}
+                      width={responsiveFontSize(2)}
+                      height={responsiveFontSize(2)}
                     />
                   </View>
                   <RatingWithProgressbar
@@ -380,18 +379,17 @@ const ServiceDetails = () => {
         <LineBreak space={2} />
       </Container>
       <View style={{ paddingHorizontal: responsiveWidth(6) }}>
-        <AppButton
+        <GradientButton
           title={'Book Service'}
-          handlePress={() => nav.navigate('Payment')}
+          onPress={() => nav.navigate('Payment')}
         />
         <LineBreak space={1} />
-        <AppButton
+        <GradientButton
           title={'Schedule For later'}
-          borderWidth={1}
+          outline={true}
           borderColor={AppColors.ThemeColor}
           textColor={AppColors.ThemeColor}
-          btnBackgroundColor={AppColors.WHITE}
-          handlePress={() => nav.navigate('ScheduleService')}
+          onPress={() => nav.navigate('ScheduleService')}
         />
       </View>
       <LineBreak space={2} />

@@ -1,8 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { AppColors, responsiveWidth } from '../utils/index';
-import AppText from './AppText';
+import { Platform, TouchableOpacity, View, Text } from 'react-native';
+import { AppColors, responsiveWidth, responsiveFontSize } from '../utils/index';
 import LinearGradient from 'react-native-linear-gradient';
 import Loader from './Loader';
 
@@ -20,7 +19,8 @@ type props = {
   borderRadius?: any;
   leftIcon?: any;
   activeOpacity?: any;
-  indicator?: any
+  indicator?: any;
+  indicatorColor?: any;
 };
 const AppButton = ({
   title,
@@ -39,46 +39,58 @@ const AppButton = ({
   indicator,
   indicatorColor
 }: props) => {
+  const hasCustomPadding = btnPadding != null;
+  const verticalPadding = hasCustomPadding ? btnPadding : 16;
+  const horizontalPadding = hasCustomPadding ? btnPadding + 8 : 20;
+  const minHeight = !hasCustomPadding && Platform.OS === 'ios' ? 48 : undefined;
+  const buttonWidth = btnWidth ? responsiveWidth(btnWidth) : undefined;
+  const alignSelf = btnWidth ? 'flex-start' : 'stretch';
+
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={activeOpacity || 0.8}
       style={{
-        borderRadius: borderRadius ?? 100,
+        width: buttonWidth,
+        alignSelf,
+        minHeight,
       }}
     >
       <LinearGradient
-        colors={ btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
+        colors={btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
+          alignSelf: 'stretch',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: btnPadding ?? 14,
+          paddingVertical: verticalPadding,
+          paddingHorizontal: horizontalPadding,
+          minHeight,
           borderRadius: borderRadius ?? 100,
-          width: btnWidth ? responsiveWidth(btnWidth) : 'auto',
           borderWidth: borderWidth || 0,
           borderColor: borderColor ?? 'transparent',
-          flexDirection: 'row',
           backgroundColor: btnBackgroundColor,
         }}
       >
-        {indicator ?
+        {indicator ? (
           <Loader color={indicatorColor} />
-          :
-          <>
-        {leftIcon && leftIcon} 
-        <AppText
-          textColor={textColor ?? AppColors.WHITE}
-          textSize={textSize ?? 2}
-          title={title}
-          textFontWeight={textFontWeight}
-        />
-        </>
-        }
+        ) : (
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {leftIcon && leftIcon}
+            <Text
+              style={{
+                color: textColor,
+                fontSize: responsiveFontSize(textSize),
+                fontWeight: textFontWeight ? 'bold' : 'normal',
+              }}
+            >
+              {title}
+            </Text>
+          </View>
+        )}
       </LinearGradient>
     </TouchableOpacity>
-
   );
 };
 

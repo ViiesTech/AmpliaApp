@@ -10,7 +10,8 @@ import {
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import AppTextInput from '../../../components/AppTextInput';
-import Icon from 'react-native-vector-icons/Feather';
+import { SvgXml } from 'react-native-svg';
+import { AppIcons } from '../../../assets/icons';
 import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
@@ -119,11 +120,7 @@ const BookingsScreens = () => {
           inputWidth={72}
           rightIcon={
             <TouchableOpacity>
-              <Icon
-                name={'search'}
-                size={responsiveFontSize(2.5)}
-                color={AppColors.LIGHTGRAY}
-              />
+              <SvgXml xml={AppIcons.search_icon(AppColors.LIGHTGRAY)} width={22} height={22} />
             </TouchableOpacity>
           }
         />

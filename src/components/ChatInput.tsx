@@ -4,9 +4,8 @@ import { View, TouchableOpacity } from 'react-native'
 import AppTextInput from './AppTextInput'
 import { AppColors, responsiveFontSize, responsiveWidth } from '../utils'
 import LinearGradient from 'react-native-linear-gradient'
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Icon from 'react-native-vector-icons/Entypo';
+import SVGXml from '../assets/icons/SVGXML';
+import { AppIcons } from '../assets/icons';
 
 const ChatInput = () => {
     return (
@@ -25,17 +24,17 @@ const ChatInput = () => {
                         }}
                     >
                         <TouchableOpacity>
-                            <Icon
-                                name="attachment"
-                                size={responsiveFontSize(2.2)}
-                                color={AppColors.Dark_themeColor}
+                            <SVGXml
+                                icon={AppIcons.attachment_icon(AppColors.Dark_themeColor)}
+                                width={responsiveFontSize(2.2)}
+                                height={responsiveFontSize(2.2)}
                             />
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <FontAwesome
-                                name="image"
-                                size={responsiveFontSize(2.2)}
-                                color={AppColors.Dark_themeColor}
+                            <SVGXml
+                                icon={AppIcons.image_icon(AppColors.Dark_themeColor)}
+                                width={responsiveFontSize(2.2)}
+                                height={responsiveFontSize(2.2)}
                             />
                         </TouchableOpacity>
                         <TouchableOpacity>
@@ -52,10 +51,10 @@ const ChatInput = () => {
                                     backgroundColor: AppColors.ThemeColor,
                                 }}
                             >
-                                <Ionicons
-                                    name="send"
-                                    size={responsiveFontSize(2.2)}
-                                    color={AppColors.WHITE}
+                                <SVGXml
+                                    icon={AppIcons.send_icon(AppColors.WHITE)}
+                                    width={responsiveFontSize(2.2)}
+                                    height={responsiveFontSize(2.2)}
                                 />
                             </LinearGradient>
                         </TouchableOpacity>

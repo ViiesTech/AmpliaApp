@@ -10,8 +10,9 @@ import {
 import AppHeader from '../../../components/AppHeader';
 import AppTextInput from '../../../components/AppTextInput';
 import LineBreak from '../../../components/LineBreak';
-import AppButton from '../../../components/AppButton';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import GradientButton from '../../../components/GradientButton';
+import SVGXml from '../../../assets/icons/SVGXML';
+import { AppIcons } from '../../../assets/icons';
 import { useChangePasswordMutation } from '../../../redux/services/mainService';
 
 const ChangePassword = () => {
@@ -92,10 +93,10 @@ const ChangePassword = () => {
             secureTextEntry={visible.current}
             rightIcon={
               <TouchableOpacity onPress={() => toggle('current')}>
-                <Ionicons
-                  name={visible.current ? 'eye-off' : 'eye'}
-                  size={responsiveFontSize(2)}
-                  color={AppColors.GRAY}
+                <SVGXml
+                  icon={visible.current ? AppIcons.eye_closed(AppColors.GRAY) : AppIcons.eye_open(AppColors.GRAY)}
+                  width={responsiveFontSize(2)}
+                  height={responsiveFontSize(2)}
                 />
               </TouchableOpacity>
             }
@@ -111,10 +112,10 @@ const ChangePassword = () => {
             inputWidth={74}
             rightIcon={
               <TouchableOpacity onPress={() => toggle('newPass')}>
-                <Ionicons
-                  name={visible.newPass ? 'eye-off' : 'eye'}
-                  size={responsiveFontSize(2)}
-                  color={AppColors.GRAY}
+                <SVGXml
+                  icon={visible.newPass ? AppIcons.eye_closed(AppColors.GRAY) : AppIcons.eye_open(AppColors.GRAY)}
+                  width={responsiveFontSize(2)}
+                  height={responsiveFontSize(2)}
                 />
               </TouchableOpacity>
             }
@@ -130,18 +131,18 @@ const ChangePassword = () => {
             secureTextEntry={visible.confirm}
             rightIcon={
               <TouchableOpacity onPress={() => toggle('confirm')}>
-                <Ionicons
-                  name={visible.confirm ? 'eye-off' : 'eye'}
-                  size={responsiveFontSize(2)}
-                  color={AppColors.GRAY}
+                <SVGXml
+                  icon={visible.confirm ? AppIcons.eye_closed(AppColors.GRAY) : AppIcons.eye_open(AppColors.GRAY)}
+                  width={responsiveFontSize(2)}
+                  height={responsiveFontSize(2)}
                 />
               </TouchableOpacity>
             }
           />
           <LineBreak space={1} />
-          <AppButton
-            handlePress={onSaveChanges}
-            indicator={isLoading}
+          <GradientButton
+            onPress={onSaveChanges}
+            loading={isLoading}
             title={'Save Changes'}
           />
         </View>

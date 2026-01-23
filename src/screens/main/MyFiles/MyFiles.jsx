@@ -13,7 +13,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import PdfCard from '../../../components/PdfCard';
-import Feather from 'react-native-vector-icons/Feather';
+import SVGXml from '../../../assets/icons/SVGXML';
+import { AppIcons } from '../../../assets/icons';
 import { useLazyGetFilesQuery } from '../../../redux/services/mainService';
 import Loader from '../../../components/Loader';
 

@@ -9,7 +9,8 @@ import {
   responsiveWidth,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
-import Icon from 'react-native-vector-icons/Fontisto';
+import SVGXml from '../../../assets/icons/SVGXML';
+import { AppIcons } from '../../../assets/icons';
 import PopularService from '../../../components/PopularService';
 import { AppImages } from '../../../assets/images';
 import LineBreak from '../../../components/LineBreak';
@@ -68,10 +69,10 @@ const Services = () => {
                 borderRadius: 100,
               }}
             >
-              <Icon
-                name={'filter'}
-                size={responsiveFontSize(2)}
-                color={AppColors.Dark_themeColor}
+              <SVGXml
+                icon={AppIcons.filter_icon(AppColors.Dark_themeColor)}
+                width={responsiveFontSize(2)}
+                height={responsiveFontSize(2)}
               />
             </TouchableOpacity>
           }

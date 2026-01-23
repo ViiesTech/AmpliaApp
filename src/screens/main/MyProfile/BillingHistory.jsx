@@ -9,7 +9,8 @@ import {
   responsiveWidth,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
-import Fontisto from 'react-native-vector-icons/Fontisto';
+import SVGXml from '../../../assets/icons/SVGXML';
+import { AppIcons } from '../../../assets/icons';
 import BackIcon from '../../../components/BackIcon';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
@@ -55,10 +56,10 @@ const BillingHistory = () => {
           rightIcon={
             <BackIcon
               icon={
-                <Fontisto
-                  name="filter"
-                  size={responsiveFontSize(2)}
-                  color={AppColors.ThemeColor}
+                <SVGXml
+                  icon={AppIcons.filter_icon(AppColors.ThemeColor)}
+                  width={responsiveFontSize(2)}
+                  height={responsiveFontSize(2)}
                 />
               }
             />

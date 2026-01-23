@@ -1,8 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { SvgXml } from 'react-native-svg';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   AppColors,
@@ -15,16 +14,16 @@ import BookingsScreens from './../screens/main/Bookings/BookingsScreens';
 import Calculator from './../screens/main/Calculator/Calculator';
 import MyFiles from './../screens/main/MyFiles/MyFiles';
 import MyProfile from './../screens/main/MyProfile/MyProfile';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppIcons } from '../assets/icons';
 
 const Tab = createBottomTabNavigator();
 
 const screens = [
-  { name: 'Home', icon: 'home-outline' },
-  { name: 'Calculator', icon: 'calculator-variant' },
-  { name: 'Bookings', icon: 'calendar-check-outline' },
-  { name: 'My Files', icon: 'file-document-outline' },
-  { name: 'Profile', icon: 'account-outline' },
+  { name: 'Home', getIcon: AppIcons.home_tab },
+  { name: 'Calculator', getIcon: AppIcons.calculator_tab },
+  { name: 'Bookings', getIcon: AppIcons.booking_tab },
+  { name: 'My Files', getIcon: AppIcons.files_tab },
+  { name: 'Profile', getIcon: AppIcons.profile_tab },
 ];
 
 const DummyScreen = ({ route }) => {
@@ -40,7 +39,7 @@ const DummyScreen = ({ route }) => {
     case 'Profile':
       return <MyProfile />;
     default:
-      return null; // Always return something
+      return null;
   }
 };
 
@@ -57,7 +56,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
             : route.name;
 
         const isFocused = state.index === index;
-        const iconName = screens[index].icon;
+        const getIcon = screens[index].getIcon;
+        const iconColor = isFocused ? '#fff' : '#A0AEB8';
 
         return (
           <TouchableOpacity
@@ -68,24 +68,13 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
             activeOpacity={0.9}
           >
             {isFocused ? (
-              <LinearGradient
-                colors={['#007B7F', '#004C5C']}
-                style={styles.activeTab}
-              >
-                <Icon
-                  name={iconName}
-                  size={responsiveFontSize(3)}
-                  color="#fff"
-                />
+              <View style={styles.activeTab}>
+                <SvgXml xml={getIcon(iconColor)} width={20} height={20} />
                 <Text style={styles.activeText}>{label}</Text>
-              </LinearGradient>
+              </View>
             ) : (
               <View style={styles.inactiveTab}>
-                <Icon
-                  name={iconName}
-                  size={responsiveFontSize(3)}
-                  color="#A0AEB8"
-                />
+                <SvgXml xml={getIcon(iconColor)} width={20} height={20} />
               </View>
             )}
           </TouchableOpacity>
@@ -112,9 +101,10 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#E6EBED',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginHorizontal: responsiveWidth(4),
+    marginHorizontal: responsiveWidth(3),
+    paddingHorizontal: responsiveWidth(1),
     paddingVertical: responsiveHeight(1),
     marginBottom: 20,
     borderRadius: 30,
@@ -125,28 +115,30 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   tabButton: {
-    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   activeTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: responsiveWidth(2),
-    gap: 5,
-    paddingVertical: responsiveHeight(1.5),
+    justifyContent: 'center',
+    backgroundColor: '#006570',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 25,
   },
   inactiveTab: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: AppColors.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
   },
   activeText: {
     color: '#fff',
-    fontSize: responsiveFontSize(1.2),
-    fontWeight: '500',
+    fontSize: responsiveFontSize(1.4),
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });

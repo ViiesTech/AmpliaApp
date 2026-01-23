@@ -15,8 +15,8 @@ import BackIcon from '../../components/BackIcon';
 import { AppIcons } from '../../assets/icons';
 import SVGXml from '../../assets/icons/SVGXML';
 import AppTextInput from '../../components/AppTextInput';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AppButton from '../../components/AppButton';
+
+import GradientButton from '../../components/GradientButton';
 import { useResetPasswordMutation } from '../../redux/services/authService';
 
 const CreateNewPassword = ({ route }) => {
@@ -106,12 +106,10 @@ const CreateNewPassword = ({ route }) => {
           inputWidth={72}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
-              <Ionicons
-                name={isShow ? 'eye-off' : 'eye'}
-                size={responsiveFontSize(2.5)}
-                color={
-                  isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY
-                }
+              <SVGXml
+                icon={isShow ? AppIcons.eye_closed(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY) : AppIcons.eye_open(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY)}
+                width={responsiveFontSize(2.5)}
+                height={responsiveFontSize(2.5)}
               />
             </TouchableOpacity>
           }
@@ -132,21 +130,17 @@ const CreateNewPassword = ({ route }) => {
             <TouchableOpacity
               onPress={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
             >
-              <Ionicons
-                name={isShowConfirmPassword ? 'eye-off' : 'eye'}
-                size={responsiveFontSize(2.5)}
-                color={
-                  isConfirmPasswordFocused
-                    ? AppColors.ThemeColor
-                    : AppColors.DARKGRAY
-                }
+              <SVGXml
+                icon={isShowConfirmPassword ? AppIcons.eye_closed(isConfirmPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY) : AppIcons.eye_open(isConfirmPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY)}
+                width={responsiveFontSize(2.5)}
+                height={responsiveFontSize(2.5)}
               />
             </TouchableOpacity>
           }
           borderColor={AppColors.LIGHTGRAY}
         />
         <LineBreak space={1} />
-        <AppButton indicator={isLoading} title={'Continue'} handlePress={() => onContinuePress()} />
+        <GradientButton loading={isLoading} title={'Continue'} onPress={() => onContinuePress()} />
         <LineBreak space={1} />
       </View>
     </Container>

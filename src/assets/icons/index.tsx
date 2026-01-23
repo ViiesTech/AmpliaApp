@@ -1,3 +1,43 @@
+// Tab bar icons with configurable color
+const home_tab = (color = '#A0AEB8') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 9.5L12 3L21 9.5V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9.5Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M9 22V12H15V22" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const calculator_tab = (color = '#A0AEB8') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="2" width="16" height="20" rx="2" stroke="${color}" stroke-width="2"/>
+<line x1="8" y1="6" x2="16" y2="6" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+<circle cx="8" cy="11" r="1" fill="${color}"/>
+<circle cx="12" cy="11" r="1" fill="${color}"/>
+<circle cx="16" cy="11" r="1" fill="${color}"/>
+<circle cx="8" cy="15" r="1" fill="${color}"/>
+<circle cx="12" cy="15" r="1" fill="${color}"/>
+<circle cx="16" cy="15" r="1" fill="${color}"/>
+<circle cx="8" cy="19" r="1" fill="${color}"/>
+<circle cx="12" cy="19" r="1" fill="${color}"/>
+<circle cx="16" cy="19" r="1" fill="${color}"/>
+</svg>`;
+
+const booking_tab = (color = '#A0AEB8') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="4" width="18" height="18" rx="2" stroke="${color}" stroke-width="2"/>
+<line x1="16" y1="2" x2="16" y2="6" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+<line x1="8" y1="2" x2="8" y2="6" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+<line x1="3" y1="10" x2="21" y2="10" stroke="${color}" stroke-width="2"/>
+<path d="M8 14L11 17L16 12" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const files_tab = (color = '#A0AEB8') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 2V8H20" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="8" y1="13" x2="16" y2="13" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+<line x1="8" y1="17" x2="16" y2="17" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+const profile_tab = (color = '#A0AEB8') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="7" r="4" stroke="${color}" stroke-width="2"/>
+<path d="M4 21V19C4 17.9391 4.42143 16.9217 5.17157 16.1716C5.92172 15.4214 6.93913 15 8 15H16C17.0609 15 18.0783 15.4214 18.8284 16.1716C19.5786 16.9217 20 17.9391 20 19V21" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 const sign_in = `<svg width="106" height="35" viewBox="0 0 106 35" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M0.6211 20.3452H5.80621C6.05567 22.4655 8.26514 23.8553 11.1161 23.8553C13.9848 23.8553 15.9448 22.4833 15.9448 20.5946C15.9448 18.9197 14.7153 17.9931 11.615 17.2982L8.26514 16.5677C3.52548 15.552 1.19128 13.1466 1.19128 9.38692C1.19128 4.64726 5.28949 1.51125 11.027 1.51125C17.0139 1.51125 20.7736 4.59381 20.8626 9.24437H15.8201C15.6419 7.07055 13.7353 5.75199 11.0448 5.75199C8.38986 5.75199 6.60804 7.01709 6.60804 8.92364C6.60804 10.5095 7.85532 11.4004 10.8131 12.0775L13.9313 12.7368C19.0808 13.8415 21.3259 16.0509 21.3259 19.971C21.3259 24.9601 17.2812 28.1139 10.9022 28.1139C4.7193 28.1139 0.781465 25.1739 0.6211 20.3452ZM23.2603 27.6685V8.05055H28.4632V27.6685H23.2603ZM25.8617 5.91236C24.3294 5.91236 23.0643 4.73635 23.0643 3.18616C23.0643 1.63598 24.3294 0.477788 25.8617 0.477788C27.4119 0.477788 28.677 1.63598 28.677 3.18616C28.677 4.73635 27.4119 5.91236 25.8617 5.91236ZM39.9838 23.5168C42.6922 23.5168 44.4383 21.343 44.4383 17.8328C44.4383 14.3048 42.6922 12.024 39.9838 12.024C37.2932 12.024 35.5827 14.2691 35.5827 17.815C35.5827 21.3786 37.2754 23.5168 39.9838 23.5168ZM39.9303 34.8492C34.7808 34.8492 31.1637 32.5863 30.8965 29.0583H36.0281C36.3667 30.359 38.006 31.1787 40.0551 31.1787C42.6922 31.1787 44.4205 29.8245 44.4205 27.615V24.1048H44.3136C43.3693 26.2074 41.0707 27.5437 38.2376 27.5437C33.4623 27.5437 30.255 23.8375 30.255 17.7971C30.255 11.6498 33.3554 7.81891 38.3267 7.81891C41.142 7.81891 43.3693 9.22656 44.4027 11.4004H44.4918V8.05055H49.6235V27.223C49.6235 31.8914 45.8282 34.8492 39.9303 34.8492ZM52.0567 27.6685V8.05055H57.0815V11.5607H57.1884C58.3109 9.08401 60.3066 7.76546 63.3179 7.76546C67.6655 7.76546 70.1244 10.5095 70.1244 15.0888V27.6685H64.9215V16.1757C64.9215 13.5742 63.7099 12.0953 61.2509 12.0953C58.7564 12.0953 57.2597 13.8771 57.2597 16.4786V27.6685H52.0567ZM84.987 27.6685H79.6059V1.9567H84.987V27.6685ZM87.7944 27.6685V8.05055H92.8192V11.5607H92.9261C94.0487 9.08401 96.0443 7.76546 99.0556 7.76546C103.403 7.76546 105.862 10.5095 105.862 15.0888V27.6685H100.659V16.1757C100.659 13.5742 99.4476 12.0953 96.9887 12.0953C94.4941 12.0953 92.9974 13.8771 92.9974 16.4786V27.6685H87.7944Z" fill="url(#paint0_linear_154_405)"/>
 <defs>
@@ -285,7 +325,113 @@ const right_arrow_two = `<svg width="9" height="14" viewBox="0 0 9 14" fill="non
 <path d="M0.988525 13.067L7.19141 6.8641L0.988525 0.661224" stroke="#547A83" stroke-width="1.3" stroke-linecap="round"/>
 </svg>`;
 
+// Search icon with configurable color
+const search_icon = (color = '#A0AEB8') => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="11" cy="11" r="7" stroke="${color}" stroke-width="2"/>
+<path d="M20 20L16.5 16.5" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+// Eye icon for password visibility
+const eye_open = (color = '#A0AEB8') => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="12" cy="12" r="3" stroke="${color}" stroke-width="2"/>
+</svg>`;
+
+const eye_closed = (color = '#A0AEB8') => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06M9.9 4.24C10.5883 4.0789 11.2931 3.99836 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19M14.12 14.12C13.8454 14.4148 13.5141 14.6512 13.1462 14.8151C12.7782 14.9791 12.3809 15.0673 11.9781 15.0744C11.5753 15.0815 11.1752 15.0074 10.8016 14.8565C10.4281 14.7056 10.0887 14.4811 9.80385 14.1962C9.51897 13.9113 9.29439 13.5719 9.14351 13.1984C8.99262 12.8248 8.91853 12.4247 8.92563 12.0219C8.93274 11.6191 9.02091 11.2218 9.18488 10.8538C9.34884 10.4859 9.58525 10.1546 9.88 9.88" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1 1L23 23" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Question mark icon for header
+const question_circle = (color = '#ffffff') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="10" stroke="${color}" stroke-width="2"/>
+<path d="M9 9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9C15 10.3062 14.1652 11.4175 13 11.8293V13" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+<circle cx="12" cy="17" r="1" fill="${color}"/>
+</svg>`;
+
+// Back arrow icon (replaces Ionicons arrow-back)
+const arrow_back = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Chevron left icon (replaces FontAwesome angle-left)
+const chevron_left = (color = '#007C91') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 18L9 12L15 6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Bell/notification icon (replaces FontAwesome bell)
+const bell_icon = (color = '#EDEDED') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Filter icon (replaces Fontisto filter)
+const filter_icon = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Attachment icon (replaces Entypo attachment)
+const attachment_icon = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.44 11.05L12.25 20.24C11.1242 21.3658 9.59723 21.9983 8.005 21.9983C6.41277 21.9983 4.88584 21.3658 3.76 20.24C2.63416 19.1142 2.00166 17.5872 2.00166 15.995C2.00166 14.4028 2.63416 12.8758 3.76 11.75L12.33 3.18C13.0806 2.42975 14.0991 2.00874 15.16 2.00874C16.2209 2.00874 17.2394 2.42975 17.99 3.18C18.7403 3.93063 19.1613 4.94905 19.1613 6.01C19.1613 7.07095 18.7403 8.08937 17.99 8.84L9.41 17.41C9.03481 17.7852 8.52561 17.9959 7.995 17.9959C7.46439 17.9959 6.95519 17.7852 6.58 17.41C6.20481 17.0348 5.99407 16.5256 5.99407 15.995C5.99407 15.4644 6.20481 14.9552 6.58 14.58L15.07 6.1" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Image icon (replaces FontAwesome image)
+const image_icon = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="3" width="18" height="18" rx="2" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="8.5" cy="8.5" r="1.5" stroke="${color}" stroke-width="2"/>
+<path d="M21 15L16 10L5 21" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Send icon (replaces Ionicons send)
+const send_icon = (color = '#ffffff') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Chevron right icon (replaces Feather chevron-right)
+const chevron_right = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 18L15 12L9 6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Three dots vertical icon (replaces Entypo dots-three-vertical)
+const dots_vertical = (color = '#007C91') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="1" fill="${color}" stroke="${color}" stroke-width="2"/>
+<circle cx="12" cy="5" r="1" fill="${color}" stroke="${color}" stroke-width="2"/>
+<circle cx="12" cy="19" r="1" fill="${color}" stroke="${color}" stroke-width="2"/>
+</svg>`;
+
+// Download icon (for MyFiles)
+const download_icon = (color = '#003C46') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M7 10L12 15L17 10" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 15V3" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Star icon (for ServiceDetails rating arrow)
+const star_icon = (color = '#FFD700') => `<svg width="24" height="24" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 export const AppIcons = {
+    home_tab,
+    calculator_tab,
+    booking_tab,
+    files_tab,
+    profile_tab,
+    search_icon,
+    eye_open,
+    eye_closed,
+    question_circle,
+    arrow_back,
+    chevron_left,
+    bell_icon,
+    filter_icon,
+    attachment_icon,
+    image_icon,
+    send_icon,
+    chevron_right,
+    dots_vertical,
+    download_icon,
+    star_icon,
     sign_in,
     sign_up,
     enter_otp,

@@ -14,10 +14,10 @@ import LineBreak from '../../components/LineBreak';
 import SVGXml from '../../assets/icons/SVGXML';
 import { AppIcons } from '../../assets/icons';
 import AppTextInput from '../../components/AppTextInput';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import CheckBox from '@react-native-community/checkbox';
 import AppText from '../../components/AppText';
-import AppButton from '../../components/AppButton';
+import GradientButton from '../../components/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import { useLoginMutation } from '../../redux/services/authService';
 
@@ -94,12 +94,10 @@ const SignIn = () => {
           inputWidth={72}
           rightIcon={
             <TouchableOpacity onPress={() => setIsShow(!isShow)}>
-              <Ionicons
-                name={isShow ? 'eye-off' : 'eye'}
-                size={responsiveFontSize(2.5)}
-                color={
-                  isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY
-                }
+              <SVGXml
+                icon={isShow ? AppIcons.eye_closed(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY) : AppIcons.eye_open(isPasswordFocused ? AppColors.ThemeColor : AppColors.DARKGRAY)}
+                width={responsiveFontSize(2.5)}
+                height={responsiveFontSize(2.5)}
               />
             </TouchableOpacity>
           }
@@ -122,11 +120,14 @@ const SignIn = () => {
             }}
           >
             <CheckBox
-              role="definition"
-              onAnimationType="stroke"
+              boxType="circle"
+              onAnimationType="fade"
               value={isDefinitionChecked}
               onValueChange={newValue => setIsDefinitionChecked(newValue)}
               tintColors={{ true: AppColors.ThemeColor, false: '#C0C0C0' }}
+              onCheckColor={AppColors.ThemeColor}
+              onTintColor={AppColors.ThemeColor}
+              tintColor="#C0C0C0"
               style={styles.checkbox}
             />
             <AppText
@@ -145,13 +146,14 @@ const SignIn = () => {
           </TouchableOpacity>
         </View>
         <LineBreak space={1} />
-        <AppButton indicator={isLoading} title={'Sign In'} handlePress={() => onLoginPress()} />
-        <LineBreak space={1} />
+        <GradientButton loading={isLoading} title="Sign In" onPress={() => onLoginPress()} />
+        <LineBreak space={2} />
         <View
           style={{
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
+            marginTop: 10,
           }}
         >
           <AppText
@@ -204,17 +206,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: responsiveHeight(20),
   },
-  checkboxWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 14, // makes it rounded
-    borderWidth: 2,
-    borderColor: '#C0C0C0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   checkbox: {
-    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }], // scales size
-    borderRadius: 100,
+    transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }],
+    paddingLeft: 10,
   },
 });

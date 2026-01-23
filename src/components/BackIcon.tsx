@@ -2,7 +2,8 @@
 import React from 'react'
 import { TouchableOpacity } from 'react-native'
 import { AppColors, responsiveFontSize } from '../utils'
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import SVGXml from '../assets/icons/SVGXML';
+import { AppIcons } from '../assets/icons';
 
 type Props = {
     onPress?: any;
@@ -23,10 +24,10 @@ const BackIcon = ({ onPress, icon }: Props) => {
             onPress={onPress}
         >
 
-            {icon ? icon : <Ionicons
-                name="arrow-back"
-                size={responsiveFontSize(3)}
-                color={AppColors.Dark_themeColor}
+            {icon ? icon : <SVGXml
+                icon={AppIcons.arrow_back(AppColors.Dark_themeColor)}
+                width={responsiveFontSize(3)}
+                height={responsiveFontSize(3)}
             />}
         </TouchableOpacity>
     )

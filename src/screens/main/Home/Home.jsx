@@ -11,7 +11,7 @@ import {
 import HomeHeader from '../../../components/HomeHeader';
 import LineBreak from '../../../components/LineBreak';
 import AppTextInput from '../../../components/AppTextInput';
-import Icon from 'react-native-vector-icons/Feather';
+import { SvgXml } from 'react-native-svg';
 import HomeBanner from '../../../components/HomeBanner';
 import AppText from '../../../components/AppText';
 import ServiceCategory from '../../../components/ServiceCategory';
@@ -119,11 +119,7 @@ const Home = () => {
           inputWidth={72}
           rightIcon={
             <TouchableOpacity>
-              <Icon
-                name={'search'}
-                size={responsiveFontSize(2.5)}
-                color={AppColors.LIGHTGRAY}
-              />
+              <SvgXml xml={AppIcons.search_icon(AppColors.LIGHTGRAY)} width={22} height={22} />
             </TouchableOpacity>
           }
         />

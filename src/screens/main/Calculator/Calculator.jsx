@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
@@ -10,9 +10,86 @@ import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import AppTextInput from '../../../components/AppTextInput';
 import AppDropDown from '../../../components/AppDropDown';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
+
+// Australian Tax Brackets for different financial years
+const TAX_BRACKETS = {
+  '2024-25': [
+    { min: 0, max: 18200, rate: 0, base: 0 },
+    { min: 18201, max: 45000, rate: 0.16, base: 0 },
+    { min: 45001, max: 135000, rate: 0.30, base: 4288 },
+    { min: 135001, max: 190000, rate: 0.37, base: 31288 },
+    { min: 190001, max: Infinity, rate: 0.45, base: 51638 },
+  ],
+  '2023-24': [
+    { min: 0, max: 18200, rate: 0, base: 0 },
+    { min: 18201, max: 45000, rate: 0.19, base: 0 },
+    { min: 45001, max: 120000, rate: 0.325, base: 5092 },
+    { min: 120001, max: 180000, rate: 0.37, base: 29467 },
+    { min: 180001, max: Infinity, rate: 0.45, base: 51667 },
+  ],
+  '2022-23': [
+    { min: 0, max: 18200, rate: 0, base: 0 },
+    { min: 18201, max: 45000, rate: 0.19, base: 0 },
+    { min: 45001, max: 120000, rate: 0.325, base: 5092 },
+    { min: 120001, max: 180000, rate: 0.37, base: 29467 },
+    { min: 180001, max: Infinity, rate: 0.45, base: 51667 },
+  ],
+};
+
+// Calculate annual tax based on income and year
+const calculateAnnualTax = (annualIncome, year) => {
+  const brackets = TAX_BRACKETS[year] || TAX_BRACKETS['2024-25'];
+  
+  for (const bracket of brackets) {
+    if (annualIncome >= bracket.min && annualIncome <= bracket.max) {
+      return bracket.base + (annualIncome - bracket.min + 1) * bracket.rate;
+    }
+  }
+  
+  // If income exceeds all brackets, use the highest bracket
+  const lastBracket = brackets[brackets.length - 1];
+  return lastBracket.base + (annualIncome - lastBracket.min + 1) * lastBracket.rate;
+};
 
 const Calculator = () => {
+  const [monthlyIncome, setMonthlyIncome] = useState('');
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [monthlyTax, setMonthlyTax] = useState(0);
+  const [hasCalculated, setHasCalculated] = useState(false);
+
+  const yearOptions = [
+    { label: '2024-25', value: '2024-25' },
+    { label: '2023-24', value: '2023-24' },
+    { label: '2022-23', value: '2022-23' },
+  ];
+
+  const handleCalculate = useCallback(() => {
+    const income = parseFloat(monthlyIncome.replace(/,/g, '')) || 0;
+    const year = selectedYear || '2024-25';
+    
+    // Convert monthly to annual income
+    const annualIncome = income * 12;
+    
+    // Calculate annual tax
+    const annualTax = calculateAnnualTax(annualIncome, year);
+    
+    // Convert back to monthly
+    const monthly = annualTax / 12;
+    
+    setMonthlyTax(monthly);
+    setHasCalculated(true);
+  }, [monthlyIncome, selectedYear]);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   return (
     <Container >
       <View style={{ marginHorizontal: responsiveWidth(5) }}>
@@ -49,12 +126,12 @@ const Calculator = () => {
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={1.8}
-            title={'Total Monthlty Tax'}
+            title={'Total Monthly Tax'}
           />
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={4}
-            title={'$2105.00'}
+            title={hasCalculated ? formatCurrency(monthlyTax) : '$0.00'}
             textFontWeight
           />
         </View>
@@ -75,11 +152,22 @@ const Calculator = () => {
             inputPlaceHolder={'Monthly Income'}
             borderWidth={1}
             borderColor={AppColors.LIGHTGRAY}
+            value={monthlyIncome}
+            onChangeText={setMonthlyIncome}
+            keyboardType="numeric"
           />
           <LineBreak space={1} />
-          <AppDropDown />
+          <AppDropDown 
+            items={yearOptions}
+            value={selectedYear}
+            onChangeValue={setSelectedYear}
+            placeholder="Choose year"
+          />
           <LineBreak space={1} />
-          <AppButton title={'Calculate'} />
+          <GradientButton 
+            title={'Calculate'} 
+            onPress={handleCalculate}
+          />
         </View>
       </View>
     </Container>

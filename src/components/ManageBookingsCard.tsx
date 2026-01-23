@@ -7,7 +7,7 @@ import AppText from './AppText';
 import LineBreak from './LineBreak';
 import SVGXml from '../assets/icons/SVGXML';
 import { AppIcons } from '../assets/icons';
-import AppButton from './AppButton';
+import GradientButton from './GradientButton';
 import { useNavigation } from '@react-navigation/native';
 
 const data = [
@@ -118,7 +118,7 @@ const ManageBookingsCard = ({ title, subTitle, status, OnPressCard }: Prop) => {
                     title={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nis'}
                 />
                 <LineBreak space={2} />
-                <AppButton title={'Review'} textSize={2} btnPadding={10} textFontWeight={false} handlePress={() => nav.navigate("ReviewsAndRatings")} />
+                <GradientButton title={'Review'} textSize={2} btnPadding={10} textFontWeight={false} onPress={() => nav.navigate("ReviewsAndRatings")} />
             </View>}
         </TouchableOpacity>
     );

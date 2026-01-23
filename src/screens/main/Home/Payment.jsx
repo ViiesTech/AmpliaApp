@@ -8,7 +8,7 @@ import AppText from '../../../components/AppText';
 import { useNavigation } from '@react-navigation/native';
 import LineBreak from '../../../components/LineBreak';
 import AppTextInput from '../../../components/AppTextInput';
-import AppButton from '../../../components/AppButton';
+import GradientButton from '../../../components/GradientButton';
 
 const Payment = () => {
   const nav = useNavigation();
@@ -101,9 +101,9 @@ const Payment = () => {
           </View>
         </View>
         <LineBreak space={2} />
-        <AppButton
+        <GradientButton
           title={'Continue To Pay'}
-          handlePress={() => nav.navigate('Main', {screen: 'Bookings'})}
+          onPress={() => nav.navigate('Main', {screen: 'Bookings'})}
         />
       </View>
       <LineBreak space={2} />

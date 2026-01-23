@@ -8,12 +8,11 @@ import {
   responsiveWidth,
   ShowToast,
 } from '../../utils';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import LineBreak from '../../components/LineBreak';
 import SVGXml from '../../assets/icons/SVGXML';
 import { AppIcons } from '../../assets/icons';
 import FieldCode from '../../components/CodeField';
-import AppButton from '../../components/AppButton';
+import GradientButton from '../../components/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import AppText from '../../components/AppText';
 import BackIcon from '../../components/BackIcon';
@@ -138,10 +137,10 @@ const onResendCode = async () => {
         </View>
         <FieldCode value={code} setValue={setCode} />
         <LineBreak space={2} />
-        <AppButton
-          indicator={type === 'forget' ? isLoading : signupVerifyLoading}
+        <GradientButton
+          loading={type === 'forget' ? isLoading : signupVerifyLoading}
           title={'Continue'}
-          handlePress={() => onVerifyPress()}
+          onPress={() => onVerifyPress()}
         />
         <LineBreak space={1} />
         <View

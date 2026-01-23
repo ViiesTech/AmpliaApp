@@ -5,7 +5,8 @@ import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from
 import BackIcon from './BackIcon'
 import { AppImages } from '../assets/images'
 import AppText from './AppText'
-import Entypo from 'react-native-vector-icons/Entypo';
+import SVGXml from '../assets/icons/SVGXML';
+import { AppIcons } from '../assets/icons';
 import { useNavigation } from '@react-navigation/native'
 
 const BookingChatHeader = () => {
@@ -45,10 +46,10 @@ const BookingChatHeader = () => {
             </View>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <TouchableOpacity>
-                    <Entypo
-                        name="dots-three-vertical"
-                        size={responsiveFontSize(2)}
-                        color={AppColors.ThemeColor}
+                    <SVGXml
+                        icon={AppIcons.dots_vertical(AppColors.ThemeColor)}
+                        width={responsiveFontSize(2)}
+                        height={responsiveFontSize(2)}
                     />
                 </TouchableOpacity>
             </View>

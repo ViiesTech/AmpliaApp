@@ -8,7 +8,7 @@ import BackIcon from '../../components/BackIcon';
 import { AppIcons } from '../../assets/icons';
 import SVGXml from '../../assets/icons/SVGXML';
 import AppTextInput from '../../components/AppTextInput';
-import AppButton from '../../components/AppButton';
+import GradientButton from '../../components/GradientButton';
 import { useForgotPasswordMutation } from '../../redux/services/authService';
 
 const ForgetPassword = () => {
@@ -72,10 +72,10 @@ const ForgetPassword = () => {
           onBlur={() => setIsEmailFocused(false)}
         />
         <LineBreak space={2} />
-        <AppButton
+        <GradientButton
           title={'Continue'}
-          indicator={isLoading}
-          handlePress={onForgetPasswordPress}
+          loading={isLoading}
+          onPress={onForgetPasswordPress}
         />
       </View>
     </Container>

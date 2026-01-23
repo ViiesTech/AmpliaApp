@@ -4,7 +4,8 @@ import { View, Image, TouchableOpacity } from 'react-native'
 import { AppColors, responsiveFontSize, responsiveWidth } from '../utils'
 import { AppImages } from '../assets/images'
 import AppText from './AppText'
-import Icon from 'react-native-vector-icons/FontAwesome';
+import SVGXml from '../assets/icons/SVGXML';
+import { AppIcons } from '../assets/icons';
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 
@@ -40,10 +41,10 @@ const HomeHeader = () => {
                 }}
                 onPress={() => nav.navigate("Notification")}
                 >
-                <Icon
-                    name={'bell'}
-                    size={responsiveFontSize(2.5)}
-                    color={AppColors.LIGHTGRAY}
+                <SVGXml
+                    icon={AppIcons.bell_icon(AppColors.LIGHTGRAY)}
+                    width={responsiveFontSize(2.5)}
+                    height={responsiveFontSize(2.5)}
                 />
             </TouchableOpacity>
         </View>
