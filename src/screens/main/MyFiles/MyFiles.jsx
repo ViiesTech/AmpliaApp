@@ -9,7 +9,6 @@ import {
   ShowToast,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
-import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import PdfCard from '../../../components/PdfCard';
@@ -74,17 +73,11 @@ const MyFiles = () => {
             contentContainerStyle={{ gap: responsiveWidth(3) }}
             renderItem={({ item, index }) => (
               <TouchableOpacity onPress={() => onSelectYear(item.title)}>
-                <LinearGradient
-                  colors={
-                    selectedTab === item.title
-                      ? ['#003C46', '#007C91']
-                      : [AppColors.app_light, AppColors.app_light]
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                <View
                   style={{
+                    backgroundColor: selectedTab === item.title ? '#006570' : AppColors.app_light,
                     paddingHorizontal: responsiveWidth(4),
-                    paddingVertical: responsiveHeight(0.8),
+                    paddingVertical: responsiveHeight(1.2),
                     borderRadius: 100,
                   }}
                 >
@@ -97,7 +90,7 @@ const MyFiles = () => {
                     textSize={1.6}
                     title={item.title}
                   />
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             )}
           />

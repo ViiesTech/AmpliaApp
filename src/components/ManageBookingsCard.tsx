@@ -7,8 +7,9 @@ import AppText from './AppText';
 import LineBreak from './LineBreak';
 import SVGXml from '../assets/icons/SVGXML';
 import { AppIcons } from '../assets/icons';
-import GradientButton from './GradientButton';
+import SmallButton from './SmallButton';
 import { useNavigation } from '@react-navigation/native';
+import GradientButton from './GradientButton';
 
 const data = [
     { id: 1, title: 'From', subTitle: '24/12/24', icon: AppIcons.calendar_small },
@@ -118,7 +119,7 @@ const ManageBookingsCard = ({ title, subTitle, status, OnPressCard }: Prop) => {
                     title={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nis'}
                 />
                 <LineBreak space={2} />
-                <GradientButton title={'Review'} textSize={2} btnPadding={10} textFontWeight={false} onPress={() => nav.navigate("ReviewsAndRatings")} />
+                <GradientButton title={'Review'} textSize={1.8} onPress={() => nav.navigate("ReviewsAndRatings")} />
             </View>}
         </TouchableOpacity>
     );
