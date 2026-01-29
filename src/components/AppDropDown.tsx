@@ -13,6 +13,8 @@ interface AppDropDownProps {
     value?: string | null;
     onChangeValue?: (value: string | null) => void;
     placeholder?: string;
+    zIndex?: number;
+    zIndexInverse?: number;
 }
 
 const AppDropDown: React.FC<AppDropDownProps> = ({
@@ -20,6 +22,8 @@ const AppDropDown: React.FC<AppDropDownProps> = ({
     value: propValue = null,
     onChangeValue,
     placeholder = 'Choose year',
+    zIndex = 1000,
+    zIndexInverse = 3000,
 }) => {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState<string | null>(propValue);
@@ -44,7 +48,7 @@ const AppDropDown: React.FC<AppDropDownProps> = ({
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { zIndex }]}>
             <DropDownPicker
                 open={open}
                 value={value}
@@ -57,8 +61,8 @@ const AppDropDown: React.FC<AppDropDownProps> = ({
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropdownContainer}
                 listMode="SCROLLVIEW"
-                zIndex={1000}
-                zIndexInverse={3000}
+                zIndex={zIndex}
+                zIndexInverse={zIndexInverse}
             />
         </View>
     );
