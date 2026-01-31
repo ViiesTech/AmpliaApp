@@ -62,7 +62,7 @@ const Home = () => {
     ({ item }) => (
       <ServiceCategory
         title={item?.name}
-        subTitle={item?.description}
+
         icon={{ uri: item?.cover }}
         onPress={() => navigation.navigate('Services')}
       />
@@ -146,7 +146,8 @@ const Home = () => {
           <Loader color={AppColors.ThemeColor} />
         ) : (
           <FlatList
-            data={categoriesData?.categories?.slice(0, 2) || []}
+            data={categoriesData?.categories?.slice(0, 3) || []}
+
             horizontal
             keyExtractor={item => String(item?._id)}
             renderItem={renderCategory}
@@ -271,9 +272,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryList: {
-    flex: 1,
     paddingHorizontal: responsiveWidth(5),
-    justifyContent: 'space-between',
+    gap: responsiveWidth(3),
   },
   serviceList: {
     paddingHorizontal: responsiveWidth(5),

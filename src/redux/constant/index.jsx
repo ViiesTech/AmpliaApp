@@ -14,8 +14,8 @@ export const endpoints = {
     search
       ? `search?search=${search}`
       : categoryId
-      ? `search?category=${categoryId}`
-      : 'service',
+        ? `search?category=${categoryId}`
+        : 'service',
   GET_USER_DETAIL: 'user',
   DELETE_USER: 'user',
   CHANGE_PASSWORD: 'user/updatePassword',
