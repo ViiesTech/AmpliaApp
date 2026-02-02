@@ -34,9 +34,9 @@ export const endpoints = {
   GET_ALL_CATEGORIES: 'category',
   GET_ALL_SERVICES: (search, categoryId) =>
     search
-      ? `search?search=${search}`
+      ? `service?search=${search}`
       : categoryId
-        ? `search?category=${categoryId}`
+        ? `service/category/${categoryId}`
         : 'service',
   GET_USER_DETAIL: 'user',
   DELETE_USER: 'user',
@@ -44,6 +44,7 @@ export const endpoints = {
   GET_SINGLE_SERVICE: id => `service/${id}`,
   GET_BOOKINGS: userId => `booking/?user=${userId}`,
   createBooking: 'booking',
+  GET_ALL_SUBADMINS: 'subAdmin',
 };
 
 export const TAX_SLABS = {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Fontisto';
@@ -7,107 +7,48 @@ import AppHeader from '../../../components/AppHeader';
 import PopularService from '../../../components/PopularService';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppText';
-import { AppImages } from '../../../assets/images';
+import { getImageUrl } from '../../../redux/constant';
+import { useNavigation } from '@react-navigation/native';
 import {
   AppColors,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
+import {
+  useLazyGetAllServicesQuery,
+} from '../../../redux/services/mainService';
+import Loader from '../../../components/Loader';
 
-const topTabsData = [
-  { id: 0, title: 'All' },
-  { id: 1, title: 'Tax Preparation & Filing' },
-  { id: 2, title: 'Financial Consulting' },
-  { id: 3, title: 'Bookkeeping & Accounting' },
-];
+const Services = ({ route }) => {
+  const navigation = useNavigation();
+  const categoryId = route?.params?.categoryId;
 
-const popularServices = [
-  {
-    id: '1',
-    categoryId: 1,
-    image: AppImages.service_one,
-    title: 'Individual Tax Filing',
-    rating: '4.5',
-    price: [
-      { id: 1, price: 200 },
-      { id: 2, price: 200 },
-    ],
-  },
-  {
-    id: '2',
-    categoryId: 2,
-    image: AppImages.service_two,
-    title: 'NTN Registration',
-    rating: '4.5',
-    price: [
-      { id: 1, price: 200 },
-      { id: 2, price: 200 },
-    ],
-  },
-  {
-    id: '3',
-    categoryId: 3,
-    image: AppImages.service_three,
-    title: 'Business Incorporation',
-    rating: '4.5',
-    price: [
-      { id: 1, price: 200 },
-      { id: 2, price: 200 },
-    ],
-  },
-];
+  const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
+    useLazyGetAllServicesQuery();
 
-const Services = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
+  console.log("servicesDatacategoryId", servicesData);
 
-  const filteredServices = useMemo(() => {
-    if (selectedTab === 0) return popularServices;
-    return popularServices.filter(item => item.categoryId === selectedTab);
-  }, [selectedTab]);
-
-  const renderTab = useCallback(
-    ({ item }) => {
-      const isActive = selectedTab === item.id;
-
-      return (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setSelectedTab(item.id)}
-        >
-          <LinearGradient
-            colors={
-              isActive
-                ? ['#003C46', '#007C91']
-                : [AppColors.app_light, AppColors.app_light]
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.tab}
-          >
-            <AppText
-              title={item.title}
-              textSize={1.6}
-              textFontWeight
-              textColor={isActive ? AppColors.WHITE : AppColors.ThemeColor}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-      );
-    },
-    [selectedTab],
-  );
+  useEffect(() => {
+    getAllServices({ categoryId });
+  }, [categoryId]);
 
   const renderService = useCallback(
     ({ item }) => (
       <PopularService
-        title={item.title}
-        image={item.image}
+        title={item.name}
+        image={{ uri: getImageUrl(item.cover, 'cover') }}
         price={item.price}
-        rating={item.rating}
+        rating={item.averageRating}
+        onPress={() =>
+          navigation.navigate('ServiceDetails', {
+            serviceId: item?._id,
+            service: item,
+          })
+        }
       />
     ),
-    [],
+    [navigation],
   );
 
   return (
@@ -126,31 +67,26 @@ const Services = () => {
             </TouchableOpacity>
           }
         />
-
-        <FlatList
-          data={topTabsData}
-          horizontal
-          keyExtractor={item => item.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsContainer}
-          renderItem={renderTab}
-        />
       </View>
 
       <LineBreak space={2} />
 
       <View style={styles.servicesWrapper}>
-        <FlatList
-          data={filteredServices}
-          numColumns={2}
-          keyExtractor={item => item.id}
-          columnWrapperStyle={styles.columnWrapper}
-          ItemSeparatorComponent={<LineBreak space={2} />}
-          renderItem={renderService}
-          ListEmptyComponent={
-            <AppText title="No services found" textAlignment="center" />
-          }
-        />
+        {serviceLoader ? (
+          <Loader color={AppColors.ThemeColor} />
+        ) : (
+          <FlatList
+            data={servicesData?.services || []}
+            numColumns={2}
+            keyExtractor={item => String(item._id)}
+            columnWrapperStyle={styles.columnWrapper}
+            ItemSeparatorComponent={<LineBreak space={2} />}
+            renderItem={renderService}
+            ListEmptyComponent={
+              <AppText title="No services found" textAlignment="center" />
+            }
+          />
+        )}
       </View>
     </Container>
   );
@@ -180,7 +116,6 @@ const styles = StyleSheet.create({
   },
   servicesWrapper: {
     paddingHorizontal: responsiveWidth(5),
-    // alignItems: 'center',
   },
   columnWrapper: {
     gap: 12,

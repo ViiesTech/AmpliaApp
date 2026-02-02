@@ -5,7 +5,9 @@ import { AppImages } from '../assets/images'
 import { AppColors, responsiveWidth } from '../utils'
 import AppText from './AppText'
 
-const OurConsultants = () => {
+import { getImageUrl } from '../redux/constant'
+
+const OurConsultants = ({ name, profile }: { name?: string, profile?: string }) => {
     return (
         <View
             style={{
@@ -15,8 +17,9 @@ const OurConsultants = () => {
                 borderRadius: responsiveWidth(10),
                 backgroundColor: AppColors.app_light,
                 paddingRight: responsiveWidth(4),
+                minWidth: responsiveWidth(42),
             }}>
-            <Image source={AppImages.consultant} style={{
+            <Image source={profile ? { uri: getImageUrl(profile, 'profile') } : AppImages.consultant} style={{
                 width: 50,
                 height: 50,
                 borderRadius: 100,
@@ -26,7 +29,7 @@ const OurConsultants = () => {
             }} />
             <View>
                 <AppText
-                    title={'Emma Thompson'}
+                    title={name || 'Emma Thompson'}
                     textSize={1.5}
                     textColor={AppColors.ThemeColor}
                     textFontWeight

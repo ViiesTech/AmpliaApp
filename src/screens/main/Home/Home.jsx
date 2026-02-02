@@ -26,6 +26,7 @@ import {
   useLazyGetAllCategoriesQuery,
   useLazyGetAllServicesQuery,
   useLazyGetBookingsQuery,
+  useLazyGetAllSubAdminsQuery,
 } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 
@@ -43,14 +44,17 @@ const Home = () => {
   const [getBookings, { data: bookingsData, isLoading: bookingsLoader }] =
     useLazyGetBookingsQuery();
 
+  const [getAllSubAdmins, { data: subAdminsData }] = useLazyGetAllSubAdminsQuery();
+
 
   useEffect(() => {
     getAllCategories();
     getAllServices();
+    getAllSubAdmins();
     if (user?._id) {
       _getBookings(user._id);
     }
-  }, [getAllCategories, getAllServices, user?._id]);
+  }, [getAllCategories, getAllServices, getAllSubAdmins, user?._id]);
 
   const _getBookings = async userId => {
     try {
@@ -66,7 +70,7 @@ const Home = () => {
         title={item?.name}
 
         icon={{ uri: getImageUrl(item?.cover, 'cover') }}
-        onPress={() => navigation.navigate('Services')}
+        onPress={() => navigation.navigate('Services', { categoryId: item?._id })}
       />
     ),
     [navigation],
@@ -124,14 +128,13 @@ const Home = () => {
 
         <LineBreak space={3} />
 
+
         {/* Service Categories Header */}
         <View style={styles.rowBetween}>
           <AppText title="Service Category" textSize={2.4} textFontWeight />
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate('ServiceCategories', {
-                data: categoriesData?.categories || [],
-              })
+              navigation.navigate('Services')
             }
           >
             <AppText
@@ -249,12 +252,12 @@ const Home = () => {
         <LineBreak space={2} />
 
         <FlatList
-          data={[1, 2, 3, 4]}
-          keyExtractor={item => String(item)}
-          numColumns={2}
-          scrollEnabled={false}
-          columnWrapperStyle={styles.consultantRow}
-          renderItem={() => <OurConsultants />}
+          data={subAdminsData?.subAdmins || []}
+          keyExtractor={item => String(item?._id)}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.consultantRow}
+          renderItem={({ item }) => <OurConsultants name={item?.firstName} profile={item?.profile} />}
         />
 
         <LineBreak space={3} />
@@ -289,6 +292,6 @@ const styles = StyleSheet.create({
   },
   consultantRow: {
     gap: responsiveWidth(3),
-    marginBottom: 10,
+    paddingBottom: 10,
   },
 });

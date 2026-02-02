@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
@@ -27,7 +28,6 @@ const ServiceCategories = ({ route }) => {
   const navigation = useNavigation();
   const [getAllCategories, { isLoading }] = useLazyGetAllCategoriesQuery();
   const [data, setData] = useState([]);
-  const categories = route?.params?.data?.categories ?? [];
 
   useEffect(() => {
     _getAllCategories();
@@ -43,7 +43,6 @@ const ServiceCategories = ({ route }) => {
       ?.catch(err => console.log('err in _getAllCategories', err));
   };
 
-  console.log('categories:-', categories);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -67,7 +66,7 @@ const ServiceCategories = ({ route }) => {
           <TouchableOpacity
             accessibilityRole="button"
             onPress={() =>
-              navigation.navigate('Services', { categoryId: item?.id })
+              navigation.navigate('Services', { categoryId: item?._id })
             }
           >
             <Icon
@@ -89,7 +88,7 @@ const ServiceCategories = ({ route }) => {
 
         <FlatList
           data={data}
-          keyExtractor={item => String(item.id)}
+          keyExtractor={item => String(item._id)}
           renderItem={renderItem}
           ItemSeparatorComponent={() => <LineBreak space={2} />}
           ListEmptyComponent={

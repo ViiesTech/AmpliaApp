@@ -219,6 +219,7 @@ const ServiceDetails = props => {
       serviceId: serviceId,
       selectedPlan: selectedPlan,
       serviceName: data?.name,
+      isScheduled: false,
     });
   };
 
@@ -227,6 +228,7 @@ const ServiceDetails = props => {
       serviceId: serviceId,
       selectedPlan: selectedPlan,
       serviceName: data?.name,
+      isScheduled: true,
     });
   };
 

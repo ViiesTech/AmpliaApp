@@ -78,6 +78,12 @@ export const mainApis = createApi({
         body: data,
       }),
     }),
+    getAllSubAdmins: builder.query({
+      query: () => ({
+        url: endpoints.GET_ALL_SUBADMINS,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 export const {
@@ -90,4 +96,5 @@ export const {
   useLazyGetSingleServiceQuery,
   useLazyGetBookingsQuery,
   useCreateBookingMutation,
+  useLazyGetAllSubAdminsQuery,
 } = mainApis;
