@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
+import { getImageUrl } from '../../../redux/constant';
 
 import Container from '../../../components/Container';
 import AppHeader from '../../../components/AppHeader';
@@ -49,7 +50,7 @@ const ServiceCategories = ({ route }) => {
       <View style={styles.card}>
         <View style={styles.iconWrapper}>
           <Image
-            source={{ uri: item?.cover }}
+            source={{ uri: getImageUrl(item?.cover, 'cover') }}
             resizeMode="cover"
             style={styles.image}
           />

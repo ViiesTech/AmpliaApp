@@ -1,4 +1,26 @@
 export const BASE_URL = 'https://apiforapp.link/Amplia/';
+export const IMAGE_BASE_URL = `${BASE_URL}uploads/`;
+
+export const getImageUrl = (filename, type) => {
+  if (!filename) return '';
+  if (typeof filename !== 'string') return '';
+  if (filename.startsWith('http')) return filename;
+
+  switch (type) {
+    case 'cover':
+      return `${IMAGE_BASE_URL}cover/${filename}`;
+    case 'icon':
+      return `${IMAGE_BASE_URL}category/icons/${filename}`;
+    case 'profile':
+      return `${IMAGE_BASE_URL}profile/${filename}`;
+    case 'file':
+      return `${IMAGE_BASE_URL}file/${filename}`;
+    case 'media':
+      return `${IMAGE_BASE_URL}message/media/${filename}`;
+    default:
+      return `${IMAGE_BASE_URL}${filename}`;
+  }
+};
 
 export const endpoints = {
   REGISTER: 'auth/signup/requestOtp',

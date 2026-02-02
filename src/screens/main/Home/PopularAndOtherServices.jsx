@@ -9,6 +9,7 @@ import PopularService from '../../../components/PopularService';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppText';
 import { useNavigation } from '@react-navigation/native';
+import { getImageUrl } from '../../../redux/constant';
 
 const popularServices = [
   {
@@ -59,11 +60,12 @@ const PopularAndOtherServices = ({ route }) => {
           renderItem={({ item }) => (
             <PopularService
               title={item.name}
-              image={{ uri: item.cover }}
-              price={item.plans}
+              image={{ uri: getImageUrl(item.cover, 'cover') }}
+              price={item.price}
               onPress={() =>
                 nav.navigate('ServiceDetails', {
                   serviceId: item?._id,
+                  service: item,
                 })
               }
               rating={item.averageRating}

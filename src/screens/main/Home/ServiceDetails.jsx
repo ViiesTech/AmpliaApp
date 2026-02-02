@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Icon from 'react-native-vector-icons/Feather';
 
 import Container from '../../../components/Container';
 import BackIcon from '../../../components/BackIcon';
@@ -21,6 +22,7 @@ import RatingWithProgressbar from '../../../components/RatingWithProgressbar';
 import { AppImages } from '../../../assets/images';
 import { AppIcons } from '../../../assets/icons';
 import SVGXml from '../../../assets/icons/SVGXML';
+import { getImageUrl } from '../../../redux/constant';
 
 import {
   AppColors,
@@ -78,15 +80,27 @@ const reviewsData = [
 
 const ServiceDetails = props => {
   const navigation = useNavigation();
+  const passedService = props?.route?.params?.service;
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [plans, setPlans] = useState([]);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(passedService || null);
   let serviceId = props?.route?.params?.serviceId;
 
   const [getSingleService, { isLoading }] = useLazyGetSingleServiceQuery();
 
   useEffect(() => {
+    if (passedService) {
+      const formattedPlans = [{
+        id: 1,
+        name: passedService?.plans || 'Standard',
+        price: passedService?.price || 0,
+        title: `${capitalizeFirstLetter(passedService?.plans || 'Standard')} Plan $${passedService?.price || 0}`,
+        description: passedService?.description || '',
+      }];
+      setPlans(formattedPlans);
+      setSelectedPlan(formattedPlans?.[0]);
+    }
     _getSingleService(serviceId);
   }, [serviceId]);
 
@@ -97,14 +111,13 @@ const ServiceDetails = props => {
         console.log('res in _getSingleService', res?.service);
         setData(res?.service);
 
-        const formattedPlans =
-          res?.service?.plans?.map((item, index) => ({
-            id: index + 1,
-            name: item?.name,
-            price: item?.price,
-            title: `${item?.name} $${item?.price}`,
-            description: item?.description,
-          })) || [];
+        const formattedPlans = [{
+          id: 1,
+          name: res?.service?.plans || 'Standard',
+          price: res?.service?.price || 0,
+          title: `${capitalizeFirstLetter(res?.service?.plans || 'Standard')} Plan $${res?.service?.price || 0}`,
+          description: res?.service?.description || '',
+        }];
 
         setPlans(formattedPlans);
         setSelectedPlan(formattedPlans?.[0]);
@@ -140,10 +153,10 @@ const ServiceDetails = props => {
     [selectedTab],
   );
 
-  const renderStatItem = ({ item }) => (
+  const renderFeatureItem = ({ item }) => (
     <View style={styles.statRow}>
-      <AppText title={item.title} textSize={1.8} textColor={AppColors.GRAY} />
-      <AppText title={item.option} textSize={1.8} textColor={AppColors.GRAY} />
+      <AppText title={item} textSize={1.8} textColor={AppColors.GRAY} />
+      <Icon name="check-circle" size={18} color={AppColors.ThemeColor} />
     </View>
   );
 
@@ -217,7 +230,7 @@ const ServiceDetails = props => {
     });
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <View style={styles.loaderContainer}>
         <Loader color={AppColors.ThemeColor} />
@@ -232,7 +245,7 @@ const ServiceDetails = props => {
       <Container>
         {/* HEADER */}
         <ImageBackground
-          source={data?.cover ? { uri: data?.cover } : AppImages.service_bg}
+          source={data?.cover ? { uri: getImageUrl(data?.cover, 'cover') } : AppImages.service_bg}
           imageStyle={styles.headerRadius}
           style={styles.header}
         >
@@ -277,12 +290,16 @@ const ServiceDetails = props => {
             showsHorizontalScrollIndicator={false}
           />
 
+          <LineBreak space={2} />
+          <AppText title="Service Features" textSize={2} textFontWeight />
+          <LineBreak space={1} />
           <View style={styles.statsBox}>
             <FlatList
-              data={statsData}
+              data={data?.features || []}
               scrollEnabled={false}
-              keyExtractor={item => item.id.toString()}
-              renderItem={renderStatItem}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderFeatureItem}
+              ListEmptyComponent={<AppText title="No features available" textSize={1.6} textColor={AppColors.GRAY} />}
             />
           </View>
 

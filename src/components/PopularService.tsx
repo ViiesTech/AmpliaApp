@@ -52,7 +52,7 @@ const PopularService = ({ image, title, rating, price, onPress }: Props) => {
                 <LineBreak space={0.5} />
 
                 <AppText
-                    title={`$${price?.[0]?.price?.toFixed(2)}`} // ?.toFixed(0)
+                    title={`$${Number(price).toFixed(2)}`}
                     textSize={1.8}
                     textColor={AppColors.GRAY}
                     textFontWeight

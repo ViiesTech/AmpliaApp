@@ -14,6 +14,7 @@ import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import SVGXml from '../../../assets/icons/SVGXML';
 import { AppIcons } from '../../../assets/icons';
+import { getImageUrl } from '../../../redux/constant';
 import AppButton from '../../../components/AppButton';
 import {
   useDeleteUserMutation,
@@ -111,13 +112,13 @@ const MyAccount = () => {
         <AppHeader
           onBackPress={true}
           heading={'My Account'}
-          // rightIcon={
-          //   <Entypo
-          //     name="dots-three-vertical"
-          //     size={responsiveFontSize(2)}
-          //     color={AppColors.ThemeColor}
-          //   />
-          // }
+        // rightIcon={
+        //   <Entypo
+        //     name="dots-three-vertical"
+        //     size={responsiveFontSize(2)}
+        //     color={AppColors.ThemeColor}
+        //   />
+        // }
         />
         {isLoading ? (
           <View style={{ marginVertical: responsiveHeight(4) }}>
@@ -139,7 +140,7 @@ const MyAccount = () => {
               <Image
                 source={
                   userData?.user?.profile
-                    ? { uri: userData?.user.profile }
+                    ? { uri: getImageUrl(userData?.user.profile, 'profile') }
                     : AppImages.userprofile
                 }
                 style={{
@@ -151,9 +152,8 @@ const MyAccount = () => {
               />
               <View>
                 <AppText
-                  title={`${userData?.user.firstName || ''} ${
-                    userData?.user.lastName || ''
-                  }`}
+                  title={`${userData?.user.firstName || ''} ${userData?.user.lastName || ''
+                    }`}
                   textSize={2}
                   textColor={AppColors.ThemeColor}
                   textFontWeight

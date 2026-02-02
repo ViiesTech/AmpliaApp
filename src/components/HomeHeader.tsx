@@ -7,6 +7,7 @@ import AppText from './AppText'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
+import { getImageUrl } from '../redux/constant'
 
 const HomeHeader = () => {
     const { user } = useSelector(state => state.persistedData)
@@ -14,7 +15,7 @@ const HomeHeader = () => {
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', gap: responsiveWidth(3), alignItems: 'center' }}>
-                <Image style={{ width: 40, height: 40, borderRadius: 40, backgroundColor: AppColors.light_themeColor, }} source={user?.profile ? { uri: user?.profile } : AppImages.userprofile} />
+                <Image style={{ width: 40, height: 40, borderRadius: 40, backgroundColor: AppColors.light_themeColor, }} source={user?.profile ? { uri: getImageUrl(user?.profile, 'profile') } : AppImages.userprofile} />
                 <View>
                     <AppText
                         title={`${user?.firstName + ' ' + user?.lastName + ' '}`}

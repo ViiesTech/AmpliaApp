@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { getImageUrl } from '../../../redux/constant';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import Container from '../../../components/Container';
@@ -42,6 +43,7 @@ const Home = () => {
   const [getBookings, { data: bookingsData, isLoading: bookingsLoader }] =
     useLazyGetBookingsQuery();
 
+
   useEffect(() => {
     getAllCategories();
     getAllServices();
@@ -63,7 +65,7 @@ const Home = () => {
       <ServiceCategory
         title={item?.name}
 
-        icon={{ uri: item?.cover }}
+        icon={{ uri: getImageUrl(item?.cover, 'cover') }}
         onPress={() => navigation.navigate('Services')}
       />
     ),
@@ -75,12 +77,13 @@ const Home = () => {
       return (
         <PopularService
           title={item?.name}
-          image={{ uri: item?.cover }}
-          price={item?.plans}
+          image={{ uri: getImageUrl(item?.cover, 'cover') }}
+          price={item?.price}
           rating={item?.averageRating}
           onPress={() =>
             navigation.navigate('ServiceDetails', {
               serviceId: item?._id,
+              service: item,
             })
           }
         />
