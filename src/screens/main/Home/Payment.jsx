@@ -81,6 +81,9 @@ const Payment = props => {
       startDate: selectedRange?.start || new Date().toISOString(),
       endDate: selectedRange?.end || new Date().toISOString(),
     };
+
+    console.log('payload:-', payload);
+
     await createBooking(payload)
       ?.unwrap()
       ?.then(res => {

@@ -27,8 +27,8 @@ const BookingChatStatus = ({ data, status }: Prop) => {
             status === 'new'
               ? AppColors.lighttest_yellow
               : status === 'Completed'
-              ? AppColors.lighttest_green
-              : AppColors.lighttest_gray,
+                ? AppColors.lighttest_green
+                : AppColors.lighttest_gray,
           paddingVertical: responsiveHeight(0.5),
           borderRadius: 100,
           alignItems: 'center',
@@ -41,8 +41,8 @@ const BookingChatStatus = ({ data, status }: Prop) => {
             status === 'new'
               ? AppColors.dark_yellow
               : status === 'Completed'
-              ? AppColors.darkGreen
-              : AppColors.darkest
+                ? AppColors.darkGreen
+                : AppColors.darkest
           }
         />
       </View>
@@ -53,8 +53,8 @@ const BookingChatStatus = ({ data, status }: Prop) => {
             status === 'new'
               ? AppColors.lighttest_yellow
               : status === 'Completed'
-              ? AppColors.lighttest_green
-              : AppColors.lighttest_gray,
+                ? AppColors.lighttest_green
+                : AppColors.lighttest_gray,
           paddingVertical: responsiveHeight(2),
           borderRadius: 15,
           paddingHorizontal: responsiveWidth(4),
@@ -82,12 +82,14 @@ const BookingChatStatus = ({ data, status }: Prop) => {
             />
           </View>
           <AppText
-            title={'ID#54654'}
+            title={data?.status}
             textSize={1.8}
             textColor={AppColors.ThemeColor}
           />
         </View>
+
         <LineBreak space={1} />
+
         <AppText
           title={
             'Lorem ipsum dolor sit amet, consectetur adipicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Lorem amet eiusmod tempor incididunt.'
@@ -96,7 +98,9 @@ const BookingChatStatus = ({ data, status }: Prop) => {
           textColor={AppColors.ThemeColor}
         />
       </View>
+
       <LineBreak space={1} />
+
       <View style={styles.container}>
         <View
           style={{

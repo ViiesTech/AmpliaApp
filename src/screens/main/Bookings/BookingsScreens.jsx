@@ -49,7 +49,7 @@ const BookingsScreens = () => {
     try {
       const res = await getBookings(userId).unwrap();
       const bookings = res?.bookings || [];
-      const active = bookings.filter(item => item.status === 'new');
+      const active = bookings.filter(item => item.status === 'new' || item.status === 'active');
       const schedule = bookings.filter(item => item.status === 'scheduled');
       const completed = bookings.filter(item => item.status === 'completed');
 
@@ -116,14 +116,16 @@ const BookingsScreens = () => {
       }
     };
 
+    console.log("item", item.service)
     return (
       <ManageBookingsCard
         title={item?.service?.name}
         subTitle={item?.service?.plan?.name}
         status={item.status}
-        fromDate={item?.scheduledDate}
-        toDate={item?.scheduledDate}
+        fromDate={item?.startDate}
+        toDate={item?.endDate}
         amount={item?.service?.plan?.price}
+        serviceImage={item?.service?.cover}
         navigation={navigation}
         OnPressCard={onPress}
       />

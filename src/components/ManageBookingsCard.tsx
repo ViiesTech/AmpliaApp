@@ -14,6 +14,7 @@ import SVGXml from '../assets/icons/SVGXML';
 import { AppIcons } from '../assets/icons';
 import AppButton from './AppButton';
 import moment from 'moment';
+import { getImageUrl } from '../redux/constant';
 
 type Prop = {
   title?: string;
@@ -24,6 +25,7 @@ type Prop = {
   toDate?: any;
   amount?: any;
   navigation?: any;
+  serviceImage?: any;
 };
 
 const ManageBookingsCard = ({
@@ -35,6 +37,7 @@ const ManageBookingsCard = ({
   amount,
   navigation,
   OnPressCard,
+  serviceImage
 }: Prop) => {
   return (
     <TouchableOpacity
@@ -55,7 +58,7 @@ const ManageBookingsCard = ({
         }}
       >
         <Image
-          source={AppImages.service_one}
+          source={{ uri: getImageUrl(serviceImage, 'cover') }}
           style={{ width: 45, height: 45, borderRadius: 10 }}
         />
         <View>
@@ -68,7 +71,7 @@ const ManageBookingsCard = ({
           <AppText
             textColor={AppColors.ThemeColor}
             textSize={1.5}
-            title={`${capitalizeFirstLetter(subTitle)} Plan ID#A23456`}
+            title={`${capitalizeFirstLetter(subTitle)} Plan`}
           />
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -78,8 +81,8 @@ const ManageBookingsCard = ({
                 status === 'new'
                   ? AppColors.lighttest_yellow
                   : status === 'Completed'
-                  ? AppColors.lighttest_green
-                  : AppColors.lighttest_gray,
+                    ? AppColors.lighttest_green
+                    : AppColors.lighttest_gray,
               paddingHorizontal: responsiveWidth(3),
               paddingVertical: responsiveHeight(0.5),
               borderRadius: 100,
@@ -94,8 +97,8 @@ const ManageBookingsCard = ({
                 status === 'new'
                   ? AppColors.dark_yellow
                   : status === 'Completed'
-                  ? AppColors.darkGreen
-                  : AppColors.darkest
+                    ? AppColors.darkGreen
+                    : AppColors.darkest
               }
             />
           </View>

@@ -63,7 +63,6 @@ export const mainApis = createApi({
     }),
     getBookings: builder.query({
       query: userId => {
-        console.log('getBookings userId:-', userId);
 
         return {
           url: endpoints.GET_BOOKINGS(userId),
@@ -73,6 +72,8 @@ export const mainApis = createApi({
     }),
     createBooking: builder.mutation({
       query: data => ({
+
+
         url: endpoints.createBooking,
         method: 'POST',
         body: data,
