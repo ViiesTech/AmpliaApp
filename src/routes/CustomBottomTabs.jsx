@@ -53,42 +53,87 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
             : options.title !== undefined
-            ? options.title
-            : route.name;
+              ? options.title
+              : route.name;
 
         const isFocused = state.index === index;
         const iconName = screens[index].icon;
 
         return (
-          <TouchableOpacity
-            key={label}
-            accessibilityRole="button"
-            onPress={() => navigation.navigate(route.name)}
-            style={styles.tabButton}
-            activeOpacity={0.9}
-          >
-            {isFocused ? (
-              <LinearGradient
-                colors={['#007B7F', '#004C5C']}
-                style={styles.activeTab}
-              >
-                <Icon
-                  name={iconName}
-                  size={responsiveFontSize(3)}
-                  color="#fff"
-                />
-                <Text style={styles.activeText}>{label}</Text>
-              </LinearGradient>
-            ) : (
-              <View style={styles.inactiveTab}>
-                <Icon
-                  name={iconName}
-                  size={responsiveFontSize(3)}
-                  color="#A0AEB8"
-                />
-              </View>
-            )}
-          </TouchableOpacity>
+          <>
+            {
+              isFocused ? (
+                <LinearGradient
+                  colors={['#007B7F', '#004C5C']}
+                  style={{ borderRadius: 25, }}
+                >
+                  <TouchableOpacity
+                    key={label}
+                    accessibilityRole="button"
+                    onPress={() => navigation.navigate(route.name)}
+                    style={styles.activeTab}
+                    // style={styles.tabButton}
+                    activeOpacity={0.9}
+                  >
+                    <Icon
+                      name={iconName}
+                      size={responsiveFontSize(3)}
+                      color="#fff"
+                    />
+                    <Text style={styles.activeText}>{label}</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              ) : (
+                <View >
+                  <TouchableOpacity
+                    key={label}
+                    accessibilityRole="button"
+                    onPress={() => navigation.navigate(route.name)}
+                    // style={styles.tabButton}
+                    style={styles.inactiveTab}
+                    activeOpacity={0.9}
+                  >
+                    <Icon
+                      name={iconName}
+                      size={responsiveFontSize(3)}
+                      color="#A0AEB8"
+                    />
+                  </TouchableOpacity>
+                </View>
+              )
+            }
+          </>
+
+
+          // <TouchableOpacity
+          //   key={label}
+          //   accessibilityRole="button"
+          //   onPress={() => navigation.navigate(route.name)}
+          //   style={styles.tabButton}
+          //   activeOpacity={0.9}
+          // >
+          //   {isFocused ? (
+          //     <LinearGradient
+          //       colors={['#007B7F', '#004C5C']}
+          //       style={styles.activeTab}
+          //     >
+          //       <Icon
+          //         name={iconName}
+          //         size={responsiveFontSize(3)}
+          //         color="#fff"
+          //       />
+          //       <Text style={styles.activeText}>{label}</Text>
+          //     </LinearGradient>
+          //   ) : (
+          //     <View style={styles.inactiveTab}>
+          //       <Icon
+          //         name={iconName}
+          //         size={responsiveFontSize(3)}
+          //         color="#A0AEB8"
+          //       />
+          //     </View>
+          //   )}
+          // </TouchableOpacity>
         );
       })}
     </View>
@@ -131,10 +176,10 @@ const styles = StyleSheet.create({
   activeTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: responsiveWidth(2),
+    paddingHorizontal: responsiveWidth(2.5),
     gap: 5,
-    paddingVertical: responsiveHeight(1.5),
-    borderRadius: 25,
+    paddingVertical: responsiveHeight(1),
+
   },
   inactiveTab: {
     width: 40,

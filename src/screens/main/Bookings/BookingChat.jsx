@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { View, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView } from 'react-native';
 import Container from '../../../components/Container';
 import LiveChatScreen from '../../../components/LiveChatScreen';
 import ChatInput from '../../../components/ChatInput';
@@ -15,7 +15,8 @@ import { useSelector } from 'react-redux';
 import { BASE_URL } from '../../../redux/constant';
 
 // Adjust socket url if needed (typically base url without /api)
-const SOCKET_URL = 'http://localhost:4006/'; // Or extract from BASE_URL
+// const SOCKET_URL = 'http://localhost:4006/'; // Or extract from BASE_URL
+const SOCKET_URL = 'https://apiforapp.link/Amplia'; // Or extract from BASE_URL
 
 const BookingChat = props => {
   const [messages, setMessages] = useState([]);
@@ -49,7 +50,10 @@ const BookingChat = props => {
         setMessages(formattedMessages);
 
         // Connect Socket
-        socketRef.current = io(SOCKET_URL);
+        socketRef.current = io("https://apiforapp.link", {
+          path: "/socket.io",
+          transports: ["websocket"],
+        });;
         socketRef.current.on('connect', () => {
           console.log('Socket connected');
           socketRef.current.emit('join_room', chat._id);
@@ -131,7 +135,8 @@ const BookingChat = props => {
   }
 
   return (
-    <Container scrollEnabled={false} safeAreaViewStyle={{ flex: 1 }}>
+    <Container scrollEnabled={true} safeAreaViewStyle={{ flex: 1 }}>
+
       <View style={{ flex: 1, marginHorizontal: responsiveWidth(5) }}>
         <BookingChatHeader />
         <BookingChatStatus data={data} status={data.status} />
@@ -145,6 +150,10 @@ const BookingChat = props => {
           paddingBottom: 10,
         }}
       >
+      </View>
+      <LineBreak space={1} />
+
+      <View style={{ marginHorizontal: responsiveWidth(5) }}>
         <ChatInput
           value={inputText}
           onChangeText={setInputText}
@@ -152,7 +161,7 @@ const BookingChat = props => {
           sendPress={handleSendMessage}
         />
       </View>
-      <LineBreak space={1} />
+
     </Container>
   );
 };

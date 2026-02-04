@@ -60,24 +60,26 @@ const MyFiles = () => {
     const isActive = selectedTab === item.title;
 
     return (
-      <TouchableOpacity onPress={() => onSelectYear(item.title)}>
-        <LinearGradient
-          colors={
-            isActive
-              ? ['#003C46', '#007C91']
-              : [AppColors.app_light, AppColors.app_light]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.tab}
-        >
+      <LinearGradient
+        colors={
+          isActive
+            ? ['#003C46', '#007C91']
+            : [AppColors.app_light, AppColors.app_light]
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{
+          borderRadius: 300,
+        }}
+      >
+        <TouchableOpacity onPress={() => onSelectYear(item.title)} style={styles.tab}>
           <AppText
             title={item.title}
             textSize={1.6}
             textColor={isActive ? AppColors.WHITE : AppColors.ThemeColor}
           />
-        </LinearGradient>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </LinearGradient>
     );
   };
 

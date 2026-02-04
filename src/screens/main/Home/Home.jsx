@@ -78,6 +78,8 @@ const Home = () => {
 
   const renderService = useCallback(
     ({ item }) => {
+
+      console.log(getImageUrl(item?.cover, 'cover'))
       return (
         <PopularService
           title={item?.name}

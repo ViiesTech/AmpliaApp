@@ -40,17 +40,18 @@ const AppButton = ({
   indicatorColor
 }: props) => {
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={activeOpacity || 0.8}
+
+    <LinearGradient
+      colors={btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
       style={{
         borderRadius: borderRadius ?? 100,
       }}
     >
-      <LinearGradient
-        colors={btnBackgroundColor ? [AppColors.WHITE, AppColors.WHITE] : ['#003C46', '#007C91']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={activeOpacity || 0.8}
         style={{
           alignItems: 'center',
           justifyContent: 'center',
@@ -61,6 +62,8 @@ const AppButton = ({
           borderColor: borderColor ?? 'transparent',
           flexDirection: 'row',
           backgroundColor: btnBackgroundColor,
+          alignSelf: 'center'
+
         }}
       >
         {indicator ?
@@ -76,8 +79,8 @@ const AppButton = ({
             />
           </>
         }
-      </LinearGradient>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </LinearGradient>
 
   );
 };

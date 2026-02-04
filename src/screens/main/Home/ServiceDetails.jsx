@@ -362,6 +362,7 @@ const ServiceDetails = props => {
           textColor={AppColors.ThemeColor}
           btnBackgroundColor={AppColors.WHITE}
           handlePress={handleScheduleService}
+          btnWidth={90}
         />
       </View>
 

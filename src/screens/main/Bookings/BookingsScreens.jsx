@@ -79,31 +79,35 @@ const BookingsScreens = () => {
 
   const renderTabItem = ({ item, index }) => {
     return (
-      <TouchableOpacity onPress={() => setSelectedTab(index)}>
-        <LinearGradient
-          colors={
-            selectedTab === index
-              ? ['#003C46', '#007C91']
-              : [AppColors.app_light, AppColors.app_light]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            paddingHorizontal: responsiveWidth(7.5),
-            paddingVertical: responsiveHeight(0.6),
-            borderRadius: 100,
-            borderWidth: 2,
-            borderColor:
-              selectedTab === index ? AppColors.ThemeColor : AppColors.LIGHTGRAY,
-          }}
-        >
+      <LinearGradient
+        colors={
+          selectedTab === index
+            ? ['#003C46', '#007C91']
+            : [AppColors.app_light, AppColors.app_light]
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{
+          borderRadius: 300,
+        }}
+
+      >
+        <TouchableOpacity onPress={() => setSelectedTab(index)} style={{
+          paddingHorizontal: responsiveWidth(7.5),
+          paddingVertical: responsiveHeight(0.6),
+          borderRadius: 300,
+          borderWidth: 2,
+          borderColor:
+            selectedTab === index ? AppColors.ThemeColor : AppColors.LIGHTGRAY,
+
+        }}>
           <AppText
             textColor={selectedTab === index ? AppColors.WHITE : AppColors.GRAY}
             textSize={1.6}
             title={item.title}
           />
-        </LinearGradient>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </LinearGradient>
     );
   };
 

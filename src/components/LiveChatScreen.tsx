@@ -45,7 +45,7 @@ const LiveChatScreen = ({ data = [] }: any) => {
                 renderItem={renderMessage}
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
-                inverted
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -54,6 +54,7 @@ const LiveChatScreen = ({ data = [] }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        height: responsiveHeight(60)
     },
     contentContainer: {
         paddingVertical: 10,

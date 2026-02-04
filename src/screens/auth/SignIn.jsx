@@ -184,6 +184,7 @@ const SignIn = () => {
           indicator={isLoading}
           title="Sign In"
           handlePress={onLoginPress}
+
         />
 
         <LineBreak space={1} />
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     height: responsiveHeight(20),
   },
   checkbox: {
-    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
   rememberRow: {
     flexDirection: 'row',
