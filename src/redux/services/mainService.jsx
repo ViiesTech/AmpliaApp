@@ -85,6 +85,24 @@ export const mainApis = createApi({
         method: 'GET',
       }),
     }),
+    // Chat Endpoints
+    createChat: builder.mutation({
+      query: (data) => ({
+        url: 'chat',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    sendMessage: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `chat/${id}`,
+        method: 'POST',
+        body: data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      }),
+    }),
   }),
 });
 export const {
@@ -98,4 +116,6 @@ export const {
   useLazyGetBookingsQuery,
   useCreateBookingMutation,
   useLazyGetAllSubAdminsQuery,
+  useCreateChatMutation,
+  useSendMessageMutation,
 } = mainApis;
