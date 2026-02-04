@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, Fragment } from 'react';
-import { View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -17,6 +17,7 @@ import {
   responsiveWidth,
   ShowToast,
 } from '../../../utils';
+import { getImageUrl } from '../../../redux/constant';
 
 import { useLazyGetFilesQuery } from '../../../redux/services/mainService';
 
@@ -121,7 +122,17 @@ const MyFiles = () => {
               keyExtractor={(item, index) =>
                 item?._id ? item._id.toString() : `file-${index}`
               }
-              renderItem={({ item }) => <PdfCard title={item.name} />}
+              renderItem={({ item }) => (
+                <PdfCard
+                  title={item.name}
+                  onPress={() => {
+                    const url = getImageUrl(item.url, 'file');
+                    Linking.openURL(url).catch(err =>
+                      console.error("Couldn't load page", err),
+                    );
+                  }}
+                />
+              )}
               ListEmptyComponent={renderEmptyComponent}
               columnWrapperStyle={styles.columnWrapper}
               ItemSeparatorComponent={() => <LineBreak space={2} />}

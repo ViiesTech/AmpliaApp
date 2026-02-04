@@ -7,12 +7,17 @@ import AppText from './AppText';
 
 type Props = {
   title?: string;
+  onPress?: () => void;
   onDownloadPress?: () => void;
 };
 
-const PdfCard = ({ title, onDownloadPress }: Props) => {
+const PdfCard = ({ title, onPress, onDownloadPress }: Props) => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={styles.container}
+    >
       <Image
         source={AppImages.pdf}
         style={styles.pdfImage}
@@ -46,7 +51,7 @@ const PdfCard = ({ title, onDownloadPress }: Props) => {
           />
         </TouchableOpacity> */}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
