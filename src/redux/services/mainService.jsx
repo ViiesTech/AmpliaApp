@@ -103,6 +103,19 @@ export const mainApis = createApi({
         }
       }),
     }),
+    createRating: builder.mutation({
+      query: (data) => ({
+        url: endpoints.CREATE_RATING,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getRatings: builder.query({
+      query: (serviceId) => ({
+        url: endpoints.GET_RATINGS(serviceId),
+        method: 'GET',
+      }),
+    }),
   }),
 });
 export const {
@@ -118,4 +131,6 @@ export const {
   useLazyGetAllSubAdminsQuery,
   useCreateChatMutation,
   useSendMessageMutation,
+  useCreateRatingMutation,
+  useLazyGetRatingsQuery,
 } = mainApis;

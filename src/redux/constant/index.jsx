@@ -45,6 +45,8 @@ export const endpoints = {
   GET_BOOKINGS: userId => `booking/?user=${userId}`,
   createBooking: 'booking',
   GET_ALL_SUBADMINS: 'subAdmin',
+  CREATE_RATING: 'rating',
+  GET_RATINGS: (serviceId) => `rating?service=${serviceId}`,
 };
 
 export const TAX_SLABS = {

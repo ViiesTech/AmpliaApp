@@ -1,15 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, TouchableOpacity, FlatList } from 'react-native';
+import { View, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import Container from '../../../components/Container';
 import {
   AppColors,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  ShowToast,
 } from '../../../utils';
 import AppHeader from '../../../components/AppHeader';
 import AppTextInput from '../../../components/AppTextInput';
+import RatingModal from '../../../components/RatingModal';
 import Icon from 'react-native-vector-icons/Feather';
 import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
@@ -33,6 +35,8 @@ const BookingsScreens = () => {
   const [scheduleBookings, setScheduleBookings] = useState([]);
   const [completedBookings, setCompletedBookings] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedBookingForRating, setSelectedBookingForRating] = useState(null);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -117,22 +121,39 @@ const BookingsScreens = () => {
         navigation.navigate('BookingChat', {
           data: { ...item },
         });
+      } else {
+        ShowToast('Chat is disabled for completed bookings');
       }
     };
 
-    console.log("item", item.service)
+    const onRatePress = () => {
+      // Logic for opening rating modal will go here
+      setSelectedBookingForRating(item);
+      setRatingModalVisible(true);
+    };
+
     return (
-      <ManageBookingsCard
-        title={item?.service?.name}
-        subTitle={item?.service?.plan?.name}
-        status={item.status}
-        fromDate={item?.startDate}
-        toDate={item?.endDate}
-        amount={item?.service?.plan?.price}
-        serviceImage={item?.service?.cover}
-        navigation={navigation}
-        OnPressCard={onPress}
-      />
+      <View>
+        <ManageBookingsCard
+          title={item?.service?.name}
+          subTitle={item?.service?.plan?.name}
+          status={item.status}
+          fromDate={item?.startDate}
+          toDate={item?.endDate}
+          amount={item?.service?.plan?.price}
+          serviceImage={item?.service?.cover}
+          navigation={navigation}
+          OnPressCard={onPress}
+        />
+        {item.status === 'completed' && !item.rating && (
+          <TouchableOpacity
+            onPress={onRatePress}
+            style={styles.rateButton}
+          >
+            <AppText title="Rate Service" textColor={AppColors.WHITE} textSize={1.4} textFontWeight />
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -202,9 +223,31 @@ const BookingsScreens = () => {
           contentContainerStyle={{ paddingBottom: responsiveHeight(5) }}
           showsVerticalScrollIndicator={false}
         />
+
+        <RatingModal
+          visible={ratingModalVisible}
+          onClose={() => setRatingModalVisible(false)}
+          booking={selectedBookingForRating}
+          onSuccess={() => {
+            if (user?._id) {
+              _getBookings(user._id);
+            }
+          }}
+        />
       </View>
     </Container>
   );
 };
 
-export default BookingsScreens;
+const styles = StyleSheet.create({
+  rateButton: {
+    backgroundColor: AppColors.ThemeColor,
+    paddingVertical: responsiveHeight(1),
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: -responsiveHeight(1),
+    marginBottom: responsiveHeight(2),
+  },
+});
+
+export default BookingsScreens; 

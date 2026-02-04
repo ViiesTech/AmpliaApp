@@ -31,7 +31,7 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import { useLazyGetSingleServiceQuery } from '../../../redux/services/mainService';
+import { useLazyGetSingleServiceQuery, useLazyGetRatingsQuery } from '../../../redux/services/mainService';
 import Loader from '../../../components/Loader';
 
 /* -------------------- STATIC DATA -------------------- */
@@ -88,6 +88,7 @@ const ServiceDetails = props => {
   let serviceId = props?.route?.params?.serviceId;
 
   const [getSingleService, { isLoading }] = useLazyGetSingleServiceQuery();
+  const [getRatings, { data: ratingsDataFromApi, isLoading: ratingsLoading }] = useLazyGetRatingsQuery();
 
   useEffect(() => {
     if (passedService) {
@@ -102,13 +103,26 @@ const ServiceDetails = props => {
       setSelectedPlan(formattedPlans?.[0]);
     }
     _getSingleService(serviceId);
+    if (serviceId) {
+      getRatings(serviceId);
+    }
   }, [serviceId]);
+
+  const distribution = ratingsDataFromApi?.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const totalRatingsForDistribution = Object.values(distribution).reduce((a, b) => a + b, 0) || 1;
+
+  const formattedRatingData = [5, 4, 3, 2, 1].map(r => ({
+    id: r,
+    rating: r,
+    progress: Math.round(((distribution[r] || 0) / totalRatingsForDistribution) * 100)
+  }));
+
+  const reviews = ratingsDataFromApi?.ratings || [];
 
   const _getSingleService = async serviceId => {
     await getSingleService(serviceId)
       ?.unwrap()
       ?.then(res => {
-        console.log('res in _getSingleService', res?.service);
         setData(res?.service);
 
         const formattedPlans = [{
@@ -312,15 +326,15 @@ const ServiceDetails = props => {
 
           <View style={styles.ratigRow1}>
             <AppText
-              title={'All Ratings (48)'}
+              title={`All Ratings (${data?.ratingCount || 0})`}
               textSize={2}
               textColor={AppColors.ThemeColor}
               textFontWeight
             />
             <View style={styles.ratingRow2}>
-              <RatingView rating={4.5} />
+              <RatingView rating={data?.averageRating || 0} />
               <AppText
-                title={'4.5'}
+                title={data?.averageRating?.toFixed(1) || '0.0'}
                 textSize={1.8}
                 textColor={AppColors.GRAY}
                 textFontWeight
@@ -330,7 +344,7 @@ const ServiceDetails = props => {
 
           <View>
             <FlatList
-              data={ratingData}
+              data={formattedRatingData}
               scrollEnabled={false}
               keyExtractor={item => item.id.toString()}
               ItemSeparatorComponent={<LineBreak space={2} />}
@@ -342,13 +356,45 @@ const ServiceDetails = props => {
         <LineBreak space={2} />
 
         <FlatList
-          data={reviewsData}
+          data={reviews}
           horizontal
-          keyExtractor={item => item.id.toString()}
-          renderItem={renderReviewItem}
+          keyExtractor={item => item._id}
+          renderItem={({ item }) => (
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewHeader}>
+                <Image
+                  source={item.user?.profile ? { uri: getImageUrl(item.user.profile, 'profile') } : AppImages.consultant}
+                  style={styles.avatar}
+                />
+
+                <View>
+                  <AppText title={`${item.user?.firstName} ${item.user?.lastName}`} textSize={1.8} textFontWeight />
+                  <View style={styles.reviewRating}>
+                    <RatingView rating={item.rating} width={2} starSize={18} />
+                    <AppText title={item.rating.toString()} textSize={1.8} />
+                  </View>
+                </View>
+
+                <View style={styles.reviewTime}>
+                  <AppText title={new Date(item.createdAt).toLocaleDateString()} textSize={1.6} />
+                </View>
+              </View>
+
+              <LineBreak space={1} />
+
+              <AppText
+                title={item.review}
+                textSize={1.8}
+                textwidth={75}
+                textColor={AppColors.Dark_themeColor}
+              />
+            </View>
+          )}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.reviewList}
+          ListEmptyComponent={<AppText title="No reviews yet" textSize={1.8} textAlignment="center" />}
         />
+
       </Container>
 
       {/* FOOTER */}
