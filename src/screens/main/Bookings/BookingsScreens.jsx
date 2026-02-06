@@ -16,12 +16,11 @@ import Icon from 'react-native-vector-icons/Feather';
 import LineBreak from '../../../components/LineBreak';
 import LinearGradient from 'react-native-linear-gradient';
 import AppText from '../../../components/AppText';
-import ManageBookingsCard from '../../../components/ManageBookingsCard';
-
-import { useLazyGetBookingsQuery } from '../../../redux/services/mainService';
-import { useSelector } from 'react-redux';
-import Loader from '../../../components/Loader';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import WaitingAssignmentModal from '../../../components/WaitingAssignmentModal';
+import { useSelector } from 'react-redux';
+import { useLazyGetBookingsQuery } from '../../../redux/services/mainService';
+import ManageBookingsCard from '../../../components/ManageBookingsCard';
 
 const topTabsData = [
   { id: 1, title: 'Active' },
@@ -37,6 +36,7 @@ const BookingsScreens = () => {
   const [searchText, setSearchText] = useState('');
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedBookingForRating, setSelectedBookingForRating] = useState(null);
+  const [waitingModalVisible, setWaitingModalVisible] = useState(false);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -116,18 +116,7 @@ const BookingsScreens = () => {
   };
 
   const renderBookingItem = ({ item }) => {
-    const onPress = () => {
-      if (item.status !== 'completed') {
-        navigation.navigate('BookingChat', {
-          data: { ...item },
-        });
-      } else {
-        ShowToast('Chat is disabled for completed bookings');
-      }
-    };
-
     const onRatePress = () => {
-      // Logic for opening rating modal will go here
       setSelectedBookingForRating(item);
       setRatingModalVisible(true);
     };
@@ -143,7 +132,20 @@ const BookingsScreens = () => {
           amount={item?.service?.plan?.price}
           serviceImage={item?.service?.cover}
           navigation={navigation}
-          OnPressCard={onPress}
+          assignedTo={item?.assignedTo}
+          OnPressCard={() => {
+            if (item.status === 'completed') {
+              ShowToast('Chat is disabled for completed bookings');
+              return;
+            }
+            if (!item.assignedTo) {
+              setWaitingModalVisible(true);
+              return;
+            }
+            navigation.navigate('BookingChat', {
+              data: { ...item },
+            });
+          }}
         />
         {item.status === 'completed' && !item.rating && (
           <TouchableOpacity
@@ -233,6 +235,11 @@ const BookingsScreens = () => {
               _getBookings(user._id);
             }
           }}
+        />
+
+        <WaitingAssignmentModal
+          visible={waitingModalVisible}
+          onClose={() => setWaitingModalVisible(false)}
         />
       </View>
     </Container>

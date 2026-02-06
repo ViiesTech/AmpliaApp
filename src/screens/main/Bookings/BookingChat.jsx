@@ -138,7 +138,7 @@ const BookingChat = props => {
     <Container scrollEnabled={true} safeAreaViewStyle={{ flex: 1 }}>
 
       <View style={{ flex: 1, marginHorizontal: responsiveWidth(5) }}>
-        <BookingChatHeader />
+        <BookingChatHeader data={data} />
         <BookingChatStatus data={data} status={data.status} />
         <LiveChatScreen data={messages} />
       </View>

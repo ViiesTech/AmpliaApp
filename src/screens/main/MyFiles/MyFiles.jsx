@@ -31,13 +31,19 @@ const topTabsData = [
   { id: 7, title: '2026' },
 ];
 
-const MyFiles = () => {
+const MyFiles = props => {
+  const { params } = props.route || {};
+  const bookingId = params?.bookingId;
   const [selectedTab, setSelectedTab] = useState('All');
   const [getFiles, { data, isLoading }] = useLazyGetFilesQuery();
 
   useEffect(() => {
-    getFiles();
-  }, [getFiles]);
+    if (bookingId) {
+      getFiles({ bookingId });
+    } else {
+      getFiles();
+    }
+  }, [getFiles, bookingId]);
 
   const onSelectYear = useCallback(
     async year => {
@@ -98,7 +104,7 @@ const MyFiles = () => {
     <Fragment>
       <Container>
         <View style={styles.container}>
-          <AppHeader onBackPress={false} heading="My Files" />
+          <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Booking Files" : "My Files"} />
 
           <FlatList
             data={topTabsData}

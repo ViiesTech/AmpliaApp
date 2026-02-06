@@ -30,7 +30,16 @@ export const endpoints = {
   VERIFY_OTP: 'auth/verifyOtp',
   FORGET_PASSWORD: 'auth/fotgotPassword',
   RESET_PASSWORD: 'auth/resetPassword',
-  GET_ALL_FILES: year => (year ? `file?year=${year}` : 'file'),
+  GET_ALL_FILES: params => {
+    if (typeof params === 'object') {
+      const { year, bookingId } = params;
+      let url = 'file?';
+      if (year) url += `year=${year}&`;
+      if (bookingId) url += `bookingId=${bookingId}&`;
+      return url.endsWith('&') || url.endsWith('?') ? url.slice(0, -1) : url;
+    }
+    return params ? `file?year=${params}` : 'file';
+  },
   GET_ALL_CATEGORIES: 'category',
   GET_ALL_SERVICES: (search, categoryId) =>
     search

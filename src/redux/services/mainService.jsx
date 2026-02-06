@@ -27,8 +27,8 @@ export const mainApis = createApi({
       }),
     }),
     getFiles: builder.query({
-      query: year => ({
-        url: endpoints.GET_ALL_FILES(year),
+      query: params => ({
+        url: endpoints.GET_ALL_FILES(params),
         method: 'GET',
       }),
     }),

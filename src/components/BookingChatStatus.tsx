@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import AppText from './AppText';
 import {
   AppColors,
@@ -19,6 +20,7 @@ type Prop = {
 };
 
 const BookingChatStatus = ({ data, status }: Prop) => {
+  const navigation = useNavigation();
   return (
     <View>
       <View
@@ -222,6 +224,36 @@ const BookingChatStatus = ({ data, status }: Prop) => {
           textColor={AppColors.ThemeColor}
         />
         <SVGXml icon={AppIcons.right_arrow_two} width={15} height={15} />
+      </View>
+
+      <LineBreak space={2} />
+      <View
+        style={[
+          styles.container,
+          {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('MyFiles', { bookingId: data._id });
+          }}
+          style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: responsiveWidth(2) }}>
+            <SVGXml icon={AppIcons.requirements} width={20} height={20} />
+            <AppText
+              title="View Booking Files"
+              textSize={1.8}
+              textColor={AppColors.ThemeColor}
+              textFontWeight
+            />
+          </View>
+          <SVGXml icon={AppIcons.right_arrow_two} width={15} height={15} />
+        </TouchableOpacity>
       </View>
 
       <LineBreak space={2} />

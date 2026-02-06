@@ -26,6 +26,7 @@ type Prop = {
   amount?: any;
   navigation?: any;
   serviceImage?: any;
+  assignedTo?: any;
 };
 
 const ManageBookingsCard = ({
@@ -37,7 +38,8 @@ const ManageBookingsCard = ({
   amount,
   navigation,
   OnPressCard,
-  serviceImage
+  serviceImage,
+  assignedTo
 }: Prop) => {
   return (
     <TouchableOpacity
@@ -104,6 +106,25 @@ const ManageBookingsCard = ({
           </View>
         </View>
       </View>
+
+      {!assignedTo && (
+        <View style={{ marginTop: responsiveHeight(1), flexDirection: 'row' }}>
+          <View
+            style={{
+              backgroundColor: AppColors.lighttest_gray,
+              paddingHorizontal: responsiveWidth(3),
+              paddingVertical: responsiveHeight(0.5),
+              borderRadius: 100,
+            }}
+          >
+            <AppText
+              title="Not assigned to any user right now"
+              textSize={1.2}
+              textColor={AppColors.GRAY}
+            />
+          </View>
+        </View>
+      )}
 
       <LineBreak space={2} />
 

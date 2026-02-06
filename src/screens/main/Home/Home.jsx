@@ -128,6 +128,22 @@ const Home = () => {
 
         <HomeBanner />
 
+        <LineBreak space={2} />
+
+        {/* Live Chat Button */}
+        <TouchableOpacity
+          style={styles.liveChatButton}
+          onPress={() => navigation.navigate('LiveChat')}
+        >
+          <Icon name="message-circle" size={responsiveFontSize(2.5)} color={AppColors.WHITE} />
+          <AppText
+            title="Live Chat Now"
+            textSize={1.8}
+            textColor={AppColors.WHITE}
+            textFontWeight
+          />
+        </TouchableOpacity>
+
         <LineBreak space={3} />
 
 
@@ -295,5 +311,14 @@ const styles = StyleSheet.create({
   consultantRow: {
     gap: responsiveWidth(3),
     paddingBottom: 10,
+  },
+  liveChatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.ThemeColor,
+    paddingVertical: responsiveHeight(1.5),
+    borderRadius: 10,
+    gap: 10,
   },
 });

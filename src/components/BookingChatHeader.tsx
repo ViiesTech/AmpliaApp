@@ -2,14 +2,24 @@
 import React from 'react'
 import { View, Image, TouchableOpacity } from 'react-native'
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils'
+import { getImageUrl } from '../redux/constant'
 import BackIcon from './BackIcon'
 import { AppImages } from '../assets/images'
 import AppText from './AppText'
 import Entypo from 'react-native-vector-icons/Entypo';
 import { useNavigation } from '@react-navigation/native'
 
-const BookingChatHeader = () => {
+type Props = {
+    data?: any;
+}
+
+const BookingChatHeader = ({ data }: Props) => {
     const nav = useNavigation();
+    const serviceName = data?.service?.name || 'Service';
+    const consultantName = data?.assignedTo
+        ? `${data.assignedTo.firstName} ${data.assignedTo.lastName}`
+        : 'Consultant';
+
     return (
         <View
             style={{
@@ -21,7 +31,7 @@ const BookingChatHeader = () => {
         >
             <BackIcon onPress={() => nav.goBack()} />
             <Image
-                source={AppImages.consultant}
+                source={data?.assignedTo?.profile ? { uri: getImageUrl(data.assignedTo.profile, 'profile') } : AppImages.consultant}
                 style={{
                     width: 45,
                     height: 45,
@@ -30,20 +40,22 @@ const BookingChatHeader = () => {
                     borderColor: AppColors.ThemeColor,
                 }}
             />
-            <View>
+            <View style={{ flex: 1 }}>
                 <AppText
-                    title={'Tax Preparation & Filing'}
+                    title={serviceName}
                     textSize={1.8}
                     textColor={AppColors.ThemeColor}
                     textFontWeight
+                    numberOfLines={1}
                 />
                 <AppText
-                    title={'J William Consultant'}
+                    title={consultantName}
                     textSize={1.6}
                     textColor={AppColors.ThemeColor}
+                    numberOfLines={1}
                 />
             </View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <View style={{ alignItems: 'flex-end' }}>
                 <TouchableOpacity>
                     <Entypo
                         name="dots-three-vertical"
@@ -56,4 +68,4 @@ const BookingChatHeader = () => {
     )
 }
 
-export default BookingChatHeader
+export default BookingChatHeader;
