@@ -131,7 +131,7 @@ const Home = () => {
         <LineBreak space={2} />
 
         {/* Live Chat Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.liveChatButton}
           onPress={() => navigation.navigate('LiveChat')}
         >
@@ -142,7 +142,7 @@ const Home = () => {
             textColor={AppColors.WHITE}
             textFontWeight
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <LineBreak space={3} />
 

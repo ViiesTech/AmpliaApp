@@ -116,6 +116,20 @@ export const mainApis = createApi({
         method: 'GET',
       }),
     }),
+    getAllTaxCategories: builder.query({
+      query: (params) => ({
+        url: 'tax-category',
+        method: 'GET',
+        params: params,
+      }),
+    }),
+    calculateTax: builder.mutation({
+      query: (data) => ({
+        url: 'tax-category/calculate',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 export const {
@@ -133,4 +147,6 @@ export const {
   useSendMessageMutation,
   useCreateRatingMutation,
   useLazyGetRatingsQuery,
+  useLazyGetAllTaxCategoriesQuery,
+  useCalculateTaxMutation,
 } = mainApis;
