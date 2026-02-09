@@ -13,6 +13,8 @@ import AppButton from '../../../components/AppButton';
 
 const Calculator = () => {
   const [selectedYear, setSelectedYear] = useState('');
+  const [taxType, setTaxType] = useState('Salary');
+  const [filer, setFiler] = useState('Filer');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [amount, setAmount] = useState('');
   const [result, setResult] = useState(null);
@@ -24,11 +26,30 @@ const Calculator = () => {
     getAllCategories();
   }, [getAllCategories]);
 
-  // Extract unique years
+  // Extract unique values for filters
   const years = Array.from(new Set(categoriesData?.data?.map(cat => cat.year.toString()) || [])).sort((a, b) => b - a);
+  const taxTypes = Array.from(new Set(categoriesData?.data?.map(cat => cat.taxType) || []));
+  const filerStatuses = Array.from(new Set(categoriesData?.data?.map(cat => cat.filerStatus) || []));
 
-  // Filter categories by year
-  const filteredCategories = categoriesData?.data?.filter(cat => cat.year.toString() === selectedYear) || [];
+  useEffect(() => {
+    if (years.length > 0 && !selectedYear) {
+      setSelectedYear(years[0]);
+    }
+    if (taxTypes.length > 0 && !taxType) {
+      setTaxType(taxTypes[0]);
+    }
+    if (filerStatuses.length > 0 && !filer) {
+      setFiler(filerStatuses[0]);
+    }
+  }, [years, taxTypes, filerStatuses, selectedYear, taxType, filer]);
+
+  // Filter categories by year, taxType, and filer status
+  const filteredCategories = categoriesData?.data?.filter(cat => {
+    const matchesYear = cat.year.toString() === selectedYear;
+    const matchesType = cat.taxType === taxType;
+    const matchesFiler = cat.filerStatus === filer;
+    return matchesYear && matchesType && matchesFiler;
+  }) || [];
 
   const handleCalculate = async () => {
     if (!selectedCategory || !amount.trim()) {
@@ -53,6 +74,8 @@ const Calculator = () => {
     setAmount('');
     setSelectedCategory(null);
     setSelectedYear('');
+    setTaxType('Salary');
+    setFiler('Filer');
   };
 
   return (
@@ -61,13 +84,13 @@ const Calculator = () => {
         <AppHeader
           onBackPress={false}
           heading={'Tax Calculator'}
-          rightIcon={
-            <TouchableOpacity
-              style={styles.headerRightIcon}
-            >
-              <SVGXml icon={AppIcons.horizontal_icon} width={20} height={20} />
-            </TouchableOpacity>
-          }
+        // rightIcon={
+        //   <TouchableOpacity
+        //     style={styles.headerRightIcon}
+        //   >
+        //     <SVGXml icon={AppIcons.horizontal_icon} width={20} height={20} />
+        //   </TouchableOpacity>
+        // }
         />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -133,10 +156,46 @@ const Calculator = () => {
                   {years.length === 0 && <AppText title="No tax years available" textColor={AppColors.GRAY} />}
                 </View>
 
-                {/* Category Selection */}
                 {selectedYear && (
                   <>
                     <LineBreak space={1} />
+                    {/* Tax Type Selection */}
+                    <AppText title="Tax Type" textSize={1.6} textFontWeight style={styles.label} />
+                    <View style={styles.chipRow}>
+                      {Array.from(new Set(categoriesData?.data?.map(cat => cat.taxType) || [])).map(type => (
+                        <TouchableOpacity
+                          key={type}
+                          style={[styles.chip, taxType === type && styles.chipActive]}
+                          onPress={() => {
+                            setTaxType(type);
+                            setSelectedCategory(null);
+                          }}
+                        >
+                          <AppText title={type} textColor={taxType === type ? AppColors.WHITE : AppColors.BLACK} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    <LineBreak space={1} />
+                    {/* Filer Status Selection */}
+                    <AppText title="Filer Status" textSize={1.6} textFontWeight style={styles.label} />
+                    <View style={styles.chipRow}>
+                      {filerStatuses.map(status => (
+                        <TouchableOpacity
+                          key={status}
+                          style={[styles.chip, filer === status && styles.chipActive]}
+                          onPress={() => {
+                            setFiler(status);
+                            setSelectedCategory(null);
+                          }}
+                        >
+                          <AppText title={status} textColor={filer === status ? AppColors.WHITE : AppColors.BLACK} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    <LineBreak space={1} />
+                    {/* Category Selection */}
                     <AppText title="Select Category" textSize={1.6} textFontWeight style={styles.label} />
                     <View style={styles.catGrid}>
                       {filteredCategories.map(cat => (
@@ -159,6 +218,9 @@ const Calculator = () => {
                           />
                         </TouchableOpacity>
                       ))}
+                      {filteredCategories.length === 0 && (
+                        <AppText title="No categories found for this selection" textColor={AppColors.GRAY} />
+                      )}
                     </View>
                   </>
                 )}

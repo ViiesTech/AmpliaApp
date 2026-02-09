@@ -99,14 +99,17 @@ export const calculateTax = (monthlyIncome: any, year: any) => {
     return Number((annualTax / 12).toFixed(2));
 };
 
-export const thousandsSeprator = (value: number) => {
-    if (!value) return '';
+export const thousandsSeprator = (value: any) => {
+    if (value === undefined || value === null || value === '') return '';
 
-    // Remove anything that's not a number
-    const numericValue = value?.replace(/[^0-9]/g, '');
+    // Convert to string and remove anything that's not a number
+    const strValue = String(value).replace(/[^0-9.]/g, '');
 
-    // Add thousand separators
-    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Split into integer and decimal parts
+    const parts = strValue.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    return parts.join('.');
 };
 
 export const capitalizeFirstLetter = (text: string) =>

@@ -268,9 +268,9 @@ const ServiceDetails = props => {
           <LineBreak space={8} />
           <View style={styles.headerRow}>
             <BackIcon onPress={navigation.goBack} />
-            <BackIcon
+            {/* <BackIcon
               icon={<SVGXml icon={AppIcons.save} width={20} height={20} />}
-            />
+            /> */}
           </View>
         </ImageBackground>
 
