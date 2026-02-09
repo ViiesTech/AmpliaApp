@@ -50,16 +50,26 @@ const PopularService = ({ image, title, rating, price, onPress }: Props) => {
                     />
                 </View>
                 <LineBreak space={0.5} />
-                {price?.map((item) => {
-                    return (
+                {Array.isArray(price) ? (
+                    price.map((item, index) => (
                         <AppText
+                            key={index}
                             title={`$${item.price}`}
                             textSize={1.8}
                             textColor={AppColors.GRAY}
                             textFontWeight
                         />
-                    )
-                })}
+                    ))
+                ) : (
+                    typeof price === 'string' || typeof price === 'number' ? (
+                        <AppText
+                            title={String(price)}
+                            textSize={1.8}
+                            textColor={AppColors.GRAY}
+                            textFontWeight
+                        />
+                    ) : null
+                )}
             </View>
         </TouchableOpacity>
     )
