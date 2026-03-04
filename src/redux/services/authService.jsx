@@ -1,18 +1,30 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { BASE_URL, endpoints } from '../constant';
+import { logout } from '../slices';
+
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers, { getState }) => {
+    const token = getState().persistedData.token;
+    console.log('-:TOKEN:-', token);
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+  if (result.error && result.error.status === 401) {
+    api.dispatch(logout());
+  }
+  return result;
+};
+
 export const authApis = createApi({
   reducerPath: 'authApis',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().persistedData.token;
-      console.log('-:TOKEN:-', token);
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: builder => ({
     register: builder.mutation({
       query: data => ({
@@ -30,7 +42,7 @@ export const authApis = createApi({
     }),
     login: builder.mutation({
       query: data => {
-        console.log('login data',data)
+        console.log('login data', data)
         return {
           url: endpoints.LOGIN,
           method: 'POST',
@@ -59,7 +71,7 @@ export const authApis = createApi({
         body: data,
       }),
     }),
-       verifyOTP: builder.mutation({
+    verifyOTP: builder.mutation({
       query: data => ({
         url: endpoints.VERIFY_OTP,
         method: 'POST',

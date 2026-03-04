@@ -10,34 +10,33 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../utils';
-import Home from '../screens/main/Home/Home';
 import BookingsScreens from './../screens/main/Bookings/BookingsScreens';
 import Calculator from './../screens/main/Calculator/Calculator';
 import MyFiles from './../screens/main/MyFiles/MyFiles';
 import MyProfile from './../screens/main/MyProfile/MyProfile';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import LiveChat from './../screens/main/Home/LiveChat';
+import RaceTrack from '../screens/main/Bookings/RaceTrack';
 
 const Tab = createBottomTabNavigator();
-
 const screens = [
-  { name: 'Home', icon: 'home-outline' },
+  { name: 'Race Track', icon: 'horse-variant' },
+  { name: 'Vault', icon: 'folder-lock-outline' },
   { name: 'Calculator', icon: 'calculator-variant' },
-  { name: 'Bookings', icon: 'calendar-check-outline' },
-  { name: 'My Files', icon: 'file-document-outline' },
-  { name: 'Profile', icon: 'account-outline' },
+  { name: 'Messages', icon: 'chat-processing-outline' },
+  { name: 'More', icon: 'dots-horizontal' },
 ];
 
 const DummyScreen = ({ route }) => {
   switch (route.name) {
-    case 'Home':
-      return <Home />;
+    case 'Race Track':
+      return <RaceTrack />;
     case 'Calculator':
       return <Calculator />;
-    case 'Bookings':
-      return <BookingsScreens />;
-    case 'My Files':
+    case 'Messages':
+      return <LiveChat />;
+    case 'Vault':
       return <MyFiles />;
-    case 'Profile':
+    case 'More':
       return <MyProfile />;
     default:
       return null; // Always return something

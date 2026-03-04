@@ -15,4 +15,5 @@ export const AppImages = {
   userprofile: require('./userProfile.jpeg'),
   userPH: require('./userPH.png'),
   download: require('./downnloadIcon.png'),
+  horse_racing_icon: require('./horse_racing_icon.png'),
 };

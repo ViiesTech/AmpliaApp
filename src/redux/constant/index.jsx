@@ -1,3 +1,4 @@
+// export const BASE_URL = 'https://apiforapp.link/Amplia/';
 export const BASE_URL = 'https://apiforapp.link/Amplia/';
 export const IMAGE_BASE_URL = `${BASE_URL}uploads/`;
 

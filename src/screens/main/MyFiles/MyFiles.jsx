@@ -104,7 +104,7 @@ const MyFiles = props => {
     <Fragment>
       <Container>
         <View style={styles.container}>
-          <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Booking Files" : "My Files"} />
+          <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Booking Files" : "Vault"} />
 
           <FlatList
             data={topTabsData}

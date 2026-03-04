@@ -33,16 +33,16 @@ const Main = () => {
       <Stack.Screen name="Main" component={TabBar} />
       <Stack.Screen name="Notification" component={Notification} />
       <Stack.Screen name="ServiceCategories" component={ServiceCategories} />
-      <Stack.Screen name="Services" component={Services} />
+      {/* <Stack.Screen name="Services" component={Services} /> */}
       <Stack.Screen name="ReviewsAndRatings" component={ReviewsAndRatings} />
       <Stack.Screen
         name="PopularAndOtherServices"
         component={PopularAndOtherServices}
       />
       <Stack.Screen name="LiveChat" component={LiveChat} />
-      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+      {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
       <Stack.Screen name="Payment" component={Payment} />
-      <Stack.Screen name="ScheduleService" component={ScheduleService} />
+      {/* <Stack.Screen name="ScheduleService" component={ScheduleService} /> */}
       <Stack.Screen name="MyAccount" component={MyAccount} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
@@ -51,7 +51,7 @@ const Main = () => {
       <Stack.Screen name="EmailUs" component={EmailUs} />
       <Stack.Screen name="BillingHistory" component={BillingHistory} />
       <Stack.Screen name="Faqs" component={Faqs} />
-      <Stack.Screen name="BookingChat" component={BookingChat} />
+      {/* <Stack.Screen name="BookingChat" component={BookingChat} /> */}
     </Stack.Navigator>
   );
 };

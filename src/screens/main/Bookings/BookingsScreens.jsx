@@ -21,6 +21,7 @@ import WaitingAssignmentModal from '../../../components/WaitingAssignmentModal';
 import { useSelector } from 'react-redux';
 import { useLazyGetBookingsQuery } from '../../../redux/services/mainService';
 import ManageBookingsCard from '../../../components/ManageBookingsCard';
+import Loader from '../../../components/Loader';
 
 const topTabsData = [
   { id: 1, title: 'Active' },
@@ -183,7 +184,7 @@ const BookingsScreens = () => {
   return (
     <Container scrollEnabled={false}>
       <View style={{ marginHorizontal: responsiveWidth(5), flex: 1 }}>
-        <AppHeader onBackPress={false} heading={'Manage Bookings'} />
+        <AppHeader onBackPress={false} heading={'Race Track'} />
         <AppTextInput
           inputPlaceHolder={'Search Services'}
           borderWidth={1}
