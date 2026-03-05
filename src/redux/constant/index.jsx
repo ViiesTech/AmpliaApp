@@ -1,5 +1,4 @@
-// export const BASE_URL = 'https://apiforapp.link/Amplia/';
-export const BASE_URL = 'https://apiforapp.link/Amplia/';
+export const BASE_URL = 'https://megasporic-carolyn-diametrically.ngrok-free.dev/';
 export const IMAGE_BASE_URL = `${BASE_URL}uploads/`;
 
 export const getImageUrl = (filename, type) => {
@@ -54,6 +53,7 @@ export const endpoints = {
   GET_SINGLE_SERVICE: id => `service/${id}`,
   GET_BOOKINGS: userId => `booking/?user=${userId}`,
   createBooking: 'booking',
+  UPDATE_BOOKING: (id) => `booking/${id}`,
   GET_ALL_SUBADMINS: 'subAdmin',
   CREATE_RATING: 'rating',
   GET_RATINGS: (serviceId) => `rating?service=${serviceId}`,

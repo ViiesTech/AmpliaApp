@@ -42,21 +42,19 @@ const AppText = ({
     <Text
       numberOfLines={numberOfLines}
       style={{
-        width: textwidth ? responsiveWidth(textwidth) : null,
+        width: textwidth ? responsiveWidth(textwidth) : undefined,
         fontSize: textSize
           ? responsiveFontSize(textSize)
           : responsiveFontSize(1.4),
         fontWeight: textFontWeight ? 'bold' : 'regular',
         color: textColor ? textColor : AppColors.BLACK,
-        textAlign: textAlignment ? textAlignment : null,
-        alignSelf: textAlignment ? textAlignment : null,
-        lineHeight: lineHeight ? responsiveHeight(lineHeight) : null,
-        borderBottomWidth: borderBottomWidth ? borderBottomWidth : null,
-        borderBottomColor: borderBottomColor ? borderBottomColor : null,
-        textTransform: textTransform ? textTransform : null,
-        paddingBottom: paddingBottom ? responsiveHeight(paddingBottom) : null,
+        lineHeight: lineHeight ? responsiveHeight(lineHeight) : undefined,
+        borderBottomWidth: borderBottomWidth ? borderBottomWidth : undefined,
+        borderBottomColor: borderBottomColor ? borderBottomColor : undefined,
+        textTransform: textTransform ? textTransform : undefined,
+        paddingBottom: paddingBottom ? responsiveHeight(paddingBottom) : undefined,
         textDecorationLine: textDecorationLine,
-        paddingHorizontal: responsiveWidth(paddingHorizontal),
+        paddingHorizontal: paddingHorizontal ? responsiveWidth(paddingHorizontal) : 0,
       }}>
       {title}
       {children}

@@ -26,18 +26,18 @@ const screens = [
   { name: 'More', icon: 'dots-horizontal' },
 ];
 
-const DummyScreen = ({ route }) => {
+const DummyScreen = ({ navigation, route }) => {
   switch (route.name) {
     case 'Race Track':
-      return <RaceTrack />;
+      return <RaceTrack route={route} navigation={navigation} />;
     case 'Calculator':
-      return <Calculator />;
+      return <Calculator route={route} navigation={navigation} />;
     case 'Messages':
-      return <LiveChat />;
+      return <LiveChat route={route} navigation={navigation} />;
     case 'Vault':
-      return <MyFiles />;
+      return <MyFiles route={route} navigation={navigation} />;
     case 'More':
-      return <MyProfile />;
+      return <MyProfile route={route} navigation={navigation} />;
     default:
       return null; // Always return something
   }

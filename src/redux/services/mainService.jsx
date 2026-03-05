@@ -10,6 +10,7 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
+    headers.set('ngrok-skip-browser-warning', 'true');
     return headers;
   },
 });
@@ -142,6 +143,39 @@ export const mainApis = createApi({
         body: data,
       }),
     }),
+    updateBooking: builder.mutation({
+      query: ({ id, data }) => ({
+        url: endpoints.UPDATE_BOOKING(id),
+        method: 'PATCH',
+        body: data,
+      }),
+    }),
+    uploadFile: builder.mutation({
+      query: data => ({
+        url: 'file',
+        method: 'POST',
+        body: data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+    }),
+    updateFile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `file/${id}`,
+        method: 'PATCH',
+        body: data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+    }),
+    getBookingById: builder.query({
+      query: id => ({
+        url: `booking/${id}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 export const {
@@ -153,7 +187,11 @@ export const {
   useLazyGetAllServicesQuery,
   useLazyGetSingleServiceQuery,
   useLazyGetBookingsQuery,
+  useGetBookingByIdQuery,
   useCreateBookingMutation,
+  useUpdateBookingMutation,
+  useUploadFileMutation,
+  useUpdateFileMutation,
   useLazyGetAllSubAdminsQuery,
   useCreateChatMutation,
   useSendMessageMutation,
