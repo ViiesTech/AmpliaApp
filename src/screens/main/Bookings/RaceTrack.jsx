@@ -62,11 +62,11 @@ const RaceTrack = ({ navigation, route }) => {
     }, [user, selectedYear, getBookings]);
 
     const bookingId = internalBookingId;
-    const { data: bookingData } = useGetBookingByIdQuery(bookingId, {
+    const { data: bookingData, isLoading: isBookingLoading, isFetching: isBookingFetching } = useGetBookingByIdQuery(bookingId, {
         pollingInterval: 3000,
         skip: !bookingId
     });
-    const [getFiles, { data: filesData }] = useLazyGetFilesQuery();
+    const [getFiles, { data: filesData, isLoading: isFilesLoading, isFetching: isFilesFetching }] = useLazyGetFilesQuery();
     const [updateBooking] = useUpdateBookingMutation();
     const [uploadFile] = useUploadFileMutation();
     const [linkFile] = useLinkFileMutation();
@@ -76,6 +76,7 @@ const RaceTrack = ({ navigation, route }) => {
     const [showVault, setShowVault] = useState(false);
     const currentYear = new Date().getFullYear();
     const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+    const [vaultYear, setVaultYear] = useState(currentYear.toString());
     const [showYearPicker, setShowYearPicker] = useState(false);
     const startYearBound = currentYear + 1;
     const years = Array.from({ length: startYearBound - 1900 + 1 }, (_, i) => (startYearBound - i).toString());
@@ -246,7 +247,8 @@ const RaceTrack = ({ navigation, route }) => {
             // For existing 'new' bookings, only open vault if they've interacted with slots
             if (hasDocuments) {
                 try {
-                    await getFiles({ userId: user._id }).unwrap();
+                    await getFiles({ userId: user._id, year: selectedYear }).unwrap();
+                    setVaultYear(selectedYear);
                     setShowVault(true);
                 } catch (error) {
                     console.error('Fetch Vault Error:', error);
@@ -450,6 +452,12 @@ const RaceTrack = ({ navigation, route }) => {
                     </View>
                 </View>
 
+                {(isBookingLoading || isBookingFetching) && (
+                    <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -25 }, { translateY: -25 }], zIndex: 10 }}>
+                        <ActivityIndicator size="large" color={AppColors.ThemeColor} />
+                    </View>
+                )}
+
                 {/* Full Screen Stages */}
                 {bookingStatus === 'preparation' && (
                     <View style={styles.prepScreen}>
@@ -484,7 +492,7 @@ const RaceTrack = ({ navigation, route }) => {
                             <LineBreak space={1} />
 
                             {bookingStatus === 'review' || bookingStatus === 'approved' ? (
-                                {(() => {
+                                (() => {
                                     const returnDoc = (filesData?.files || []).find(f => f.type === 'return_doc');
                                     return (
                                         <View style={styles.returnDocCard}>
@@ -515,14 +523,14 @@ const RaceTrack = ({ navigation, route }) => {
                                             </TouchableOpacity>
                                         </View>
                                     );
-                                })()}
+                                })()
                             ) : (
-                            <FlatList
-                                data={documents}
-                                renderItem={renderDocItem}
-                                keyExtractor={item => item.id.toString()}
-                                scrollEnabled={false}
-                            />
+                                <FlatList
+                                    data={documents}
+                                    renderItem={renderDocItem}
+                                    keyExtractor={item => item.id.toString()}
+                                    scrollEnabled={false}
+                                />
                             )}
 
                             {(bookingStatus === 'new' || bookingStatus === 'rejected' || bookingStatus === 'approved' || bookingStatus === 'filed') && (
@@ -595,29 +603,88 @@ const RaceTrack = ({ navigation, route }) => {
                             </View>
                             <AppText title="Select documents you've previously uploaded to link them with this booking." textSize={1.4} textColor={AppColors.GRAY} style={{ marginBottom: 15 }} />
 
-                            <FlatList
-                                data={filesData?.files || []}
-                                keyExtractor={(item, index) => index.toString()}
-                                renderItem={({ item }) => (
-                                    <View style={styles.vaultItem}>
-                                        <View style={{ flex: 1 }}>
-                                            <AppText title={item.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
-                                            <AppText title={`Uploaded on ${new Date(item.createdAt).toLocaleDateString()}`} textSize={1.2} textColor={AppColors.GRAY} />
-                                        </View>
+                            <View style={{ height: 50, marginBottom: 15 }}>
+                                <FlatList
+                                    data={years}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    keyExtractor={item => `vault-year-${item}`}
+                                    renderItem={({ item: y }) => (
                                         <TouchableOpacity
-                                            style={styles.linkButton}
-                                            onPress={() => handleLinkDocument(item)}
+                                            style={[styles.vaultYearTab, vaultYear === y && styles.activeVaultYearTab]}
+                                            onPress={async () => {
+                                                setVaultYear(y);
+                                                try {
+                                                    await getFiles({ userId: user._id, year: y }).unwrap();
+                                                } catch (e) {
+                                                    console.error("Vault Year Fetch Error", e);
+                                                }
+                                            }}
                                         >
-                                            <AppText title="Link" textSize={1.4} textColor={AppColors.WHITE} textFontWeight />
+                                            <AppText title={y} textSize={1.4} textColor={vaultYear === y ? AppColors.WHITE : AppColors.ThemeColor} textFontWeight={vaultYear === y} />
                                         </TouchableOpacity>
-                                    </View>
-                                )}
-                                ListEmptyComponent={() => (
-                                    <View style={{ alignItems: 'center', padding: 20 }}>
-                                        <AppText title="No documents found in your vault." textSize={1.6} textColor={AppColors.GRAY} />
-                                    </View>
-                                )}
-                            />
+                                    )}
+                                />
+                            </View>
+
+                            {(isFilesLoading || isFilesFetching) ? (
+                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                    <ActivityIndicator size="large" color={AppColors.ThemeColor} />
+                                </View>
+                            ) : (
+                                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                                    {(() => {
+                                        const filtered = filesData?.files || [];
+                                        const filedByAdmin = filtered.filter(f => f.type === 'return_doc');
+                                        const userDocs = filtered.filter(f => f.type === 'user_doc');
+
+                                        if (filtered.length === 0) {
+                                            return (
+                                                <View style={{ alignItems: 'center', padding: 20 }}>
+                                                    <AppText title={`No documents found for ${vaultYear}.`} textSize={1.6} textColor={AppColors.GRAY} />
+                                                </View>
+                                            );
+                                        }
+
+                                        const renderVaultItem = (item, index, prefix) => (
+                                            <View key={`${prefix}-${index}`} style={styles.vaultItem}>
+                                                <View style={{ flex: 1 }}>
+                                                    <AppText title={item.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                                    <AppText title={`${prefix === 'admin' ? 'Received' : 'Uploaded'} on ${new Date(item.createdAt).toLocaleDateString()}`} textSize={1.2} textColor={AppColors.GRAY} />
+                                                </View>
+                                                <TouchableOpacity
+                                                    style={styles.linkButton}
+                                                    onPress={() => handleLinkDocument(item)}
+                                                >
+                                                    <AppText title="Link" textSize={1.4} textColor={AppColors.WHITE} textFontWeight />
+                                                </TouchableOpacity>
+                                            </View>
+                                        );
+
+                                        return (
+                                            <>
+                                                {filedByAdmin.length > 0 && (
+                                                    <View style={{ marginBottom: 20 }}>
+                                                        <AppText title="FILED DOCUMENTS (From Admin)" textSize={1.4} textColor={AppColors.GRAY} textFontWeight style={{ marginBottom: 10 }} />
+                                                        {filedByAdmin.map((item, index) => renderVaultItem(item, index, 'admin'))}
+                                                    </View>
+                                                )}
+
+                                                <View style={{ marginBottom: 20 }}>
+                                                    <AppText title="YOUR DOCUMENTS" textSize={1.4} textColor={AppColors.GRAY} textFontWeight style={{ marginBottom: 10 }} />
+                                                    {userDocs.length > 0 ? (
+                                                        userDocs.map((item, index) => renderVaultItem(item, index, 'user'))
+                                                    ) : (
+                                                        <View style={{ alignItems: 'center', padding: 20 }}>
+                                                            <AppText title="No user documents found." textSize={1.4} textColor={AppColors.GRAY} />
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </>
+                                        );
+                                    })()}
+                                </ScrollView>
+                            )}
 
                             <TouchableOpacity
                                 style={[styles.proceedButton, isSubmitting && { opacity: 0.7 }]}
@@ -657,6 +724,7 @@ const RaceTrack = ({ navigation, route }) => {
                                         onPress={() => {
                                             setSelectedYear(y);
                                             setShowYearPicker(false);
+                                            getFiles({ userId: user?._id, year: y });
                                         }}
                                     >
                                         <AppText title={y} textSize={1.8} textColor={selectedYear === y ? AppColors.WHITE : AppColors.ThemeColor} textFontWeight={selectedYear === y} />
@@ -908,6 +976,19 @@ const styles = StyleSheet.create({
         height: 50, // Fixed height for FlatList layout
     },
     selectedYearOption: {
+        backgroundColor: AppColors.ThemeColor,
+    },
+    vaultYearTab: {
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#F0F3F6',
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 40,
+    },
+    activeVaultYearTab: {
         backgroundColor: AppColors.ThemeColor,
     }
 });
