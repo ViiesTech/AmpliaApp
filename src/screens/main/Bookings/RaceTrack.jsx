@@ -38,18 +38,27 @@ const RaceTrack = ({ navigation, route }) => {
     const [getAllServices] = useLazyGetAllServicesQuery();
     const [createBooking] = useCreateBookingMutation();
 
-    // If no bookingId, try to find the user's latest booking
+    // Find the booking that matches the currently selected year
     useEffect(() => {
-        if (!internalBookingId && user?._id) {
+        if (user?._id) {
             getBookings(user._id).unwrap().then(res => {
                 const bookings = res?.bookings || [];
-                if (bookings.length > 0) {
-                    const latest = bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-                    setInternalBookingId(latest._id);
+                // Sort by date to get the latest if multiple exists (unlikely but safe)
+                const matching = bookings
+                    .filter(b => b.year === selectedYear)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+                if (matching) {
+                    setInternalBookingId(matching._id);
+                } else {
+                    // No booking for this year, reset to 'new' state
+                    setInternalBookingId(null);
+                    setBookingStatus('new');
+                    setDocuments(initialDocs);
                 }
             });
         }
-    }, [user, internalBookingId]);
+    }, [user, selectedYear, getBookings]);
 
     const bookingId = internalBookingId;
     const { data: bookingData } = useGetBookingByIdQuery(bookingId, {
@@ -64,10 +73,18 @@ const RaceTrack = ({ navigation, route }) => {
     const [bookingStatus, setBookingStatus] = useState('new');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showVault, setShowVault] = useState(false);
+    const currentYear = new Date().getFullYear();
+    const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+    const [showYearPicker, setShowYearPicker] = useState(false);
+    const startYearBound = currentYear + 1;
+    const years = Array.from({ length: startYearBound - 1900 + 1 }, (_, i) => (startYearBound - i).toString());
 
+
+    // console.log("bookingData", bookingData);
     useEffect(() => {
-        if (bookingData?.success && bookingData?.data?.status) {
-            setBookingStatus(bookingData.data.status);
+        if (bookingData?.success && bookingData?.booking?.status) {
+
+            setBookingStatus(bookingData?.booking?.status);
         }
     }, [bookingData]);
 
@@ -115,7 +132,7 @@ const RaceTrack = ({ navigation, route }) => {
                 bookingId: bookingId,
                 name: vaultFile.name,
                 url: vaultFile.url,
-                year: vaultFile.year || '2024',
+                year: selectedYear,
                 type: vaultFile.type || 'user_doc'
             };
 
@@ -180,6 +197,7 @@ const RaceTrack = ({ navigation, route }) => {
                 description: taxService.description || '',
                 cover: taxService.cover || '',
                 status: 'new',
+                year: selectedYear,
                 startDate: new Date().toISOString(),
                 endDate: new Date().toISOString(),
             };
@@ -198,27 +216,43 @@ const RaceTrack = ({ navigation, route }) => {
     };
 
     const handleStartFilling = async () => {
-        if (bookingStatus === 'new' || !bookingId) {
+        const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
+
+        if (bookingStatus === 'new' || isStartingNew || !bookingId) {
             if (!user?._id) {
                 ShowToast('User identity missing, please re-login');
                 return;
             }
 
-            let currentId = bookingId;
-            if (!currentId) {
-                setIsSubmitting(true);
-                currentId = await handleStartNewBooking();
-                setIsSubmitting(false);
-                if (!currentId) return;
+            // Check if user has already picked or sent any documents
+            const hasDocuments = documents.some(d => d.status !== 'Pending');
+
+            setIsSubmitting(true);
+            const newId = await handleStartNewBooking();
+            setIsSubmitting(false);
+
+            if (!newId) return;
+
+            if (isStartingNew) {
+                // If starting a fresh process after approval/filing:
+                // 1. Reset local documents
+                setDocuments(initialDocs);
+                // 2. DON'T open the modal (user needs to pick new documents first)
+                ShowToast('Filing restarted. Please upload new documents.');
+                return;
             }
 
-            // Fetch user documents to show in VaultModal
-            try {
-                await getFiles({ userId: user._id }).unwrap();
-                setShowVault(true);
-            } catch (error) {
-                console.error('Fetch Vault Error:', error);
-                ShowToast('Failed to fetch document vault');
+            // For existing 'new' bookings, only open vault if they've interacted with slots
+            if (hasDocuments) {
+                try {
+                    await getFiles({ userId: user._id }).unwrap();
+                    setShowVault(true);
+                } catch (error) {
+                    console.error('Fetch Vault Error:', error);
+                    ShowToast('Failed to fetch document vault');
+                }
+            } else {
+                ShowToast('Booking active. Please upload documents.');
             }
         } else if (bookingStatus === 'sent' || bookingStatus === 'rejected') {
             // Direct re-upload flow or simple status update
@@ -243,7 +277,7 @@ const RaceTrack = ({ navigation, route }) => {
                         name: file.name || `document_${Date.now()}.pdf`,
                     });
                     formData.append('name', cat.name);
-                    formData.append('year', 2024);
+                    formData.append('year', selectedYear);
                     formData.append('bookingId', bookingId);
                     formData.append('type', 'user_doc');
 
@@ -366,9 +400,16 @@ const RaceTrack = ({ navigation, route }) => {
             <View style={styles.content}>
                 <AppHeader onBackPress={false} heading="Race Track" />
 
-                <View style={styles.yearHeader}>
-                    <AppText title="Taxes 2024" textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
-                </View>
+                <TouchableOpacity
+                    style={styles.yearHeader}
+                    onPress={() => (bookingStatus === 'new' || bookingStatus === 'approved' || bookingStatus === 'filed') && setShowYearPicker(true)}
+                    disabled={!['new', 'approved', 'filed'].includes(bookingStatus)}
+                >
+                    <AppText title={`Taxes ${selectedYear}`} textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
+                    {['new', 'approved', 'filed'].includes(bookingStatus) && (
+                        <Icon name="chevron-down" size={20} color={AppColors.ThemeColor} style={{ marginLeft: 5 }} />
+                    )}
+                </TouchableOpacity>
 
                 {/* Race Track Progress Bar */}
                 <View style={styles.progressContainer}>
@@ -383,12 +424,10 @@ const RaceTrack = ({ navigation, route }) => {
                         <View style={styles.trackLineContainer}>
                             <View style={styles.trackLine} />
                             <View style={[styles.activeTrack, {
-                                width: bookingStatus === 'sent' ? '25%' :
-                                    bookingStatus === 'received' ? '35%' :
-                                        bookingStatus === 'preparation' ? '50%' :
-                                            bookingStatus === 'review' ? '75%' :
-                                                bookingStatus === 'approved' ? '85%' :
-                                                    bookingStatus === 'filed' ? '100%' : '15%'
+                                width: (bookingStatus === 'sent' || bookingStatus === 'received') ? '15%' :
+                                    bookingStatus === 'preparation' ? '40%' :
+                                        (bookingStatus === 'review' || bookingStatus === 'approved') ? '70%' :
+                                            bookingStatus === 'filed' ? '100%' : '10%'
                             }]} />
                             <View style={styles.trackDots}>
                                 <View style={[styles.dot, ['sent', 'received', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
@@ -399,12 +438,10 @@ const RaceTrack = ({ navigation, route }) => {
                             <Image
                                 source={AppImages.horse_racing_icon}
                                 style={[styles.horseIcon, {
-                                    left: bookingStatus === 'sent' ? '18%' :
-                                        bookingStatus === 'received' ? '28%' :
-                                            bookingStatus === 'preparation' ? '42%' :
-                                                bookingStatus === 'review' ? '68%' :
-                                                    bookingStatus === 'approved' ? '78%' :
-                                                        bookingStatus === 'filed' ? '92%' : '8%'
+                                    left: (bookingStatus === 'sent' || bookingStatus === 'received') ? '0%' :
+                                        bookingStatus === 'preparation' ? '30%' :
+                                            (bookingStatus === 'review' || bookingStatus === 'approved') ? '62%' :
+                                                bookingStatus === 'filed' ? '88%' : '-2%'
                                 }]}
                                 resizeMode="contain"
                             />
@@ -415,20 +452,23 @@ const RaceTrack = ({ navigation, route }) => {
                 {/* Full Screen Stages */}
                 {bookingStatus === 'preparation' && (
                     <View style={styles.prepScreen}>
-                        <View style={styles.loaderContainer}>
-                            <View style={styles.spinner} />
+                        <View style={styles.loaderWrapper}>
+                            <ActivityIndicator size="large" color={AppColors.ThemeColor} />
+                            <View style={{ marginTop: 20 }}>
+                                <AppText
+                                    title="PREPARING..."
+                                    textSize={2.8}
+                                    textColor={AppColors.ThemeColor}
+                                    textFontWeight
+                                    textAlignment="center"
+                                />
+                            </View>
                         </View>
                         <AppText
-                            title="PREPARATION"
-                            textSize={4}
-                            textColor={AppColors.ThemeColor}
-                            textFontWeight
-                        />
-                        <AppText
-                            title="Your tax return is being prepared by our experts."
-                            textSize={1.8}
+                            title="Our experts are currently working on your tax return. You will be notified once it's ready for review."
+                            textSize={1.6}
                             textColor={AppColors.GRAY}
-                            style={{ marginTop: 10, textAlign: 'center' }}
+                            style={{ marginTop: 20, textAlign: 'center', paddingHorizontal: 20 }}
                         />
                     </View>
                 )}
@@ -469,7 +509,7 @@ const RaceTrack = ({ navigation, route }) => {
                                 />
                             )}
 
-                            {(bookingStatus === 'new' || bookingStatus === 'rejected') && (
+                            {(bookingStatus === 'new' || bookingStatus === 'rejected' || bookingStatus === 'approved' || bookingStatus === 'filed') && (
                                 <TouchableOpacity
                                     style={[styles.startButton, isSubmitting && { opacity: 0.7 }]}
                                     onPress={handleStartFilling}
@@ -478,7 +518,7 @@ const RaceTrack = ({ navigation, route }) => {
                                     {isSubmitting ? (
                                         <ActivityIndicator size="small" color={AppColors.WHITE} />
                                     ) : (
-                                        <AppText title={bookingStatus === 'rejected' ? "UPDATE FILING" : "START"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
+                                        <AppText title={(bookingStatus === 'approved' || bookingStatus === 'filed') ? "START NEW" : bookingStatus === 'rejected' ? "UPDATE FILING" : "START"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
                                     )}
                                 </TouchableOpacity>
                             )}
@@ -577,6 +617,46 @@ const RaceTrack = ({ navigation, route }) => {
                         </View>
                     </View>
                 </Modal>
+
+                {/* Year Picker Modal */}
+                <Modal
+                    visible={showYearPicker}
+                    animationType="fade"
+                    transparent={true}
+                    onRequestClose={() => setShowYearPicker(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setShowYearPicker(false)}
+                    >
+                        <View style={styles.yearPickerContainer}>
+                            <AppText title="Select Tax Year" textSize={2} textColor={AppColors.ThemeColor} textFontWeight style={{ marginBottom: 15 }} />
+                            <FlatList
+                                data={years}
+                                keyExtractor={item => item}
+                                renderItem={({ item: y }) => (
+                                    <TouchableOpacity
+                                        style={[styles.yearOption, selectedYear === y && styles.selectedYearOption]}
+                                        onPress={() => {
+                                            setSelectedYear(y);
+                                            setShowYearPicker(false);
+                                        }}
+                                    >
+                                        <AppText title={y} textSize={1.8} textColor={selectedYear === y ? AppColors.WHITE : AppColors.ThemeColor} textFontWeight={selectedYear === y} />
+                                        {selectedYear === y && <Icon name="check" size={20} color={AppColors.WHITE} />}
+                                    </TouchableOpacity>
+                                )}
+                                showsVerticalScrollIndicator={false}
+                                contentContainerStyle={{ paddingBottom: 10 }}
+                                initialScrollIndex={years.indexOf(selectedYear) !== -1 ? years.indexOf(selectedYear) : 0}
+                                getItemLayout={(data, index) => (
+                                    { length: 55, offset: 55 * index, index }
+                                )}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
             </View>
         </Container>
     );
@@ -590,8 +670,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     yearHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         marginVertical: responsiveHeight(1),
+        paddingVertical: 5,
     },
     progressContainer: {
         backgroundColor: AppColors.WHITE,
@@ -698,18 +781,15 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: responsiveHeight(5),
+        paddingVertical: 40,
+        backgroundColor: '#F9FAFB',
+        borderRadius: 20,
+        marginTop: 20,
     },
-    loaderContainer: {
-        marginBottom: 20,
-    },
-    spinner: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        borderWidth: 4,
-        borderColor: '#E6EBED',
-        borderTopColor: '#007B7F',
+    loaderWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
     },
     startButton: {
         backgroundColor: AppColors.ThemeColor,
@@ -787,5 +867,31 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 30,
         width: '100%',
+    },
+    yearPickerContainer: {
+        backgroundColor: AppColors.WHITE,
+        borderRadius: 20,
+        padding: 20,
+        width: '85%',
+        alignSelf: 'center',
+        maxHeight: '70%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    yearOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+        marginBottom: 5,
+        height: 50, // Fixed height for FlatList layout
+    },
+    selectedYearOption: {
+        backgroundColor: AppColors.ThemeColor,
     }
 });
