@@ -176,6 +176,13 @@ export const mainApis = createApi({
         method: 'GET',
       }),
     }),
+    linkFile: builder.mutation({
+      query: data => ({
+        url: 'file/link',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 export const {
@@ -199,4 +206,5 @@ export const {
   useLazyGetRatingsQuery,
   useLazyGetAllTaxCategoriesQuery,
   useCalculateTaxMutation,
+  useLinkFileMutation,
 } = mainApis;

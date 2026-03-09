@@ -32,10 +32,11 @@ export const endpoints = {
   RESET_PASSWORD: 'auth/resetPassword',
   GET_ALL_FILES: params => {
     if (typeof params === 'object') {
-      const { year, bookingId } = params;
+      const { year, bookingId, userId } = params;
       let url = 'file?';
       if (year) url += `year=${year}&`;
       if (bookingId) url += `bookingId=${bookingId}&`;
+      if (userId) url += `userId=${userId}&`;
       return url.endsWith('&') || url.endsWith('?') ? url.slice(0, -1) : url;
     }
     return params ? `file?year=${params}` : 'file';

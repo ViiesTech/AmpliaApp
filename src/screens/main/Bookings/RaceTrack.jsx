@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation } from '../../../redux/services/mainService';
+import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import Container from '../../../components/Container';
@@ -35,13 +35,15 @@ const RaceTrack = ({ navigation, route }) => {
     const [getBookings] = useLazyGetBookingsQuery();
     const [internalBookingId, setInternalBookingId] = useState(route?.params?.bookingId);
 
+    const [getAllServices] = useLazyGetAllServicesQuery();
+    const [createBooking] = useCreateBookingMutation();
+
     // If no bookingId, try to find the user's latest booking
     useEffect(() => {
         if (!internalBookingId && user?._id) {
             getBookings(user._id).unwrap().then(res => {
                 const bookings = res?.bookings || [];
                 if (bookings.length > 0) {
-                    // Sort by date or just pick first active
                     const latest = bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
                     setInternalBookingId(latest._id);
                 }
@@ -49,7 +51,7 @@ const RaceTrack = ({ navigation, route }) => {
         }
     }, [user, internalBookingId]);
 
-    const bookingId = internalBookingId || '67c740203f19e487da23a789'; // Fallback to mock
+    const bookingId = internalBookingId;
     const { data: bookingData } = useGetBookingByIdQuery(bookingId, {
         pollingInterval: 3000,
         skip: !bookingId
@@ -57,9 +59,11 @@ const RaceTrack = ({ navigation, route }) => {
     const [getFiles, { data: filesData }] = useLazyGetFilesQuery();
     const [updateBooking] = useUpdateBookingMutation();
     const [uploadFile] = useUploadFileMutation();
+    const [linkFile] = useLinkFileMutation();
     const [documents, setDocuments] = useState(initialDocs);
     const [bookingStatus, setBookingStatus] = useState('new');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showVault, setShowVault] = useState(false);
 
     useEffect(() => {
         if (bookingData?.success && bookingData?.data?.status) {
@@ -97,6 +101,35 @@ const RaceTrack = ({ navigation, route }) => {
         }
     }, [filesData]);
 
+    const handleLinkDocument = async (vaultFile) => {
+        if (!bookingId) {
+            ShowToast('No active booking to link documents');
+            return;
+        }
+
+        try {
+            // Find which document category this vault file should fulfill
+            // If the user picked a specific doc slot before opening vault, we'd use that.
+            // For now, let's try to match by name or just use 'user_doc' type.
+            const payload = {
+                bookingId: bookingId,
+                name: vaultFile.name,
+                url: vaultFile.url,
+                year: vaultFile.year || '2024',
+                type: vaultFile.type || 'user_doc'
+            };
+
+            await linkFile(payload).unwrap();
+            ShowToast(`${vaultFile.name} linked successfully`);
+
+            // Refresh files
+            getFiles({ bookingId });
+        } catch (error) {
+            console.error('Link File Error:', error);
+            ShowToast('Failed to link document');
+        }
+    };
+
     const handlePick = async (category) => {
         try {
             const results = await pick({
@@ -120,18 +153,86 @@ const RaceTrack = ({ navigation, route }) => {
         }
     };
 
-    const handleStartFilling = async () => {
+    const handleStartNewBooking = async () => {
         try {
-            setIsSubmitting(true);
+            // Try to find real service from backend
+            const servicesRes = await getAllServices().unwrap();
+            let taxService = servicesRes?.services?.find(s => s.name.toLowerCase().includes('tax')) || servicesRes?.services?.[0];
 
-            // 1. Upload all picked files
-            const categoriesWithFiles = documents.filter(d => d.status === 'Picked' && d.files?.length > 0);
+            // If no services in DB, use a predefined fallback to ensure flow works
+            if (!taxService) {
+                taxService = {
+                    _id: '67c740203f19e487da23a002',
+                    name: 'Tax Preparation & Filing',
+                    category: 'Tax',
+                    price: 250,
+                    description: 'Professional tax preparation and filing service (Fallback).',
+                    cover: 'service_one.png'
+                };
+            }
 
-            if (categoriesWithFiles.length === 0 && !documents.some(d => d.status === 'Received' || d.status === 'Sent')) {
-                ShowToast('Please upload at least one document');
-                setIsSubmitting(false);
+            const payload = {
+                service: taxService._id,
+                serviceName: taxService.name,
+                category: typeof taxService.category === 'object' ? taxService.category?.name : (taxService.category || 'Tax'),
+                planName: 'Standard',
+                price: taxService.price || 0,
+                description: taxService.description || '',
+                cover: taxService.cover || '',
+                status: 'new',
+                startDate: new Date().toISOString(),
+                endDate: new Date().toISOString(),
+            };
+
+            const res = await createBooking(payload).unwrap();
+            if (res?.success && res?.booking?._id) {
+                setInternalBookingId(res.booking._id);
+                return res.booking._id;
+            }
+            return null;
+        } catch (error) {
+            console.error('Create Booking Error:', error);
+            ShowToast('Failed to create new booking');
+            return null;
+        }
+    };
+
+    const handleStartFilling = async () => {
+        if (bookingStatus === 'new' || !bookingId) {
+            if (!user?._id) {
+                ShowToast('User identity missing, please re-login');
                 return;
             }
+
+            let currentId = bookingId;
+            if (!currentId) {
+                setIsSubmitting(true);
+                currentId = await handleStartNewBooking();
+                setIsSubmitting(false);
+                if (!currentId) return;
+            }
+
+            // Fetch user documents to show in VaultModal
+            try {
+                await getFiles({ userId: user._id }).unwrap();
+                setShowVault(true);
+            } catch (error) {
+                console.error('Fetch Vault Error:', error);
+                ShowToast('Failed to fetch document vault');
+            }
+        } else if (bookingStatus === 'sent' || bookingStatus === 'rejected') {
+            // Direct re-upload flow or simple status update
+            handleStartProcess();
+        }
+    };
+
+    const handleStartProcess = async () => {
+        if (!bookingId) return;
+
+        setIsSubmitting(true);
+        try {
+            // 1. Upload all NEWLY picked files (if any)
+            const categoriesWithFiles = documents.filter(d => d.status === 'Picked' && d.files?.length > 0);
 
             for (const cat of categoriesWithFiles) {
                 for (const file of cat.files) {
@@ -149,14 +250,13 @@ const RaceTrack = ({ navigation, route }) => {
                     await uploadFile(formData).unwrap();
                 }
             }
-
-            // 2. Update booking status
+            // Update booking status to 'sent' when user finishes selecting documents
             await updateBooking({ id: bookingId, data: { status: 'sent' } }).unwrap();
-            setBookingStatus('sent');
-            ShowToast('Documents sent to admin panel');
+            ShowToast('Filing process started successfully');
+            if (showVault) setShowVault(false);
         } catch (error) {
             console.error('Start Error:', error);
-            ShowToast('Failed to start process');
+            ShowToast(error?.data?.message || 'Failed to start filing process');
         } finally {
             setIsSubmitting(false);
         }
@@ -201,7 +301,7 @@ const RaceTrack = ({ navigation, route }) => {
                     </View>
                 </View>
 
-                {!isReceived && !isSent && !isPicked ? (
+                {(isRejected || (bookingStatus === 'new' && !isReceived && !isSent && !isPicked)) ? (
                     <TouchableOpacity
                         style={styles.uploadButton}
                         onPress={() => handlePick(item)}
@@ -369,7 +469,7 @@ const RaceTrack = ({ navigation, route }) => {
                                 />
                             )}
 
-                            {bookingStatus === 'new' && (documents.some(d => d.status === 'Sent' || d.status === 'Received' || d.status === 'Picked')) && (
+                            {(bookingStatus === 'new' || bookingStatus === 'rejected') && (
                                 <TouchableOpacity
                                     style={[styles.startButton, isSubmitting && { opacity: 0.7 }]}
                                     onPress={handleStartFilling}
@@ -378,7 +478,7 @@ const RaceTrack = ({ navigation, route }) => {
                                     {isSubmitting ? (
                                         <ActivityIndicator size="small" color={AppColors.WHITE} />
                                     ) : (
-                                        <AppText title="START" textSize={2} textColor={AppColors.WHITE} textFontWeight />
+                                        <AppText title={bookingStatus === 'rejected' ? "UPDATE FILING" : "START"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
                                     )}
                                 </TouchableOpacity>
                             )}
@@ -422,6 +522,61 @@ const RaceTrack = ({ navigation, route }) => {
                 <LineBreak space={4} />
 
                 <LineBreak space={4} />
+
+                <Modal
+                    visible={showVault}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setShowVault(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.vaultContainer}>
+                            <View style={styles.vaultHeader}>
+                                <AppText title="Your Document Vault" textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
+                                <TouchableOpacity onPress={() => setShowVault(false)}>
+                                    <Icon name="close" size={25} color={AppColors.GRAY} />
+                                </TouchableOpacity>
+                            </View>
+                            <AppText title="Select documents you've previously uploaded to link them with this booking." textSize={1.4} textColor={AppColors.GRAY} style={{ marginBottom: 15 }} />
+
+                            <FlatList
+                                data={filesData?.files || []}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={({ item }) => (
+                                    <View style={styles.vaultItem}>
+                                        <View style={{ flex: 1 }}>
+                                            <AppText title={item.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                            <AppText title={`Uploaded on ${new Date(item.createdAt).toLocaleDateString()}`} textSize={1.2} textColor={AppColors.GRAY} />
+                                        </View>
+                                        <TouchableOpacity
+                                            style={styles.linkButton}
+                                            onPress={() => handleLinkDocument(item)}
+                                        >
+                                            <AppText title="Link" textSize={1.4} textColor={AppColors.WHITE} textFontWeight />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                                ListEmptyComponent={() => (
+                                    <View style={{ alignItems: 'center', padding: 20 }}>
+                                        <AppText title="No documents found in your vault." textSize={1.6} textColor={AppColors.GRAY} />
+                                    </View>
+                                )}
+                            />
+
+                            <TouchableOpacity
+                                style={[styles.proceedButton, isSubmitting && { opacity: 0.7 }]}
+                                onPress={handleStartProcess}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <ActivityIndicator color={AppColors.WHITE} />
+                                ) : (
+                                    <AppText title="START FILING" textColor={AppColors.WHITE} textFontWeight />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </Container>
     );
@@ -592,5 +747,45 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginTop: 15,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    vaultContainer: {
+        backgroundColor: AppColors.WHITE,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        padding: 20,
+        maxHeight: '80%',
+    },
+    vaultHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    vaultItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F3F6',
+    },
+    vaultLinkButton: {
+        backgroundColor: AppColors.ThemeColor,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    proceedButton: {
+        backgroundColor: AppColors.ThemeColor,
+        paddingVertical: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 20,
+        marginBottom: 30,
+        width: '100%',
     }
 });
