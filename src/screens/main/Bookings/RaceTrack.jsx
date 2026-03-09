@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal, Linking } from 'react-native';
+import { getImageUrl } from '../../../redux/constant';
 import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
@@ -483,30 +484,45 @@ const RaceTrack = ({ navigation, route }) => {
                             <LineBreak space={1} />
 
                             {bookingStatus === 'review' || bookingStatus === 'approved' ? (
-                                <View style={styles.returnDocCard}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={styles.fileIconBig}>
-                                            <Icon name="file-pdf-box" size={30} color="#F44336" />
+                                {(() => {
+                                    const returnDoc = (filesData?.files || []).find(f => f.type === 'return_doc');
+                                    return (
+                                        <View style={styles.returnDocCard}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <View style={styles.fileIconBig}>
+                                                    <Icon name="file-pdf-box" size={30} color="#F44336" />
+                                                </View>
+                                                <View style={{ marginLeft: 15, flex: 1 }}>
+                                                    <AppText title={returnDoc?.name || `Tax Return ${selectedYear} (Final)`} textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
+                                                    <AppText title="Uploaded by Admin" textSize={1.4} textColor={AppColors.GRAY} />
+                                                </View>
+                                            </View>
+                                            <TouchableOpacity
+                                                style={[styles.viewButton, !returnDoc && { opacity: 0.5 }]}
+                                                disabled={!returnDoc}
+                                                onPress={() => {
+                                                    if (returnDoc) {
+                                                        const url = getImageUrl(returnDoc.url, 'file');
+                                                        Linking.openURL(url).catch(err =>
+                                                            console.error("Couldn't load page", err),
+                                                        );
+                                                    } else {
+                                                        ShowToast('Return document not found');
+                                                    }
+                                                }}
+                                            >
+                                                <AppText title="View Return" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                            </TouchableOpacity>
                                         </View>
-                                        <View style={{ marginLeft: 15, flex: 1 }}>
-                                            <AppText title="Tax Return 2024 (Final)" textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
-                                            <AppText title="Uploaded by Admin" textSize={1.4} textColor={AppColors.GRAY} />
-                                        </View>
-                                    </View>
-                                    <TouchableOpacity
-                                        style={styles.viewButton}
-                                        onPress={() => ShowToast('Opening return document...')}
-                                    >
-                                        <AppText title="View Return" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
-                                    </TouchableOpacity>
-                                </View>
+                                    );
+                                })()}
                             ) : (
-                                <FlatList
-                                    data={documents}
-                                    renderItem={renderDocItem}
-                                    keyExtractor={item => item.id.toString()}
-                                    scrollEnabled={false}
-                                />
+                            <FlatList
+                                data={documents}
+                                renderItem={renderDocItem}
+                                keyExtractor={item => item.id.toString()}
+                                scrollEnabled={false}
+                            />
                             )}
 
                             {(bookingStatus === 'new' || bookingStatus === 'rejected' || bookingStatus === 'approved' || bookingStatus === 'filed') && (

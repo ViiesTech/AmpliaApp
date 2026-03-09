@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, Fragment } from 'react';
-import { View, FlatList, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, Linking, ScrollView } from 'react-native';
+import { useSelector } from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -21,40 +22,41 @@ import { getImageUrl } from '../../../redux/constant';
 
 import { useLazyGetFilesQuery } from '../../../redux/services/mainService';
 
+const currentYear = new Date().getFullYear();
+const startYearBound = currentYear + 1;
 const topTabsData = [
-  { id: 1, title: 'All' },
-  { id: 2, title: '2021' },
-  { id: 3, title: '2022' },
-  { id: 4, title: '2023' },
-  { id: 5, title: '2024' },
-  { id: 6, title: '2025' },
-  { id: 7, title: '2026' },
+  { id: 0, title: 'All' },
+  ...Array.from({ length: startYearBound - 1900 + 1 }, (_, i) => ({
+    id: i + 1,
+    title: (startYearBound - i).toString()
+  }))
 ];
 
 const MyFiles = props => {
   const { params } = props.route || {};
   const bookingId = params?.bookingId;
   const [selectedTab, setSelectedTab] = useState('All');
-  const [getFiles, { data, isLoading }] = useLazyGetFilesQuery();
+  const { user } = useSelector(state => state.persistedData);
+  const [getFiles, { data, isLoading, isFetching }] = useLazyGetFilesQuery();
 
   useEffect(() => {
     if (bookingId) {
-      getFiles({ bookingId });
-    } else {
-      getFiles();
+      getFiles({ bookingId, userId: user?._id });
+    } else if (user?._id) {
+      getFiles({ userId: user._id });
     }
-  }, [getFiles, bookingId]);
+  }, [getFiles, bookingId, user?._id]);
 
   const onSelectYear = useCallback(
     async year => {
       setSelectedTab(year);
 
       try {
-        if (year === 'All') {
-          await getFiles().unwrap();
-        } else {
-          await getFiles(year).unwrap();
+        const fetchParams = { userId: user?._id };
+        if (year !== 'All') {
+          fetchParams.year = year;
         }
+        await getFiles(fetchParams).unwrap();
       } catch (error) {
         ShowToast(error?.data?.message || 'Error fetching files');
         console.log('Fetch files error:', error);
@@ -92,10 +94,12 @@ const MyFiles = props => {
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
+      <Feather name="folder-minus" size={40} color={AppColors.GRAY} style={{ marginBottom: 10 }} />
       <AppText
         textSize={1.8}
         textAlignment="center"
-        title={data?.message || 'No Files Found'}
+        textColor={AppColors.GRAY}
+        title={selectedTab === 'All' ? 'No documents found in your vault.' : `No documents found for ${selectedTab}.`}
       />
     </View>
   );
@@ -117,34 +121,72 @@ const MyFiles = props => {
 
           <LineBreak space={2} />
 
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <View style={styles.loaderContainer}>
               <Loader color={AppColors.ThemeColor} />
             </View>
           ) : (
-            <FlatList
-              data={data?.files || []}
-              numColumns={2}
-              keyExtractor={(item, index) =>
-                item?._id ? item._id.toString() : `file-${index}`
-              }
-              renderItem={({ item }) => (
-                <PdfCard
-                  title={item.name}
-                  onPress={() => {
-                    const url = getImageUrl(item.url, 'file');
-                    Linking.openURL(url).catch(err =>
-                      console.error("Couldn't load page", err),
-                    );
-                  }}
-                />
-              )}
-              ListEmptyComponent={renderEmptyComponent}
-              columnWrapperStyle={styles.columnWrapper}
-              ItemSeparatorComponent={() => <LineBreak space={2} />}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1 }}
-            />
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+              {(() => {
+                const files = data?.files || [];
+                const filedByAdmin = files.filter(f => f.type === 'return_doc');
+                const userDocs = files.filter(f => f.type === 'user_doc');
+
+                if (files.length === 0) return renderEmptyComponent();
+
+                const renderFileGrid = (items) => (
+                  <View style={styles.gridContainer}>
+                    {items.map((item, index) => (
+                      <View key={item?._id || `file-${index}`} style={styles.gridItem}>
+                        <PdfCard
+                          title={item.name}
+                          onPress={() => {
+                            const url = getImageUrl(item.url, 'file');
+                            Linking.openURL(url).catch(err =>
+                              console.error("Couldn't load page", err),
+                            );
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                );
+
+                return (
+                  <View style={{ paddingBottom: 20 }}>
+                    {filedByAdmin.length > 0 && (
+                      <View style={{ marginBottom: 25 }}>
+                        <AppText
+                          title="FILED DOCUMENTS (From Admin)"
+                          textSize={1.6}
+                          textColor={AppColors.GRAY}
+                          textFontWeight
+                          style={{ marginBottom: 15 }}
+                        />
+                        {renderFileGrid(filedByAdmin)}
+                      </View>
+                    )}
+
+                    <View>
+                      <AppText
+                        title="YOUR DOCUMENTS"
+                        textSize={1.6}
+                        textColor={AppColors.GRAY}
+                        textFontWeight
+                        style={{ marginBottom: 15 }}
+                      />
+                      {userDocs.length > 0 ? (
+                        renderFileGrid(userDocs)
+                      ) : (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                          <AppText title="No user documents found." textSize={1.4} textColor={AppColors.GRAY} />
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                );
+              })()}
+            </ScrollView>
           )}
 
           <LineBreak space={10} />
@@ -191,6 +233,15 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     gap: responsiveWidth(3),
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: responsiveWidth(3),
+  },
+  gridItem: {
+    width: (responsiveWidth(90) - responsiveWidth(3)) / 2,
+    marginBottom: responsiveHeight(2),
   },
   fab: {
     position: 'absolute',
