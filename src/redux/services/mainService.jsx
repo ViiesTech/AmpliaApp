@@ -75,10 +75,9 @@ export const mainApis = createApi({
       },
     }),
     getBookings: builder.query({
-      query: userId => {
-
+      query: (params) => {
         return {
-          url: endpoints.GET_BOOKINGS(userId),
+          url: endpoints.GET_BOOKINGS(params),
           method: 'GET',
         };
       },

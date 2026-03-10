@@ -52,7 +52,16 @@ export const endpoints = {
   DELETE_USER: 'user',
   CHANGE_PASSWORD: 'user/updatePassword',
   GET_SINGLE_SERVICE: id => `service/${id}`,
-  GET_BOOKINGS: userId => `booking/?user=${userId}`,
+  GET_BOOKINGS: params => {
+    if (typeof params === 'object') {
+      const { userId, year, FiledYear } = params;
+      let url = `booking/?user=${userId}`;
+      if (year) url += `&year=${year}`;
+      if (FiledYear) url += `&FiledYear=${FiledYear}`;
+      return url;
+    }
+    return `booking/?user=${params}`;
+  },
   createBooking: 'booking',
   UPDATE_BOOKING: (id) => `booking/${id}`,
   GET_ALL_SUBADMINS: 'subAdmin',
