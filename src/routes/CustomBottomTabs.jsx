@@ -20,7 +20,7 @@ import RaceTrack from '../screens/main/Bookings/RaceTrack';
 const Tab = createBottomTabNavigator();
 const screens = [
   { name: 'Race Track', icon: 'horse-variant' },
-  { name: 'Vault', icon: 'folder-lock-outline' },
+  { name: 'Vault', icon: 'folder' },
   { name: 'Calculator', icon: 'calculator-variant' },
   { name: 'Messages', icon: 'chat-processing-outline' },
   { name: 'More', icon: 'dots-horizontal' },

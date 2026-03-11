@@ -32,7 +32,15 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>AmpliaApp requires access to your location to provide personalized services related to your village.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AmpliaApp requires access to the camera to allow you to take profile pictures and send photo attachments in chat.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AmpliaApp requires access to your photo library to allow you to select profile pictures and send attachments in chat.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>AmpliaApp requires permission to save photos to your library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AmpliaApp requires access to the microphone if you want to record video message attachments.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
