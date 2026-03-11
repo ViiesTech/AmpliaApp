@@ -1,3 +1,4 @@
+// export const BASE_URL = 'https://apiforapp.link/Amplia/';
 export const BASE_URL = 'https://megasporic-carolyn-diametrically.ngrok-free.dev/';
 export const IMAGE_BASE_URL = `${BASE_URL}uploads/`;
 
