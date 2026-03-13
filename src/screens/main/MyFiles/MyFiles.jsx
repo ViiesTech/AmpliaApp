@@ -36,6 +36,7 @@ const MyFiles = props => {
   const { params } = props.route || {};
   const bookingId = params?.bookingId;
   const [selectedTab, setSelectedTab] = useState('All');
+  const [selectedDocType, setSelectedDocType] = useState('user_doc'); // 'user_doc' or 'return_doc'
   const { user } = useSelector(state => state.persistedData);
   const [getFiles, { data, isLoading, isFetching }] = useLazyGetFilesQuery();
 
@@ -62,7 +63,7 @@ const MyFiles = props => {
         console.log('Fetch files error:', error);
       }
     },
-    [getFiles],
+    [getFiles, user?._id],
   );
 
   const renderTabItem = ({ item }) => {
@@ -110,6 +111,44 @@ const MyFiles = props => {
         <View style={styles.container}>
           <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Booking Files" : "Vault"} />
 
+          <View style={styles.toggleWrapper}>
+            <TouchableOpacity
+              onPress={() => setSelectedDocType('user_doc')}
+              style={styles.toggleButton}
+            >
+              <LinearGradient
+                colors={selectedDocType === 'user_doc' ? ['#003C46', '#007C91'] : [AppColors.WHITE, AppColors.WHITE]}
+                style={styles.toggleGradient}
+              >
+                <AppText
+                  title="My Files"
+                  textSize={1.6}
+                  textColor={selectedDocType === 'user_doc' ? AppColors.WHITE : AppColors.ThemeColor}
+                  textFontWeight={selectedDocType === 'user_doc'}
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setSelectedDocType('return_doc')}
+              style={styles.toggleButton}
+            >
+              <LinearGradient
+                colors={selectedDocType === 'return_doc' ? ['#003C46', '#007C91'] : [AppColors.WHITE, AppColors.WHITE]}
+                style={styles.toggleGradient}
+              >
+                <AppText
+                  title="Return Files"
+                  textSize={1.6}
+                  textColor={selectedDocType === 'return_doc' ? AppColors.WHITE : AppColors.ThemeColor}
+                  textFontWeight={selectedDocType === 'return_doc'}
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          <LineBreak space={1.5} />
+
           <FlatList
             data={topTabsData}
             horizontal
@@ -129,10 +168,9 @@ const MyFiles = props => {
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
               {(() => {
                 const files = data?.files || [];
-                const filedByAdmin = files.filter(f => f.type === 'return_doc');
-                const userDocs = files.filter(f => f.type === 'user_doc');
+                const filteredFiles = files.filter(f => f.type === selectedDocType);
 
-                if (files.length === 0) return renderEmptyComponent();
+                if (files.length === 0 || filteredFiles.length === 0) return renderEmptyComponent();
 
                 const renderFileGrid = (items) => (
                   <View style={styles.gridContainer}>
@@ -154,34 +192,15 @@ const MyFiles = props => {
 
                 return (
                   <View style={{ paddingBottom: 20 }}>
-                    {filedByAdmin.length > 0 && (
-                      <View style={{ marginBottom: 25 }}>
-                        <AppText
-                          title="FILED DOCUMENTS (From Admin)"
-                          textSize={1.6}
-                          textColor={AppColors.GRAY}
-                          textFontWeight
-                          style={{ marginBottom: 15 }}
-                        />
-                        {renderFileGrid(filedByAdmin)}
-                      </View>
-                    )}
-
                     <View>
                       <AppText
-                        title="YOUR DOCUMENTS"
+                        title={selectedDocType === 'user_doc' ? "YOUR DOCUMENTS" : "FILED DOCUMENTS (From Admin)"}
                         textSize={1.6}
                         textColor={AppColors.GRAY}
                         textFontWeight
                         style={{ marginBottom: 15 }}
                       />
-                      {userDocs.length > 0 ? (
-                        renderFileGrid(userDocs)
-                      ) : (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                          <AppText title="No user documents found." textSize={1.4} textColor={AppColors.GRAY} />
-                        </View>
-                      )}
+                      {renderFileGrid(filteredFiles)}
                     </View>
                   </View>
                 );
@@ -192,22 +211,6 @@ const MyFiles = props => {
           <LineBreak space={10} />
         </View>
       </Container>
-
-      {/* Floating Action Button (optional) */}
-      {/* 
-      <TouchableOpacity style={styles.fab}>
-        <LinearGradient
-          colors={['#003C46', '#007C91']}
-          style={styles.fabGradient}
-        >
-          <Feather
-            name="plus"
-            size={responsiveFontSize(3)}
-            color={AppColors.WHITE}
-          />
-        </LinearGradient>
-      </TouchableOpacity> 
-      */}
     </Fragment>
   );
 };
@@ -218,9 +221,28 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: responsiveWidth(5),
   },
+  toggleWrapper: {
+    flexDirection: 'row',
+    backgroundColor: AppColors.WHITE,
+    borderRadius: 30,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: AppColors.app_light,
+    marginBottom: responsiveHeight(1),
+  },
+  toggleButton: {
+    flex: 1,
+  },
+  toggleGradient: {
+    paddingVertical: responsiveHeight(1.2),
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   tabsContainer: {
     gap: responsiveWidth(3),
     flexGrow: 1,
+    paddingVertical: 5,
   },
   tab: {
     paddingHorizontal: responsiveWidth(4),
@@ -257,6 +279,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
+    marginTop: responsiveHeight(10),
     alignItems: 'center',
     justifyContent: 'center',
   },

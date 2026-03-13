@@ -540,7 +540,7 @@ const RaceTrack = ({ navigation, route }) => {
                 >
                     <AppText title={`Taxes ${selectedYear}`} textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
                     {['new', 'approved', 'filed'].includes(bookingStatus) && (
-                        <Icon name="chevron-down" size={20} color={AppColors.ThemeColor} style={{ marginLeft: 5 }} />
+                        <Icon name="chevron-down" size={15} color={AppColors.ThemeColor} style={{ marginLeft: 5 }} />
                     )}
                 </TouchableOpacity>
 
@@ -948,9 +948,9 @@ const styles = StyleSheet.create({
     },
     horseIcon: {
         position: 'absolute',
-        width: 60,
-        height: 60,
-        top: -55,
+        width: 50,
+        height: 50,
+        top: -40,
         left: '25%', // Moves based on progress
     },
     docsContainer: {
