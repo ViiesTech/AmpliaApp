@@ -19,16 +19,17 @@ import Feather from 'react-native-vector-icons/Feather';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppText';
 import { AppImages } from '../../../assets/images';
+import { calculateComplexityScore, getTierInfo, detectMaterialChange } from '../../../utils/complexityScoring';
 
 const initialDocs = [
-    { id: 1, name: 'W-2 / 1099', status: 'Pending', rejectionReason: '' },
-    { id: 2, name: 'Self-employment', status: 'Pending', rejectionReason: '' },
-    { id: 3, name: 'Rental property', status: 'Pending', rejectionReason: '' },
-    { id: 4, name: 'Investments', status: 'Pending', rejectionReason: '' },
-    { id: 5, name: 'Crypto', status: 'Pending', rejectionReason: '' },
-    { id: 6, name: 'Foreign income', status: 'Pending', rejectionReason: '' },
-    { id: 7, name: 'Dependents', status: 'Pending', rejectionReason: '' },
-    { id: 8, name: 'Prior-year return', status: 'Pending', important: true, rejectionReason: '' },
+    { id: 1, name: 'W-2 / 1099', status: 'Pending', rejectionReason: '', type: 'income' },
+    { id: 2, name: 'Self-employment', status: 'Pending', rejectionReason: '', type: 'schedule_c' },
+    { id: 3, name: 'Rental property', status: 'Pending', rejectionReason: '', type: 'rental' },
+    { id: 4, name: 'Investments', status: 'Pending', rejectionReason: '', type: 'investments' },
+    { id: 5, name: 'Crypto', status: 'Pending', rejectionReason: '', type: 'crypto' },
+    { id: 6, name: 'Foreign income', status: 'Pending', rejectionReason: '', type: 'foreign' },
+    { id: 7, name: 'Dependents', status: 'Pending', rejectionReason: '', type: 'dependents' },
+    { id: 8, name: 'Prior-year return', status: 'Pending', important: true, rejectionReason: '', type: 'prior_year' },
 ];
 
 const RaceTrack = ({ navigation, route }) => {
@@ -40,7 +41,60 @@ const RaceTrack = ({ navigation, route }) => {
     const [createBooking] = useCreateBookingMutation();
 
 
+    const getScoringData = (docs) => {
+        const data = {
+            w2Count: 0,
+            necMisc1099Count: 0,
+            k1Count: 0,
+            ssa1099Count: 0,
+            unemploymentCount: 0,
+            hasScheduleC: false,
+            rentalPropertyCount: 0,
+            hasCapitalGains: false,
+            hasCrypto: false,
+            additionalStatesCount: 0,
+            hasForeignIncome: false,
+            hasITIN: false,
+            isAmended: false,
+            hasPriorYearIssues: false,
+            dependentCount: 0,
+            hasChildcareCredit: false,
+            hasEducationCredit: false,
+        };
 
+        docs.forEach(doc => {
+            const fileCount = (doc.files?.length || 0) || (doc.status === 'Sent' || doc.status === 'Received' ? 1 : 0);
+            if (fileCount === 0) return;
+
+            switch (doc.type) {
+                case 'income':
+                    data.w2Count = fileCount; // Simplified mapping
+                    break;
+                case 'schedule_c':
+                    data.hasScheduleC = true;
+                    break;
+                case 'rental':
+                    data.rentalPropertyCount = fileCount;
+                    break;
+                case 'investments':
+                    data.hasCapitalGains = true;
+                    break;
+                case 'crypto':
+                    data.hasCrypto = true;
+                    break;
+                case 'foreign':
+                    data.hasForeignIncome = true;
+                    break;
+                case 'dependents':
+                    data.dependentCount = fileCount;
+                    break;
+                case 'prior_year':
+                    data.hasPriorYearIssues = true;
+                    break;
+            }
+        });
+        return data;
+    };
 
 
     const bookingId = internalBookingId;
@@ -62,6 +116,15 @@ const RaceTrack = ({ navigation, route }) => {
     const [showYearPicker, setShowYearPicker] = useState(false);
     const startYearBound = currentYear + 1;
     const years = Array.from({ length: startYearBound - 1900 + 1 }, (_, i) => (startYearBound - i).toString());
+
+    const [showEstimateModal, setShowEstimateModal] = useState(false);
+    const [estimateInfo, setEstimateInfo] = useState(null);
+    const [materialChange, setMaterialChange] = useState(null);
+
+    const liveScoringData = getScoringData(documents);
+    const liveScore = calculateComplexityScore(liveScoringData);
+    const liveTier = getTierInfo(liveScore);
+
 
     // Find the booking that matches the currently selected year
 
@@ -173,6 +236,12 @@ const RaceTrack = ({ navigation, route }) => {
         }
     };
 
+    const handleDeselect = (categoryId) => {
+        setDocuments(prev => prev.map(doc =>
+            doc.id === categoryId ? { ...doc, files: [], status: 'Pending' } : doc
+        ));
+    };
+
     const handlePick = async (category) => {
         try {
             const results = await pick({
@@ -244,13 +313,49 @@ const RaceTrack = ({ navigation, route }) => {
 
     const handleStartFilling = async () => {
         const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
+        const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
 
-        // 1. If starting fresh after approval/filing, create new booking + reset
-        if (isStartingNew) {
-            if (!user?._id) {
-                ShowToast('User identity missing, please re-login');
-                return;
+        // 1. Calculate complexity
+        const currentScoringData = getScoringData(documents);
+        const score = calculateComplexityScore(currentScoringData);
+        const tier = getTierInfo(score);
+
+        // 2. Always show estimate if starting new OR if new documents are picked OR no price yet
+        if (!bookingId || bookingStatus === 'new' || isStartingNew || hasPickedDocs || !bookingData?.booking?.price) {
+
+            // Check for material change reasons to display in the modal if applicable
+            if (bookingId && !isStartingNew && hasPickedDocs) {
+                const oldScoringData = getScoringData(documents.map(d => ({
+                    ...d,
+                    files: (d.status === 'Sent' || d.status === 'Received') ? [1] : []
+                })));
+                const change = detectMaterialChange(oldScoringData, currentScoringData);
+                setMaterialChange(change.isMaterial ? change : null);
+            } else {
+                setMaterialChange(null);
             }
+
+            setEstimateInfo({ score, tier });
+            setShowEstimateModal(true);
+            return;
+        }
+
+        // 3. If no new docs picked, open vault so user can link existing files
+        try {
+            await getFiles({ userId: user._id, year: selectedYear }).unwrap();
+            setVaultYear(selectedYear);
+            setShowVault(true);
+        } catch (error) {
+            console.error('Fetch Vault Error:', error);
+            ShowToast('Failed to fetch document vault');
+        }
+    };
+
+    const handleConfirmEstimate = async () => {
+        setShowEstimateModal(false);
+        const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
+
+        if (isStartingNew) {
             setIsSubmitting(true);
             const newId = await handleStartNewBooking();
             setIsSubmitting(false);
@@ -260,45 +365,29 @@ const RaceTrack = ({ navigation, route }) => {
             return;
         }
 
-        // 2. If no booking exists yet, create one first
         if (!bookingId) {
-            if (!user?._id) {
-                ShowToast('User identity missing, please re-login');
-                return;
-            }
             setIsSubmitting(true);
             const newId = await handleStartNewBooking();
             setIsSubmitting(false);
             if (!newId) return;
 
-            // If user already picked docs, upload them right away
             const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
             if (hasPickedDocs) {
-                // bookingId state hasn't updated yet, pass newId directly
                 await handleStartProcessWithId(newId);
             } else {
                 ShowToast('Booking created. Please upload your documents.');
             }
-            return;
-        }
-
-        // 3. Booking exists — check if user has picked any documents to upload
-        const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
-
-        if (hasPickedDocs) {
-            // Upload picked docs and mark booking as 'sent'
-            await handleStartProcess();
         } else {
-            // No new docs picked — open vault so user can link existing files
-            try {
-                await getFiles({ userId: user._id, year: selectedYear }).unwrap();
-                setVaultYear(selectedYear);
-                setShowVault(true);
-            } catch (error) {
-                console.error('Fetch Vault Error:', error);
-                ShowToast('Failed to fetch document vault');
+            const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
+            if (hasPickedDocs) {
+                await handleStartProcess();
+            } else {
+                // For material change confirmation without new picked docs (linking case)
+                await updateBooking({ id: bookingId, data: { status: 'sent', price: estimateInfo.tier.basePrice } }).unwrap();
+                ShowToast('Change confirmed and scope updated.');
             }
         }
+        setMaterialChange(null);
     };
 
     const handleStartProcessWithId = async (id) => {
@@ -324,7 +413,7 @@ const RaceTrack = ({ navigation, route }) => {
                 }
             }
             // 2. Update booking status to 'sent'
-            await updateBooking({ id: id, data: { status: 'sent' } }).unwrap();
+            await updateBooking({ id: id, data: { status: 'sent', price: estimateInfo?.tier?.basePrice || 0 } }).unwrap();
 
             // 3. Re-fetch files so the UI shows them as 'Sent'
             await getFiles({ bookingId: id });
@@ -370,7 +459,7 @@ const RaceTrack = ({ navigation, route }) => {
                 }
             }
             // 2. Update booking status to 'sent'
-            await updateBooking({ id: bookingId, data: { status: 'sent' } }).unwrap();
+            await updateBooking({ id: bookingId, data: { status: 'sent', price: estimateInfo?.tier?.basePrice || 0 } }).unwrap();
 
             // 3. Re-fetch files so the UI shows them as 'Sent'
             await getFiles({ bookingId });
@@ -448,19 +537,27 @@ const RaceTrack = ({ navigation, route }) => {
                         />
                     </TouchableOpacity>
                 ) : isPicked ? (
-                    <TouchableOpacity
-                        style={[styles.uploadButton, { backgroundColor: '#E0F2F1' }]}
-                        onPress={() => handlePick(item)}
-                    >
-                        <Icon name="file-document-outline" size={responsiveFontSize(2)} color={AppColors.ThemeColor} />
-                        <AppText
-                            title="Selected"
-                            textSize={1.4}
-                            textColor={AppColors.ThemeColor}
-                            textFontWeight
-                            style={{ marginLeft: 5 }}
-                        />
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity
+                            style={[styles.uploadButton, { backgroundColor: '#E0F2F1', marginRight: 8 }]}
+                            onPress={() => handlePick(item)}
+                        >
+                            <Icon name="file-document-outline" size={responsiveFontSize(2)} color={AppColors.ThemeColor} />
+                            <AppText
+                                title="Selected"
+                                textSize={1.4}
+                                textColor={AppColors.ThemeColor}
+                                textFontWeight
+                                style={{ marginLeft: 5 }}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => handleDeselect(item.id)}
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                            <Icon name="close-circle" size={responsiveFontSize(2.5)} color={AppColors.GRAY} />
+                        </TouchableOpacity>
+                    </View>
                 ) : isSent ? (
                     <View style={[styles.uploadButton, { backgroundColor: '#FFF3E0' }]}>
                         <AppText
@@ -621,6 +718,28 @@ const RaceTrack = ({ navigation, route }) => {
                             <AppText title={bookingStatus === 'review' || bookingStatus === 'approved' ? "Review Your Return" : "Documents Needed"} textSize={2} textColor={AppColors.ThemeColor} textFontWeight />
                             <LineBreak space={1} />
 
+                            {/* Live Estimate Bar */}
+                            {(bookingStatus === 'new' || bookingStatus === 'sent' || bookingStatus === 'rejected') && (
+                                <View style={styles.liveEstimateBar}>
+                                    <View style={styles.liveEstimateItem}>
+                                        <AppText title="Current Tier" textSize={1.2} textColor={AppColors.GRAY} />
+                                        <AppText title={liveTier.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                    </View>
+                                    <View style={styles.liveEstimateDivider} />
+                                    <View style={styles.liveEstimateItem}>
+                                        <AppText title="Est. Price" textSize={1.2} textColor={AppColors.GRAY} />
+                                        <AppText title={`$${liveTier.basePrice}`} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                    </View>
+                                    <View style={styles.liveEstimateDivider} />
+                                    <View style={styles.liveEstimateItem}>
+                                        <AppText title="Points" textSize={1.2} textColor={AppColors.GRAY} />
+                                        <AppText title={liveScore.toString()} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                    </View>
+                                </View>
+                            )}
+                            <LineBreak space={1} />
+                            <LineBreak space={1} />
+
                             {bookingStatus === 'review' || bookingStatus === 'approved' ? (
                                 (() => {
                                     const returnDoc = (filesData?.files || []).find(f => f.type === 'return_doc');
@@ -716,6 +835,72 @@ const RaceTrack = ({ navigation, route }) => {
                 <LineBreak space={4} />
 
                 <LineBreak space={4} />
+                <LineBreak space={4} />
+
+                {/* Estimate & Confirmation Modal */}
+                <Modal
+                    visible={showEstimateModal}
+                    animationType="fade"
+                    transparent={true}
+                    onRequestClose={() => setShowEstimateModal(false)}
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.estimateContainer}>
+                            <View style={styles.estimateHeader}>
+                                <Icon name={materialChange ? "alert-decagram" : "calculator"} size={40} color={AppColors.ThemeColor} />
+                                <LineBreak space={1} />
+                                <AppText
+                                    title={materialChange ? "Scope Change Detected" : "Complexity Estimate"}
+                                    textSize={2.4}
+                                    textColor={AppColors.ThemeColor}
+                                    textFontWeight
+                                />
+                            </View>
+
+                            <View style={styles.estimateBody}>
+                                {materialChange && (
+                                    <View style={styles.materialNotice}>
+                                        <AppText title="Additional documents were added that affect pricing:" textSize={1.4} textColor="#856404" textFontWeight />
+                                        {materialChange.reasons.map((reason, idx) => (
+                                            <AppText key={idx} title={`• ${reason}`} textSize={1.4} textColor="#856404" />
+                                        ))}
+                                    </View>
+                                )}
+
+                                <View style={styles.tierBox}>
+                                    <AppText title="Your Return Tier:" textSize={1.4} textColor={AppColors.GRAY} />
+                                    <AppText title={estimateInfo?.tier?.name} textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
+                                    <AppText title={`Complexity Score: ${estimateInfo?.score}`} textSize={1.2} textColor={AppColors.GRAY} />
+                                </View>
+
+                                <View style={styles.priceRow}>
+                                    <AppText title="Estimated Fee" textSize={1.8} textColor={AppColors.ThemeColor} />
+                                    <AppText title={`$${estimateInfo?.tier?.basePrice}`} textSize={2.4} textColor={AppColors.ThemeColor} textFontWeight />
+                                </View>
+                                <AppText title="Final pricing may adjust if additional documents are added." textSize={1.2} textColor={AppColors.GRAY} textAlignment="center" />
+                            </View>
+
+                            <View style={styles.estimateFooter}>
+                                <TouchableOpacity
+                                    style={styles.cancelButton}
+                                    onPress={() => {
+                                        setShowEstimateModal(false);
+                                        setMaterialChange(null);
+                                    }}
+                                >
+                                    <AppText title="Cancel" textSize={1.6} textColor={AppColors.GRAY} textFontWeight />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.confirmButton}
+                                    onPress={handleConfirmEstimate}
+                                >
+                                    <AppText title={materialChange ? "Accept & Continue" : "Confirm & Proceed"} textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
 
                 <Modal
                     visible={showVault}
@@ -1047,7 +1232,8 @@ const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     vaultContainer: {
         backgroundColor: AppColors.WHITE,
@@ -1122,5 +1308,84 @@ const styles = StyleSheet.create({
     },
     activeVaultYearTab: {
         backgroundColor: AppColors.ThemeColor,
-    }
+    },
+    estimateContainer: {
+        width: responsiveWidth(90),
+        backgroundColor: AppColors.WHITE,
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+    },
+    estimateHeader: {
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    estimateBody: {
+        width: '100%',
+        marginBottom: 20,
+    },
+    tierBox: {
+        backgroundColor: '#F5F7F8',
+        padding: 15,
+        borderRadius: 15,
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderColor: '#EEE',
+        marginTop: 10,
+    },
+    materialNotice: {
+        backgroundColor: '#FFF3CD',
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#FFEeba',
+    },
+    estimateFooter: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    cancelButton: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    confirmButton: {
+        flex: 2,
+        backgroundColor: AppColors.ThemeColor,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    liveEstimateBar: {
+        flexDirection: 'row',
+        backgroundColor: '#F5F7F8',
+        borderRadius: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    liveEstimateItem: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    liveEstimateDivider: {
+        width: 1,
+        height: '100%',
+        backgroundColor: '#E0E0E0',
+        marginHorizontal: 10,
+    },
 });

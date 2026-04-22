@@ -18,6 +18,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../../../redux/slices';
 
 const data = [
+  { id: 0, icon: AppIcons.dollar, title: 'Tax Calculator', navTo: 'Calculator' },
   { id: 1, icon: AppIcons.account, title: 'My Account', navTo: 'MyAccount' },
   {
     id: 2,

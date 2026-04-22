@@ -168,7 +168,7 @@ const LiveChat = () => {
     return (
       <Container safeAreaViewStyle={styles.container}>
         <View style={styles.chatContainer}>
-          <AppHeader onBackPress heading="Live Chat" />
+          <AppHeader onBackPress={false} heading="Messages" />
           <View style={styles.loaderContainer}>
             <Loader color={AppColors.ThemeColor} />
           </View>
@@ -184,7 +184,7 @@ const LiveChat = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.chatContainer}>
-          <AppHeader onBackPress heading="Live Chat" />
+          <AppHeader onBackPress={false} heading="Messages" />
           <View style={styles.statusBar}>
             <AppText
               title={activeHandler ? 'Connected to Support' : 'Waiting for a consultant...'}

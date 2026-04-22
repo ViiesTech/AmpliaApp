@@ -109,7 +109,7 @@ const MyFiles = props => {
     <Fragment>
       <Container>
         <View style={styles.container}>
-          <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Booking Files" : "Vault"} />
+          <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Tax Vault Files" : "Tax Vault"} />
 
           <View style={styles.toggleWrapper}>
             <TouchableOpacity

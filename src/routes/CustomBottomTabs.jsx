@@ -20,8 +20,7 @@ import RaceTrack from '../screens/main/Bookings/RaceTrack';
 const Tab = createBottomTabNavigator();
 const screens = [
   { name: 'Race Track', icon: 'horse-variant' },
-  { name: 'Vault', icon: 'folder' },
-  { name: 'Calculator', icon: 'calculator-variant' },
+  { name: 'Tax Vault', icon: 'folder' },
   { name: 'Messages', icon: 'chat-processing-outline' },
   { name: 'More', icon: 'dots-horizontal' },
 ];
@@ -30,11 +29,9 @@ const DummyScreen = ({ navigation, route }) => {
   switch (route.name) {
     case 'Race Track':
       return <RaceTrack route={route} navigation={navigation} />;
-    case 'Calculator':
-      return <Calculator route={route} navigation={navigation} />;
     case 'Messages':
       return <LiveChat route={route} navigation={navigation} />;
-    case 'Vault':
+    case 'Tax Vault':
       return <MyFiles route={route} navigation={navigation} />;
     case 'More':
       return <MyProfile route={route} navigation={navigation} />;
