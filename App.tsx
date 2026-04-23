@@ -6,6 +6,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 import { store, persistor } from './src/redux/store/index'
 import ToastMessage from './src/components/ToastMessage'
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 const App = () => {
 
@@ -23,8 +24,10 @@ const App = () => {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={null}>
         <NavigationContainer>
-          <Routes />
-          <ToastMessage position={'top'} />
+          <StripeProvider publishableKey="pk_test_51TPN2L50Y2eXm2mJEmnwCVOzAeyIsGmxndXdGUoorm9J0YjgNpFpF2nTYrwtEKcFX88VP7rpSaka2dVMmS594eKn00NWRPKUvJ">
+            <Routes />
+            <ToastMessage position={'top'} />
+          </StripeProvider>
         </NavigationContainer>
       </PersistGate>
     </Provider>

@@ -182,6 +182,13 @@ export const mainApis = createApi({
         body: data,
       }),
     }),
+    createPaymentIntent: builder.mutation({
+      query: data => ({
+        url: 'payment/create-intent',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 export const {
@@ -206,4 +213,5 @@ export const {
   useLazyGetAllTaxCategoriesQuery,
   useCalculateTaxMutation,
   useLinkFileMutation,
+  useCreatePaymentIntentMutation,
 } = mainApis;

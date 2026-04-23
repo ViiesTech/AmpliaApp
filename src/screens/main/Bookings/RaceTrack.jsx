@@ -1,8 +1,9 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal, Linking, Alert } from 'react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 import { getImageUrl } from '../../../redux/constant';
-import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation } from '../../../redux/services/mainService';
+import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation, useCreatePaymentIntentMutation } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import Container from '../../../components/Container';
@@ -105,6 +106,8 @@ const RaceTrack = ({ navigation, route }) => {
     const [updateBooking] = useUpdateBookingMutation();
     const [uploadFile] = useUploadFileMutation();
     const [linkFile] = useLinkFileMutation();
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [createPaymentIntent] = useCreatePaymentIntentMutation();
     const [documents, setDocuments] = useState(initialDocs);
     const [bookingStatus, setBookingStatus] = useState('new');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -274,7 +277,7 @@ const RaceTrack = ({ navigation, route }) => {
             // If no services in DB, use a predefined fallback to ensure flow works
             if (!taxService) {
                 taxService = {
-                    _id: '67c740203f19e487da23a002',
+                    _id: '69ea2279ea0c6bab0b10c4ff',
                     name: 'Tax Preparation & Filing',
                     category: 'Tax',
                     price: 250,
@@ -323,6 +326,18 @@ const RaceTrack = ({ navigation, route }) => {
         // 2. Always show estimate if starting new OR if new documents are picked OR no price yet
         if (!bookingId || bookingStatus === 'new' || isStartingNew || hasPickedDocs || !bookingData?.booking?.price) {
 
+            // Special case: If starting a new filing and NO docs are picked, bypass modal and just restart
+            if (isStartingNew && !hasPickedDocs) {
+                setIsSubmitting(true);
+                const newId = await handleStartNewBooking();
+                setIsSubmitting(false);
+                if (newId) {
+                    setDocuments(initialDocs);
+                    ShowToast('Filing restarted. Please upload new documents.');
+                }
+                return;
+            }
+
             // Check for material change reasons to display in the modal if applicable
             if (bookingId && !isStartingNew && hasPickedDocs) {
                 const oldScoringData = getScoringData(documents.map(d => ({
@@ -352,8 +367,53 @@ const RaceTrack = ({ navigation, route }) => {
     };
 
     const handleConfirmEstimate = async () => {
-        setShowEstimateModal(false);
         const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
+        const price = estimateInfo?.tier?.basePrice || 0;
+        const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
+
+        // ONLY pay if there are actually files to submit. Starting a new booking shell shouldn't charge.
+        if (price > 0 && hasPickedDocs) {
+            setIsSubmitting(true);
+            try {
+                const intentRes = await createPaymentIntent({ amount: price, currency: 'usd' }).unwrap();
+                if (!intentRes.success) {
+                    ShowToast('Failed to initialize payment');
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                const { error: initError } = await initPaymentSheet({
+                    merchantDisplayName: 'Amplia App',
+                    paymentIntentClientSecret: intentRes.clientSecret,
+                    defaultBillingDetails: {
+                        name: user?.name || '',
+                    },
+                });
+
+                if (initError) {
+                    ShowToast(initError.message);
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                const { error: presentError } = await presentPaymentSheet();
+                if (presentError) {
+                    if (presentError.code !== 'Canceled') {
+                        ShowToast(presentError.message);
+                    }
+                    setIsSubmitting(false);
+                    return;
+                }
+                ShowToast('Payment Successful');
+            } catch (err) {
+                console.error('Payment Flow Error:', err);
+                ShowToast('Payment failed');
+                setIsSubmitting(false);
+                return;
+            }
+        }
+
+        setShowEstimateModal(false);
 
         if (isStartingNew) {
             setIsSubmitting(true);
@@ -859,14 +919,7 @@ const RaceTrack = ({ navigation, route }) => {
                             </View>
 
                             <View style={styles.estimateBody}>
-                                {materialChange && (
-                                    <View style={styles.materialNotice}>
-                                        <AppText title="Additional documents were added that affect pricing:" textSize={1.4} textColor="#856404" textFontWeight />
-                                        {materialChange.reasons.map((reason, idx) => (
-                                            <AppText key={idx} title={`• ${reason}`} textSize={1.4} textColor="#856404" />
-                                        ))}
-                                    </View>
-                                )}
+                                {/* Removed Material Change notice */}
 
                                 <View style={styles.tierBox}>
                                     <AppText title="Your Return Tier:" textSize={1.4} textColor={AppColors.GRAY} />
@@ -1347,6 +1400,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         borderWidth: 1,
         borderColor: '#FFEeba',
+        alignItems: 'center',
     },
     estimateFooter: {
         flexDirection: 'row',
