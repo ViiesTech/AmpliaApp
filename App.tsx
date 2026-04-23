@@ -24,7 +24,8 @@ const App = () => {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={null}>
         <NavigationContainer>
-          <StripeProvider publishableKey="pk_test_51TPN2L50Y2eXm2mJEmnwCVOzAeyIsGmxndXdGUoorm9J0YjgNpFpF2nTYrwtEKcFX88VP7rpSaka2dVMmS594eKn00NWRPKUvJ">
+          {/* <StripeProvider publishableKey="pk_test_51TPN2L50Y2eXm2mJEmnwCVOzAeyIsGmxndXdGUoorm9J0YjgNpFpF2nTYrwtEKcFX88VP7rpSaka2dVMmS594eKn00NWRPKUvJ"> */}
+          <StripeProvider publishableKey="pk_test_51TKl0iL29ya199eCXHx7LBsmT5TP0wNSrndrxq49JW2laMrmfdQF2KV4x9xse8A2baFxzK4JzYmCwzMNOOBoyjrH00e900JmXN">
             <Routes />
             <ToastMessage position={'top'} />
           </StripeProvider>
