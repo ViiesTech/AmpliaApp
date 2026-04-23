@@ -79,7 +79,8 @@ const MyFiles = props => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
-          borderRadius: 300,
+          borderRadius: 100,
+          marginVertical: 5,
         }}
       >
         <TouchableOpacity onPress={() => onSelectYear(item.title)} style={styles.tab}>
@@ -110,6 +111,7 @@ const MyFiles = props => {
       <Container>
         <View style={styles.container}>
           <AppHeader onBackPress={bookingId ? () => props.navigation.goBack() : false} heading={bookingId ? "Tax Vault Files" : "Tax Vault"} />
+          <LineBreak space={2} />
 
           <View style={styles.toggleWrapper}>
             <TouchableOpacity
@@ -224,30 +226,34 @@ const styles = StyleSheet.create({
   toggleWrapper: {
     flexDirection: 'row',
     backgroundColor: AppColors.WHITE,
-    borderRadius: 30,
-    padding: 5,
+    borderRadius: 35,
+    padding: 6,
     borderWidth: 1,
     borderColor: AppColors.app_light,
-    marginBottom: responsiveHeight(1),
+    marginBottom: responsiveHeight(2),
+    height: 55, // Set a fixed height for consistency
   },
   toggleButton: {
     flex: 1,
   },
   toggleGradient: {
-    paddingVertical: responsiveHeight(1.2),
-    borderRadius: 25,
+    flex: 1,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabsContainer: {
     gap: responsiveWidth(3),
-    flexGrow: 1,
+    paddingHorizontal: responsiveWidth(1),
     paddingVertical: 5,
   },
   tab: {
-    paddingHorizontal: responsiveWidth(4),
-    paddingVertical: responsiveHeight(0.8),
+    paddingHorizontal: responsiveWidth(6),
+    paddingVertical: responsiveHeight(1),
     borderRadius: 100,
+    minWidth: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loaderContainer: {
     marginTop: responsiveHeight(5),

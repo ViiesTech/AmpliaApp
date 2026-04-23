@@ -803,6 +803,8 @@ const RaceTrack = ({ navigation, route }) => {
                             {bookingStatus === 'review' || bookingStatus === 'approved' ? (
                                 (() => {
                                     const returnDoc = (filesData?.files || []).find(f => f.type === 'return_doc');
+
+                                    console.log("returnDoc", returnDoc)
                                     return (
                                         <View style={styles.returnDocCard}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
