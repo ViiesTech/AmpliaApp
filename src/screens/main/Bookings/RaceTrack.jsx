@@ -188,7 +188,7 @@ const RaceTrack = ({ navigation, route }) => {
                     let uiStatus = 'Pending';
                     const backendStatus = backendFile.status?.toLowerCase();
                     if (backendStatus === 'sent') uiStatus = 'Sent';
-                    if (backendStatus === 'received') uiStatus = 'Received';
+                    if (backendStatus === 'received' || backendStatus === 'approved') uiStatus = 'Approved';
                     if (backendStatus === 'rejected') uiStatus = 'Rejected';
                     return {
                         ...doc,
@@ -372,7 +372,8 @@ const RaceTrack = ({ navigation, route }) => {
         const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
 
         // ONLY pay if there are actually files to submit. Starting a new booking shell shouldn't charge.
-        if (price > 0 && hasPickedDocs) {
+        // Defer payment to 'payment_pending' stage
+        if (false && price > 0 && hasPickedDocs) {
             setIsSubmitting(true);
             try {
                 const intentRes = await createPaymentIntent({ amount: price, currency: 'usd' }).unwrap();
@@ -438,9 +439,9 @@ const RaceTrack = ({ navigation, route }) => {
                 ShowToast('Booking created. Please upload your documents.');
             }
         } else {
-            const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
             if (hasPickedDocs) {
                 await handleStartProcess();
+                ShowToast('Documents submitted for review');
             } else {
                 // For material change confirmation without new picked docs (linking case)
                 await updateBooking({ id: bookingId, data: { status: 'sent', price: estimateInfo.tier.basePrice } }).unwrap();
@@ -484,7 +485,7 @@ const RaceTrack = ({ navigation, route }) => {
             ));
             setBookingStatus('sent');
 
-            ShowToast('Filing process started successfully');
+            ShowToast('Documents submitted successfully');
             if (showVault) setShowVault(false);
         } catch (error) {
             console.error('Start Error:', error);
@@ -530,7 +531,7 @@ const RaceTrack = ({ navigation, route }) => {
             ));
             setBookingStatus('sent');
 
-            ShowToast('Filing process started successfully');
+            ShowToast('Documents submitted successfully');
             if (showVault) setShowVault(false);
         } catch (error) {
             console.error('Start Error:', error);
@@ -541,13 +542,13 @@ const RaceTrack = ({ navigation, route }) => {
     };
 
     const renderDocItem = ({ item }) => {
-        const isReceived = item.status === 'Received';
+        const isApproved = item.status === 'Approved';
         const isSent = item.status === 'Sent';
         const isRejected = item.status === 'Rejected';
         const isPicked = item.status === 'Picked';
 
         const getStatusColor = () => {
-            if (isReceived) return "#60C14C";
+            if (isApproved) return "#60C14C";
             if (isRejected) return "#F44336";
             if (isSent) return "#FF9800";
             if (isPicked) return AppColors.ThemeColor;
@@ -558,7 +559,7 @@ const RaceTrack = ({ navigation, route }) => {
             <View style={styles.docItem}>
                 <View style={styles.docLeft}>
                     <Icon
-                        name={isReceived ? "check-circle" : isRejected ? "alert-circle" : (isSent || isPicked) ? "clock-outline" : "checkbox-blank-circle-outline"}
+                        name={isApproved ? "check-circle" : isRejected ? "alert-circle" : (isSent || isPicked) ? "clock-outline" : "checkbox-blank-circle-outline"}
                         size={responsiveFontSize(2.5)}
                         color={getStatusColor()}
                     />
@@ -569,9 +570,9 @@ const RaceTrack = ({ navigation, route }) => {
                             textColor={AppColors.ThemeColor}
                             textFontWeight
                         />
-                        {(isReceived || isSent || isRejected || isPicked) && (
-                            <AppText
-                                title={isRejected ? `Rejected: ${item.rejectionReason}` : isSent ? "Waiting for review" : isPicked ? "Ready to start" : "Received"}
+                        {(isApproved || isSent || isRejected || isPicked) && (
+                        <AppText
+                                title={isRejected ? `Rejected: ${item.rejectionReason}` : isSent ? "Waiting for review" : isPicked ? "Ready to submit" : "Approved"}
                                 textSize={1.4}
                                 textColor={getStatusColor()}
                             />
@@ -579,7 +580,7 @@ const RaceTrack = ({ navigation, route }) => {
                     </View>
                 </View>
 
-                {(isRejected || ((bookingStatus === 'new' || bookingStatus === 'sent') && !isReceived && !isSent && !isPicked)) ? (
+                {(isRejected || ((bookingStatus === 'new' || bookingStatus === 'sent') && !isApproved && !isSent && !isPicked)) ? (
                     <TouchableOpacity
                         style={styles.uploadButton}
                         onPress={() => handlePick(item)}
@@ -627,7 +628,7 @@ const RaceTrack = ({ navigation, route }) => {
                             textFontWeight
                         />
                     </View>
-                ) : isReceived ? (
+                ) : isApproved ? (
                     <View style={[styles.uploadButton, styles.receivedButton]}>
                         <Icon
                             name="check"
@@ -635,7 +636,7 @@ const RaceTrack = ({ navigation, route }) => {
                             color="#60C14C"
                         />
                         <AppText
-                            title="Received"
+                            title="Approved"
                             textSize={1.4}
                             textColor="#60C14C"
                             textFontWeight
@@ -705,7 +706,8 @@ const RaceTrack = ({ navigation, route }) => {
                 <View style={styles.progressContainer}>
                     <View style={styles.raceInfo}>
                         <View style={styles.raceMarkers}>
-                            <AppText title="Start" textSize={1.4} textColor={['sent', 'received', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['sent', 'received', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
+                            <AppText title="Start" textSize={1.4} textColor={['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
+                            <AppText title="Pay" textSize={1.4} textColor={['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
                             <AppText title="Prep" textSize={1.4} textColor={['preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
                             <AppText title="Review" textSize={1.4} textColor={['review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['review', 'approved', 'filed'].includes(bookingStatus)} />
                             <AppText title="Filed" textSize={1.4} textColor={bookingStatus === 'filed' ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={bookingStatus === 'filed'} />
@@ -714,13 +716,15 @@ const RaceTrack = ({ navigation, route }) => {
                         <View style={styles.trackLineContainer}>
                             <View style={styles.trackLine} />
                             <View style={[styles.activeTrack, {
-                                width: (bookingStatus === 'sent' || bookingStatus === 'received') ? '15%' :
-                                    bookingStatus === 'preparation' ? '40%' :
-                                        (bookingStatus === 'review' || bookingStatus === 'approved') ? '70%' :
-                                            bookingStatus === 'filed' ? '100%' : '10%'
+                                width: (bookingStatus === 'sent' || bookingStatus === 'received') ? '10%' :
+                                    bookingStatus === 'payment_pending' ? '25%' :
+                                        bookingStatus === 'preparation' ? '50%' :
+                                            (bookingStatus === 'review' || bookingStatus === 'approved') ? '75%' :
+                                                bookingStatus === 'filed' ? '100%' : '5%'
                             }]} />
                             <View style={styles.trackDots}>
-                                <View style={[styles.dot, ['sent', 'received', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
+                                <View style={[styles.dot, ['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
+                                <View style={[styles.dot, ['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
                                 <View style={[styles.dot, ['preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
                                 <View style={[styles.dot, ['review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
                                 <View style={[styles.dot, bookingStatus === 'filed' ? styles.activeDot : null]} />
@@ -728,10 +732,11 @@ const RaceTrack = ({ navigation, route }) => {
                             <Image
                                 source={AppImages.horse_racing_icon}
                                 style={[styles.horseIcon, {
-                                    left: (bookingStatus === 'sent' || bookingStatus === 'received') ? '0%' :
-                                        bookingStatus === 'preparation' ? '30%' :
-                                            (bookingStatus === 'review' || bookingStatus === 'approved') ? '62%' :
-                                                bookingStatus === 'filed' ? '88%' : '-2%'
+                                    left: (bookingStatus === 'sent' || bookingStatus === 'received') ? '-2%' :
+                                        bookingStatus === 'payment_pending' ? '21%' :
+                                            bookingStatus === 'preparation' ? '46%' :
+                                                (bookingStatus === 'review' || bookingStatus === 'approved') ? '71%' :
+                                                    bookingStatus === 'filed' ? '92%' : '-2%'
                                 }]}
                                 resizeMode="contain"
                             />
@@ -746,6 +751,88 @@ const RaceTrack = ({ navigation, route }) => {
                 )}
 
                 {/* Full Screen Stages */}
+                {bookingStatus === 'payment_pending' && (
+                    <View style={styles.prepScreen}>
+                        <View style={styles.loaderWrapper}>
+                            <Icon name="credit-card-outline" size={responsiveFontSize(6)} color={AppColors.ThemeColor} />
+                            <View style={{ marginTop: 20 }}>
+                                <AppText
+                                    title="PAYMENT REQUIRED"
+                                    textSize={2.8}
+                                    textColor={AppColors.ThemeColor}
+                                    textFontWeight
+                                    textAlignment="center"
+                                />
+                            </View>
+                        </View>
+                        <AppText
+                            title={`Your documents have been approved. Please pay the estimated fee of $${bookingData?.booking?.price || 0} to begin the tax preparation process.`}
+                            textSize={1.6}
+                            textColor={AppColors.GRAY}
+                            style={{ marginTop: 20, textAlign: 'center', paddingHorizontal: 20 }}
+                        />
+                        <TouchableOpacity
+                            style={[styles.startButton, { width: '80%', marginTop: 30 }]}
+                            onPress={async () => {
+                                const price = bookingData?.booking?.price || 0;
+                                if (price <= 0) {
+                                    ShowToast('Invalid payment amount');
+                                    return;
+                                }
+                                setIsSubmitting(true);
+                                try {
+                                    const intentRes = await createPaymentIntent({ amount: price, currency: 'usd' }).unwrap();
+                                    if (!intentRes.success) {
+                                        ShowToast('Failed to initialize payment');
+                                        setIsSubmitting(false);
+                                        return;
+                                    }
+
+                                    const { error: initError } = await initPaymentSheet({
+                                        merchantDisplayName: 'Amplia App',
+                                        paymentIntentClientSecret: intentRes.clientSecret,
+                                        defaultBillingDetails: {
+                                            name: user?.name || '',
+                                        },
+                                    });
+
+                                    if (initError) {
+                                        ShowToast(initError.message);
+                                        setIsSubmitting(false);
+                                        return;
+                                    }
+
+                                    const { error: presentError } = await presentPaymentSheet();
+                                    if (presentError) {
+                                        if (presentError.code !== 'Canceled') {
+                                            ShowToast(presentError.message);
+                                        }
+                                        setIsSubmitting(false);
+                                        return;
+                                    }
+                                    
+                                    // Update status to preparation after successful payment
+                                    await updateBooking({ id: bookingId, data: { status: 'preparation' } }).unwrap();
+                                    setBookingStatus('preparation');
+                                    ShowToast('Payment Successful! Preparation started.');
+                                } catch (err) {
+                                    console.error('Payment Flow Error:', err);
+                                    ShowToast('Payment failed');
+                                } finally {
+                                    setIsSubmitting(false);
+                                }
+                            }}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <ActivityIndicator size="small" color={AppColors.WHITE} />
+                            ) : (
+                                <AppText title="PAY NOW" textSize={2} textColor={AppColors.WHITE} textFontWeight />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 {bookingStatus === 'preparation' && (
                     <View style={styles.prepScreen}>
                         <View style={styles.loaderWrapper}>
@@ -782,18 +869,13 @@ const RaceTrack = ({ navigation, route }) => {
                             {(bookingStatus === 'new' || bookingStatus === 'sent' || bookingStatus === 'rejected') && (
                                 <View style={styles.liveEstimateBar}>
                                     <View style={styles.liveEstimateItem}>
-                                        <AppText title="Current Tier" textSize={1.2} textColor={AppColors.GRAY} />
-                                        <AppText title={liveTier.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
-                                    </View>
-                                    <View style={styles.liveEstimateDivider} />
-                                    <View style={styles.liveEstimateItem}>
                                         <AppText title="Est. Price" textSize={1.2} textColor={AppColors.GRAY} />
                                         <AppText title={`$${liveTier.basePrice}`} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
                                     </View>
                                     <View style={styles.liveEstimateDivider} />
                                     <View style={styles.liveEstimateItem}>
-                                        <AppText title="Points" textSize={1.2} textColor={AppColors.GRAY} />
-                                        <AppText title={liveScore.toString()} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                        <AppText title="Tier" textSize={1.2} textColor={AppColors.GRAY} />
+                                        <AppText title={liveTier.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
                                     </View>
                                 </View>
                             )}
@@ -837,7 +919,7 @@ const RaceTrack = ({ navigation, route }) => {
                                 })()
                             ) : (
                                 <FlatList
-                                    data={documents}
+                                    data={bookingStatus === 'payment_pending' ? documents.filter(d => d.status === 'Approved') : documents}
                                     renderItem={renderDocItem}
                                     keyExtractor={item => item.id.toString()}
                                     scrollEnabled={false}
@@ -853,7 +935,7 @@ const RaceTrack = ({ navigation, route }) => {
                                     {isSubmitting ? (
                                         <ActivityIndicator size="small" color={AppColors.WHITE} />
                                     ) : (
-                                        <AppText title={(bookingStatus === 'approved' || bookingStatus === 'filed') ? "START NEW" : bookingStatus === 'rejected' ? "UPDATE FILING" : bookingStatus === 'sent' ? "SEND UPDATE" : "START"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
+                                        <AppText title={(bookingStatus === 'approved' || bookingStatus === 'filed') ? "START NEW" : bookingStatus === 'rejected' ? "UPDATE FILING" : bookingStatus === 'sent' ? "SEND UPDATE" : "SUBMIT"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
                                     )}
                                 </TouchableOpacity>
                             )}
@@ -880,11 +962,12 @@ const RaceTrack = ({ navigation, route }) => {
                         ) : (
                             <View style={styles.messageBox}>
                                 <AppText
-                                    title={bookingStatus === 'sent' ? "Waiting for admin to review your documents." :
-                                        bookingStatus === 'received' ? "All documents received. Waiting for preparation to start." :
-                                            bookingStatus === 'approved' ? "You have approved your return. Waiting for final filing confirmation." :
-                                                bookingStatus === 'filed' ? "Filing completed! You can start a new request for next year." :
-                                                    "Please upload your documents and press START to begin."}
+                                    title={bookingStatus === 'sent' ? "Waiting for admin to review and approve your documents." :
+                                        bookingStatus === 'received' ? "Documents approved! Please proceed to payment." :
+                                            bookingStatus === 'payment_pending' ? "Please complete your payment to start the tax preparation." :
+                                                bookingStatus === 'approved' ? "You have approved your return. Waiting for final filing confirmation." :
+                                                    bookingStatus === 'filed' ? "Filing completed! You can start a new request for next year." :
+                                                        "Please upload your documents and press SUBMIT to begin."}
                                     textSize={1.6}
                                     textColor={AppColors.ThemeColor}
                                     textAlignment="center"

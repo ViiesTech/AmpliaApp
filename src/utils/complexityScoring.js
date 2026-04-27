@@ -44,6 +44,28 @@ export const TIERS = {
  * @returns {number} complexity score
  */
 export const calculateComplexityScore = (data) => {
+    // Check if there are ANY documents or situations provided
+    const hasDocuments = 
+        (data.w2Count || 0) > 0 || 
+        (data.necMisc1099Count || 0) > 0 || 
+        (data.k1Count || 0) > 0 || 
+        (data.ssa1099Count || 0) > 0 || 
+        (data.unemploymentCount || 0) > 0 || 
+        data.hasScheduleC || 
+        (data.rentalPropertyCount || 0) > 0 || 
+        data.hasCapitalGains || 
+        data.hasCrypto || 
+        (data.additionalStatesCount || 0) > 0 || 
+        data.hasForeignIncome || 
+        data.hasITIN || 
+        data.isAmended || 
+        data.hasPriorYearIssues || 
+        (data.dependentCount || 0) > 0 || 
+        data.hasChildcareCredit || 
+        data.hasEducationCredit;
+
+    if (!hasDocuments) return 0;
+
     let score = SCORING_RULES.BASE_RETURN;
 
     // Income Documents
@@ -82,6 +104,7 @@ export const calculateComplexityScore = (data) => {
  * @returns {Object} Tier information
  */
 export const getTierInfo = (score) => {
+    if (score === 0) return { name: 'None', basePrice: 0 };
     if (score <= TIERS.TIER_1.max) return TIERS.TIER_1;
     if (score <= TIERS.TIER_2.max) return TIERS.TIER_2;
     if (score <= TIERS.TIER_3.max) return TIERS.TIER_3;
