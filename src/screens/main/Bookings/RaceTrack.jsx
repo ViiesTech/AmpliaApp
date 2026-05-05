@@ -64,7 +64,7 @@ const RaceTrack = ({ navigation, route }) => {
         };
 
         docs.forEach(doc => {
-            const fileCount = (doc.files?.length || 0) || (doc.status === 'Sent' || doc.status === 'Received' ? 1 : 0);
+            const fileCount = (doc.localFiles?.length || 0) + (doc.serverCount || 0);
             if (fileCount === 0) return;
 
             switch (doc.type) {
@@ -127,6 +127,7 @@ const RaceTrack = ({ navigation, route }) => {
     const liveScoringData = getScoringData(documents);
     const liveScore = calculateComplexityScore(liveScoringData);
     const liveTier = getTierInfo(liveScore);
+    const hasPickedDocs = documents.some(d => d.localFiles?.length > 0);
 
 
     // Find the booking that matches the currently selected year
@@ -173,34 +174,30 @@ const RaceTrack = ({ navigation, route }) => {
     useEffect(() => {
         if (!bookingId) {
             // Only reset if no docs are locally picked
-            const hasLocalPicks = documents.some(d => d.status === 'Picked');
+            const hasLocalPicks = documents.some(d => d.localFiles?.length > 0);
             if (!hasLocalPicks) {
                 setDocuments(initialDocs);
             }
             return;
         }
+
         if (filesData?.success && filesData?.files) {
+            const backendFiles = filesData.files;
             setDocuments(prev => prev.map(doc => {
-                // Don't overwrite locally picked files
-                if (doc.status === 'Picked') return doc;
-                const backendFile = filesData.files.find(f => f.name === doc.name);
-                if (backendFile) {
-                    let uiStatus = 'Pending';
-                    const backendStatus = backendFile.status?.toLowerCase();
-                    if (backendStatus === 'sent') uiStatus = 'Sent';
-                    if (backendStatus === 'received' || backendStatus === 'approved') uiStatus = 'Approved';
-                    if (backendStatus === 'rejected') uiStatus = 'Rejected';
-                    return {
-                        ...doc,
-                        status: uiStatus,
-                        rejectionReason: backendFile.rejectionReason || '',
-                    };
+                const categoryFiles = backendFiles.filter(f => f.name.toLowerCase().includes(doc.name.toLowerCase()));
+                if (categoryFiles.length > 0) {
+                    const statuses = categoryFiles.map(f => f.status.toLowerCase());
+                    let finalStatus = 'Sent';
+                    if (statuses.includes('rejected')) finalStatus = 'Rejected';
+                    else if (statuses.every(s => s === 'approved' || s === 'received')) finalStatus = 'Approved';
+
+                    return { ...doc, status: finalStatus, serverCount: categoryFiles.length };
                 }
-                return { ...doc, status: 'Pending', rejectionReason: '' };
+                return doc;
             }));
         } else {
             // Only reset if no locally picked docs
-            const hasLocalPicks = documents.some(d => d.status === 'Picked');
+            const hasLocalPicks = documents.some(d => d.localFiles?.length > 0);
             if (!hasLocalPicks) {
                 setDocuments(initialDocs);
             }
@@ -241,23 +238,26 @@ const RaceTrack = ({ navigation, route }) => {
 
     const handleDeselect = (categoryId) => {
         setDocuments(prev => prev.map(doc =>
-            doc.id === categoryId ? { ...doc, files: [], status: 'Pending' } : doc
+            doc.id === categoryId ? { ...doc, localFiles: [], status: doc.serverCount > 0 ? 'Sent' : 'Pending' } : doc
         ));
     };
 
-    const handlePick = async (category) => {
+    const handleUpload = async (id) => {
         try {
-            const results = await pick({
+            const res = await pick({
                 type: [types.allFiles],
                 allowMultiSelection: true,
             });
 
-            setDocuments(prev => prev.map(doc =>
-                doc.id === category.id ? { ...doc, files: results, status: 'Picked', rejectionReason: '' } : doc
-            ));
-
-            ShowToast(`${results.length} document(s) selected`);
-
+            if (res) {
+                setDocuments(prev => prev.map(doc =>
+                    doc.id === id ? {
+                        ...doc,
+                        status: 'Picked',
+                        localFiles: [...(doc.localFiles || []), ...res]
+                    } : doc
+                ));
+            }
         } catch (err) {
             if (isErrorWithCode(err, errorCodes.OPERATION_CANCELED)) {
                 console.log('User cancelled document picker');
@@ -266,6 +266,33 @@ const RaceTrack = ({ navigation, route }) => {
                 ShowToast('Failed to pick document(s)');
             }
         }
+    };
+
+    const handleResetSession = () => {
+        Alert.alert(
+            "Reset Session",
+            "Are you sure you want to delete the whole session? This will cancel all uploads and start fresh.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Reset", 
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsSubmitting(true);
+                        try {
+                            const newId = await handleStartNewBooking();
+                            if (newId) {
+                                setBookingStatus('new');
+                                setDocuments(initialDocs);
+                                ShowToast('Session reset. You can now start fresh.');
+                            }
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleStartNewBooking = async () => {
@@ -314,105 +341,9 @@ const RaceTrack = ({ navigation, route }) => {
         }
     };
 
-    const handleStartFilling = async () => {
-        const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
-        const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
-
-        // 1. Calculate complexity
-        const currentScoringData = getScoringData(documents);
-        const score = calculateComplexityScore(currentScoringData);
-        const tier = getTierInfo(score);
-
-        // 2. Always show estimate if starting new OR if new documents are picked OR no price yet
-        if (!bookingId || bookingStatus === 'new' || isStartingNew || hasPickedDocs || !bookingData?.booking?.price) {
-
-            // Special case: If starting a new filing and NO docs are picked, bypass modal and just restart
-            if (isStartingNew && !hasPickedDocs) {
-                setIsSubmitting(true);
-                const newId = await handleStartNewBooking();
-                setIsSubmitting(false);
-                if (newId) {
-                    setDocuments(initialDocs);
-                    ShowToast('Filing restarted. Please upload new documents.');
-                }
-                return;
-            }
-
-            // Check for material change reasons to display in the modal if applicable
-            if (bookingId && !isStartingNew && hasPickedDocs) {
-                const oldScoringData = getScoringData(documents.map(d => ({
-                    ...d,
-                    files: (d.status === 'Sent' || d.status === 'Received') ? [1] : []
-                })));
-                const change = detectMaterialChange(oldScoringData, currentScoringData);
-                setMaterialChange(change.isMaterial ? change : null);
-            } else {
-                setMaterialChange(null);
-            }
-
-            setEstimateInfo({ score, tier });
-            setShowEstimateModal(true);
-            return;
-        }
-
-        // 3. If no new docs picked, open vault so user can link existing files
-        try {
-            await getFiles({ userId: user._id, year: selectedYear }).unwrap();
-            setVaultYear(selectedYear);
-            setShowVault(true);
-        } catch (error) {
-            console.error('Fetch Vault Error:', error);
-            ShowToast('Failed to fetch document vault');
-        }
-    };
-
     const handleConfirmEstimate = async () => {
         const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
-        const price = estimateInfo?.tier?.basePrice || 0;
-        const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
-
-        // ONLY pay if there are actually files to submit. Starting a new booking shell shouldn't charge.
-        // Defer payment to 'payment_pending' stage
-        if (false && price > 0 && hasPickedDocs) {
-            setIsSubmitting(true);
-            try {
-                const intentRes = await createPaymentIntent({ amount: price, currency: 'usd' }).unwrap();
-                if (!intentRes.success) {
-                    ShowToast('Failed to initialize payment');
-                    setIsSubmitting(false);
-                    return;
-                }
-
-                const { error: initError } = await initPaymentSheet({
-                    merchantDisplayName: 'Amplia App',
-                    paymentIntentClientSecret: intentRes.clientSecret,
-                    defaultBillingDetails: {
-                        name: user?.name || '',
-                    },
-                });
-
-                if (initError) {
-                    ShowToast(initError.message);
-                    setIsSubmitting(false);
-                    return;
-                }
-
-                const { error: presentError } = await presentPaymentSheet();
-                if (presentError) {
-                    if (presentError.code !== 'Canceled') {
-                        ShowToast(presentError.message);
-                    }
-                    setIsSubmitting(false);
-                    return;
-                }
-                ShowToast('Payment Successful');
-            } catch (err) {
-                console.error('Payment Flow Error:', err);
-                ShowToast('Payment failed');
-                setIsSubmitting(false);
-                return;
-            }
-        }
+        const hasPickedDocs = documents.some(d => d.localFiles?.length > 0);
 
         setShowEstimateModal(false);
 
@@ -421,8 +352,9 @@ const RaceTrack = ({ navigation, route }) => {
             const newId = await handleStartNewBooking();
             setIsSubmitting(false);
             if (!newId) return;
+            setBookingStatus('new');
             setDocuments(initialDocs);
-            ShowToast('Filing restarted. Please upload new documents.');
+            ShowToast('Filing restarted. Please upload your documents.');
             return;
         }
 
@@ -432,7 +364,6 @@ const RaceTrack = ({ navigation, route }) => {
             setIsSubmitting(false);
             if (!newId) return;
 
-            const hasPickedDocs = documents.some(d => d.status === 'Picked' && d.files?.length > 0);
             if (hasPickedDocs) {
                 await handleStartProcessWithId(newId);
             } else {
@@ -443,30 +374,69 @@ const RaceTrack = ({ navigation, route }) => {
                 await handleStartProcess();
                 ShowToast('Documents submitted for review');
             } else {
-                // For material change confirmation without new picked docs (linking case)
                 await updateBooking({ id: bookingId, data: { status: 'sent', price: estimateInfo.tier.basePrice } }).unwrap();
-                ShowToast('Change confirmed and scope updated.');
+                ShowToast('Documents submitted for review');
             }
         }
         setMaterialChange(null);
     };
 
+    const handleStartFilling = async () => {
+        const isStartingNew = bookingStatus === 'approved' || bookingStatus === 'filed';
+        const hasPickedDocs = documents.some(d => d.localFiles?.length > 0);
+
+        // 1. If starting new and no docs picked yet, just reset immediately
+        if (isStartingNew && !hasPickedDocs) {
+            setIsSubmitting(true);
+            try {
+                const newId = await handleStartNewBooking();
+                if (newId) {
+                    setBookingStatus('new');
+                    setDocuments(initialDocs);
+                    ShowToast('Started fresh filing.');
+                }
+            } finally {
+                setIsSubmitting(false);
+            }
+            return;
+        }
+
+        // 2. Calculate complexity
+        const currentScoringData = getScoringData(documents);
+        const score = calculateComplexityScore(currentScoringData);
+        const tier = getTierInfo(score);
+
+        // 3. Always show estimate if starting new OR if new documents are picked OR no price yet
+        if (!bookingId || bookingStatus === 'new' || isStartingNew || hasPickedDocs || !bookingData?.booking?.price) {
+            setEstimateInfo({ score, tier });
+            setShowEstimateModal(true);
+            return;
+        }
+
+        // 3. If no new docs picked and already submitted, just remind user to upload more
+        if (bookingStatus === 'sent') {
+            ShowToast('Please upload new documents to update your filing.');
+        }
+    };
+
+
+
     const handleStartProcessWithId = async (id) => {
         setIsSubmitting(true);
         try {
-            // 1. Upload all NEWLY picked files (if any)
-            const categoriesWithFiles = documents.filter(d => d.status === 'Picked' && d.files?.length > 0);
-
-            for (const cat of categoriesWithFiles) {
-                for (const file of cat.files) {
+            const pickedDocs = documents.filter(d => d.localFiles?.length > 0);
+            // 1. Upload picked documents
+            for (const doc of pickedDocs) {
+                const filesToUpload = doc.localFiles || [];
+                for (const file of filesToUpload) {
                     const formData = new FormData();
                     formData.append('file', {
                         uri: file.uri,
                         type: file.type || 'application/pdf',
                         name: file.name || `document_${Date.now()}.pdf`,
                     });
-                    formData.append('name', cat.name);
-                    formData.append('year', selectedYear);
+                    formData.append('name', doc.name);
+                    formData.append('year', selectedYear.toString());
                     formData.append('bookingId', id);
                     formData.append('type', 'user_doc');
 
@@ -479,9 +449,9 @@ const RaceTrack = ({ navigation, route }) => {
             // 3. Re-fetch files so the UI shows them as 'Sent'
             await getFiles({ bookingId: id });
 
-            // 4. Update local status instantly
+            // 4. Update local status
             setDocuments(prev => prev.map(d =>
-                d.status === 'Picked' ? { ...d, status: 'Sent' } : d
+                d.localFiles?.length > 0 ? { ...d, localFiles: [], status: 'Sent' } : d
             ));
             setBookingStatus('sent');
 
@@ -497,171 +467,63 @@ const RaceTrack = ({ navigation, route }) => {
 
     const handleStartProcess = async () => {
         if (!bookingId) return;
+        await handleStartProcessWithId(bookingId);
+    };
 
-        setIsSubmitting(true);
-        try {
-            // 1. Upload all NEWLY picked files (if any)
-            const categoriesWithFiles = documents.filter(d => d.status === 'Picked' && d.files?.length > 0);
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Approved': return "#60C14C";
+            case 'Rejected': return "#F44336";
+            case 'Sent': return "#FF9800";
+            case 'Picked': return AppColors.ThemeColor;
+            default: return AppColors.LIGHTGRAY;
+        }
+    };
 
-            for (const cat of categoriesWithFiles) {
-                for (const file of cat.files) {
-                    const formData = new FormData();
-                    formData.append('file', {
-                        uri: file.uri,
-                        type: file.type || 'application/pdf',
-                        name: file.name || `document_${Date.now()}.pdf`,
-                    });
-                    formData.append('name', cat.name);
-                    formData.append('year', selectedYear);
-                    formData.append('bookingId', bookingId);
-                    formData.append('type', 'user_doc');
+    const getStatusMessage = (item) => {
+        const { status, localFiles, serverCount } = item;
+        const totalFiles = (localFiles?.length || 0) + (serverCount || 0);
+        const countText = totalFiles > 0 ? ` (${totalFiles} ${totalFiles === 1 ? 'file' : 'files'})` : '';
 
-                    await uploadFile(formData).unwrap();
-                }
-            }
-            // 2. Update booking status to 'sent'
-            await updateBooking({ id: bookingId, data: { status: 'sent', price: estimateInfo?.tier?.basePrice || 0 } }).unwrap();
-
-            // 3. Re-fetch files so the UI shows them as 'Sent'
-            await getFiles({ bookingId });
-
-            // 4. Update local status instantly
-            setDocuments(prev => prev.map(d =>
-                d.status === 'Picked' ? { ...d, status: 'Sent' } : d
-            ));
-            setBookingStatus('sent');
-
-            ShowToast('Documents submitted successfully');
-            if (showVault) setShowVault(false);
-        } catch (error) {
-            console.error('Start Error:', error);
-            ShowToast(error?.data?.message || 'Failed to start filing process');
-        } finally {
-            setIsSubmitting(false);
+        switch (status) {
+            case 'Sent': return `Waiting for review${countText}`;
+            case 'Approved': return `Document approved${countText}`;
+            case 'Rejected': return `Document rejected${countText}`;
+            case 'Picked': return `${localFiles?.length || 1} file${(localFiles?.length || 1) === 1 ? '' : 's'} selected`;
+            default: return 'Needs to be uploaded';
         }
     };
 
     const renderDocItem = ({ item }) => {
-        const isApproved = item.status === 'Approved';
-        const isSent = item.status === 'Sent';
-        const isRejected = item.status === 'Rejected';
-        const isPicked = item.status === 'Picked';
-
-        const getStatusColor = () => {
-            if (isApproved) return "#60C14C";
-            if (isRejected) return "#F44336";
-            if (isSent) return "#FF9800";
-            if (isPicked) return AppColors.ThemeColor;
-            return AppColors.LIGHTGRAY;
-        };
-
         return (
             <View style={styles.docItem}>
-                <View style={styles.docLeft}>
-                    <Icon
-                        name={isApproved ? "check-circle" : isRejected ? "alert-circle" : (isSent || isPicked) ? "clock-outline" : "checkbox-blank-circle-outline"}
-                        size={responsiveFontSize(2.5)}
-                        color={getStatusColor()}
-                    />
-                    <View style={{ marginLeft: 10, flex: 1 }}>
+                <View style={styles.docInfo}>
+                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+                    <View style={{ flex: 1 }}>
+                        <AppText title={item.name} textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
                         <AppText
-                            title={item.name}
-                            textSize={1.8}
-                            textColor={AppColors.ThemeColor}
-                            textFontWeight
-                        />
-                        {(isApproved || isSent || isRejected || isPicked) && (
-                        <AppText
-                                title={isRejected ? `Rejected: ${item.rejectionReason}` : isSent ? "Waiting for review" : isPicked ? "Ready to submit" : "Approved"}
-                                textSize={1.4}
-                                textColor={getStatusColor()}
-                            />
-                        )}
-                    </View>
-                </View>
-
-                {(isRejected || ((bookingStatus === 'new' || bookingStatus === 'sent') && !isApproved && !isSent && !isPicked)) ? (
-                    <TouchableOpacity
-                        style={styles.uploadButton}
-                        onPress={() => handlePick(item)}
-                    >
-                        <Feather
-                            name="upload"
-                            size={responsiveFontSize(2)}
-                            color={AppColors.GRAY}
-                        />
-                        <AppText
-                            title={isRejected ? "Re-upload" : "Upload"}
+                            title={getStatusMessage(item)}
                             textSize={1.4}
-                            textColor={AppColors.GRAY}
-                            style={{ marginLeft: 5 }}
+                            textColor={item.status === 'Rejected' ? AppColors.RED_COLOR : AppColors.GRAY}
                         />
-                    </TouchableOpacity>
-                ) : isPicked ? (
+                    </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity
-                            style={[styles.uploadButton, { backgroundColor: '#E0F2F1', marginRight: 8 }]}
-                            onPress={() => handlePick(item)}
+                            style={styles.uploadButton}
+                            onPress={() => handleUpload(item.id)}
+                            disabled={bookingStatus === 'filed'}
                         >
-                            <Icon name="file-document-outline" size={responsiveFontSize(2)} color={AppColors.ThemeColor} />
+                            <Icon name="upload" size={14} color={AppColors.ThemeColor} />
                             <AppText
-                                title="Selected"
+                                title="Upload"
                                 textSize={1.4}
                                 textColor={AppColors.ThemeColor}
                                 textFontWeight
-                                style={{ marginLeft: 5 }}
+                                style={{ marginLeft: 4 }}
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => handleDeselect(item.id)}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                            <Icon name="close-circle" size={responsiveFontSize(2.5)} color={AppColors.GRAY} />
-                        </TouchableOpacity>
                     </View>
-                ) : isSent ? (
-                    <View style={[styles.uploadButton, { backgroundColor: '#FFF3E0' }]}>
-                        <AppText
-                            title="Sent"
-                            textSize={1.4}
-                            textColor="#FF9800"
-                            textFontWeight
-                        />
-                    </View>
-                ) : isApproved ? (
-                    <View style={[styles.uploadButton, styles.receivedButton]}>
-                        <Icon
-                            name="check"
-                            size={responsiveFontSize(2)}
-                            color="#60C14C"
-                        />
-                        <AppText
-                            title="Approved"
-                            textSize={1.4}
-                            textColor="#60C14C"
-                            textFontWeight
-                            style={{ marginLeft: 5 }}
-                        />
-                    </View>
-                ) : (
-                    // Default: not sent, not received — show Upload button
-                    <TouchableOpacity
-                        style={styles.uploadButton}
-                        onPress={() => handlePick(item)}
-                    >
-                        <Feather
-                            name="upload"
-                            size={responsiveFontSize(2)}
-                            color={AppColors.GRAY}
-                        />
-                        <AppText
-                            title="Upload"
-                            textSize={1.4}
-                            textColor={AppColors.GRAY}
-                            style={{ marginLeft: 5 }}
-                        />
-                    </TouchableOpacity>
-                )}
+                </View>
             </View>
         );
     };
@@ -669,74 +531,77 @@ const RaceTrack = ({ navigation, route }) => {
     return (
         <Container scrollEnabled={true}>
             <View style={styles.content}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                    <AppHeader onBackPress={false} heading="Race Track" />
-                    <TouchableOpacity
-                        onPress={async () => {
-                            if (!bookingId) return;
-                            setIsRefreshing(true);
-                            try {
-                                await refetchBooking();
-                                await getFiles({ bookingId });
-                            } finally {
-                                setIsRefreshing(false);
-                            }
-                        }}
-                        disabled={!bookingId || isRefreshing}
-                        style={{ opacity: !bookingId ? 0.3 : 1 }}
-                    >
-                        {isRefreshing
-                            ? <ActivityIndicator size="small" color={AppColors.ThemeColor} />
-                            : <Icon name="refresh" size={responsiveFontSize(3)} color={AppColors.ThemeColor} />}
-                    </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <AppHeader 
+                        onBackPress={false} 
+                        heading="Race Track" 
+                        rightIcon={
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TouchableOpacity
+                                    onPress={handleResetSession}
+                                    style={{ marginRight: 15 }}
+                                    disabled={isSubmitting}
+                                >
+                                    <Icon name="trash-can-outline" size={responsiveFontSize(3)} color={AppColors.RED_COLOR} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        if (!bookingId) return;
+                                        setIsRefreshing(true);
+                                        try {
+                                            await refetchBooking();
+                                            await getFiles({ bookingId });
+                                        } finally {
+                                            setIsRefreshing(false);
+                                        }
+                                    }}
+                                    disabled={!bookingId || isRefreshing}
+                                    style={{ opacity: !bookingId ? 0.3 : 1 }}
+                                >
+                                    {isRefreshing
+                                        ? <ActivityIndicator size="small" color={AppColors.ThemeColor} />
+                                        : <Icon name="refresh" size={responsiveFontSize(3)} color={AppColors.ThemeColor} />}
+                                </TouchableOpacity>
+                            </View>
+                        }
+                    />
                 </View>
 
-                <TouchableOpacity
-                    style={styles.yearHeader}
-                    onPress={() => (bookingStatus === 'new' || bookingStatus === 'approved' || bookingStatus === 'filed') && setShowYearPicker(true)}
-                    disabled={!['new', 'approved', 'filed'].includes(bookingStatus)}
-                >
-                    <AppText title={`Taxes ${selectedYear}`} textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
-                    {['new', 'approved', 'filed'].includes(bookingStatus) && (
-                        <Icon name="chevron-down" size={15} color={AppColors.ThemeColor} style={{ marginLeft: 5 }} />
-                    )}
-                </TouchableOpacity>
+
 
                 {/* Race Track Progress Bar */}
                 <View style={styles.progressContainer}>
                     <View style={styles.raceInfo}>
                         <View style={styles.raceMarkers}>
-                            <AppText title="Start" textSize={1.4} textColor={['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
+                            <AppText title="Start" textSize={1.4} textColor={AppColors.ThemeColor} textFontWeight />
+                            <AppText title="Prep" textSize={1.4} textColor={(documents.some(d => d.localFiles?.length > 0) || ['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={documents.some(d => d.localFiles?.length > 0) || ['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
+                            <AppText title="Review" textSize={1.4} textColor={(bookingStatus === 'received' || (bookingStatus === 'sent' && documents.some(d => d.status === 'Approved')) || ['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={(bookingStatus === 'received' || (bookingStatus === 'sent' && documents.some(d => d.status === 'Approved')) || ['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus))} />
                             <AppText title="Pay" textSize={1.4} textColor={['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
-                            <AppText title="Prep" textSize={1.4} textColor={['preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['preparation', 'review', 'approved', 'filed'].includes(bookingStatus)} />
-                            <AppText title="Review" textSize={1.4} textColor={['review', 'approved', 'filed'].includes(bookingStatus) ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={['review', 'approved', 'filed'].includes(bookingStatus)} />
                             <AppText title="Filed" textSize={1.4} textColor={bookingStatus === 'filed' ? AppColors.ThemeColor : AppColors.GRAY} textFontWeight={bookingStatus === 'filed'} />
                         </View>
 
                         <View style={styles.trackLineContainer}>
                             <View style={styles.trackLine} />
                             <View style={[styles.activeTrack, {
-                                width: (bookingStatus === 'sent' || bookingStatus === 'received') ? '10%' :
-                                    bookingStatus === 'payment_pending' ? '25%' :
-                                        bookingStatus === 'preparation' ? '50%' :
-                                            (bookingStatus === 'review' || bookingStatus === 'approved') ? '75%' :
-                                                bookingStatus === 'filed' ? '100%' : '5%'
+                                width: bookingStatus === 'filed' ? '100%' :
+                                    (['payment_pending', 'preparation', 'review', 'approved'].includes(bookingStatus)) ? '75%' :
+                                        (bookingStatus === 'received' || (bookingStatus === 'sent' && documents.some(d => d.status === 'Approved'))) ? '50%' :
+                                            (documents.some(d => d.localFiles?.length > 0) || bookingStatus === 'sent') ? '25%' : '5%'
                             }]} />
                             <View style={styles.trackDots}>
-                                <View style={[styles.dot, ['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
-                                <View style={[styles.dot, ['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
-                                <View style={[styles.dot, ['preparation', 'review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
-                                <View style={[styles.dot, ['review', 'approved', 'filed'].includes(bookingStatus) ? styles.activeDot : null]} />
+                                <View style={[styles.dot, styles.activeDot]} />
+                                <View style={[styles.dot, (documents.some(d => d.localFiles?.length > 0) || ['sent', 'received', 'payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)) ? styles.activeDot : null]} />
+                                <View style={[styles.dot, (bookingStatus === 'received' || (bookingStatus === 'sent' && documents.some(d => d.status === 'Approved')) || ['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)) ? styles.activeDot : null]} />
+                                <View style={[styles.dot, (['payment_pending', 'preparation', 'review', 'approved', 'filed'].includes(bookingStatus)) ? styles.activeDot : null]} />
                                 <View style={[styles.dot, bookingStatus === 'filed' ? styles.activeDot : null]} />
                             </View>
                             <Image
                                 source={AppImages.horse_racing_icon}
                                 style={[styles.horseIcon, {
-                                    left: (bookingStatus === 'sent' || bookingStatus === 'received') ? '-2%' :
-                                        bookingStatus === 'payment_pending' ? '21%' :
-                                            bookingStatus === 'preparation' ? '46%' :
-                                                (bookingStatus === 'review' || bookingStatus === 'approved') ? '71%' :
-                                                    bookingStatus === 'filed' ? '92%' : '-2%'
+                                    left: bookingStatus === 'filed' ? '92%' :
+                                        (['payment_pending', 'preparation', 'review', 'approved'].includes(bookingStatus)) ? '71%' :
+                                            (bookingStatus === 'received' || (bookingStatus === 'sent' && documents.some(d => d.status === 'Approved'))) ? '46%' :
+                                                (documents.some(d => d.localFiles?.length > 0) || bookingStatus === 'sent') ? '21%' : '-2%'
                                 }]}
                                 resizeMode="contain"
                             />
@@ -935,7 +800,12 @@ const RaceTrack = ({ navigation, route }) => {
                                     {isSubmitting ? (
                                         <ActivityIndicator size="small" color={AppColors.WHITE} />
                                     ) : (
-                                        <AppText title={(bookingStatus === 'approved' || bookingStatus === 'filed') ? "START NEW" : bookingStatus === 'rejected' ? "UPDATE FILING" : bookingStatus === 'sent' ? "SEND UPDATE" : "SUBMIT"} textSize={2} textColor={AppColors.WHITE} textFontWeight />
+                                        <AppText
+                                            title={(bookingStatus === 'approved' || bookingStatus === 'filed') ? "START NEW" : "SUBMIT"}
+                                            textSize={2}
+                                            textColor={AppColors.WHITE}
+                                            textFontWeight
+                                        />
                                     )}
                                 </TouchableOpacity>
                             )}
@@ -978,8 +848,6 @@ const RaceTrack = ({ navigation, route }) => {
                 )}
 
                 <LineBreak space={4} />
-
-                <LineBreak space={4} />
                 <LineBreak space={4} />
 
                 {/* Estimate & Confirmation Modal */}
@@ -993,10 +861,10 @@ const RaceTrack = ({ navigation, route }) => {
                     <View style={styles.modalOverlay}>
                         <View style={styles.estimateContainer}>
                             <View style={styles.estimateHeader}>
-                                <Icon name={materialChange ? "alert-decagram" : "calculator"} size={40} color={AppColors.ThemeColor} />
+                                <Icon name="calculator" size={40} color={AppColors.ThemeColor} />
                                 <LineBreak space={1} />
                                 <AppText
-                                    title={materialChange ? "Scope Change Detected" : "Complexity Estimate"}
+                                    title="Submission Summary"
                                     textSize={2.4}
                                     textColor={AppColors.ThemeColor}
                                     textFontWeight
@@ -1004,8 +872,6 @@ const RaceTrack = ({ navigation, route }) => {
                             </View>
 
                             <View style={styles.estimateBody}>
-                                {/* Removed Material Change notice */}
-
                                 <View style={styles.tierBox}>
                                     <AppText title="Your Return Tier:" textSize={1.4} textColor={AppColors.GRAY} />
                                     <AppText title={estimateInfo?.tier?.name} textSize={2.2} textColor={AppColors.ThemeColor} textFontWeight />
@@ -1013,7 +879,7 @@ const RaceTrack = ({ navigation, route }) => {
                                 </View>
 
                                 <View style={styles.priceRow}>
-                                    <AppText title="Estimated Fee" textSize={1.8} textColor={AppColors.ThemeColor} />
+                                    <AppText title="Total Estimate" textSize={1.8} textColor={AppColors.ThemeColor} />
                                     <AppText title={`$${estimateInfo?.tier?.basePrice}`} textSize={2.4} textColor={AppColors.ThemeColor} textFontWeight />
                                 </View>
                                 <AppText title="Final pricing may adjust if additional documents are added." textSize={1.2} textColor={AppColors.GRAY} textAlignment="center" />
@@ -1033,12 +899,14 @@ const RaceTrack = ({ navigation, route }) => {
                                     style={styles.confirmButton}
                                     onPress={handleConfirmEstimate}
                                 >
-                                    <AppText title={materialChange ? "Accept & Continue" : "Confirm & Proceed"} textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                    <AppText title="Confirm & Submit" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </View>
                 </Modal>
+
+
 
                 <Modal
                     visible={showVault}
@@ -1294,6 +1162,17 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#F0F3F6',
     },
+    docInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    statusDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        marginRight: 10,
+    },
     docLeft: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -1526,5 +1405,19 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: '#E0E0E0',
         marginHorizontal: 10,
+    },
+    submissionSummary: {
+        backgroundColor: '#F9FAFB',
+        padding: 15,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        marginBottom: 15,
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginVertical: 4,
     },
 });
