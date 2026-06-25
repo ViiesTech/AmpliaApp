@@ -1,5 +1,5 @@
-// export const BASE_URL = 'https://apiforapp.link/Amplia/';
-export const BASE_URL = 'https://stylitic-senselessly-olene.ngrok-free.dev/';
+export const BASE_URL = 'https://apiforapp.link/Amplia/';
+// export const BASE_URL = 'https://stylitic-senselessly-olene.ngrok-free.dev/';
 export const IMAGE_BASE_URL = `${BASE_URL}uploads/`;
 
 export const getImageUrl = (filename, type) => {
