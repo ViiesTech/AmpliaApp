@@ -1,12 +1,13 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal, Linking, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TouchableOpacity, FlatList, StyleSheet, Image, ScrollView, ActivityIndicator, Modal, Linking, Alert, PanResponder } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import { getImageUrl } from '../../../redux/constant';
-import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation, useCreatePaymentIntentMutation } from '../../../redux/services/mainService';
+import { useLazyGetFilesQuery, useUpdateBookingMutation, useGetBookingByIdQuery, useLazyGetBookingsQuery, useUploadFileMutation, useLazyGetAllServicesQuery, useCreateBookingMutation, useLinkFileMutation, useCreatePaymentIntentMutation, useSignFileMutation } from '../../../redux/services/mainService';
 import { useSelector } from 'react-redux';
 import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import Container from '../../../components/Container';
+import Svg, { Path } from 'react-native-svg';
 import {
     AppColors,
     responsiveFontSize,
@@ -31,6 +32,7 @@ const initialDocs = [
     { id: 6, name: 'Foreign income', status: 'Pending', rejectionReason: '', type: 'foreign' },
     { id: 7, name: 'Dependents', status: 'Pending', rejectionReason: '', type: 'dependents' },
     { id: 8, name: 'Prior-year return', status: 'Pending', important: true, rejectionReason: '', type: 'prior_year' },
+    { id: 9, name: 'Insurance 1095-A', status: 'Pending', rejectionReason: '', type: 'insurance_1095a' },
 ];
 
 const RaceTrack = ({ navigation, route }) => {
@@ -61,6 +63,7 @@ const RaceTrack = ({ navigation, route }) => {
             dependentCount: 0,
             hasChildcareCredit: false,
             hasEducationCredit: false,
+            hasInsurance1095A: false,
         };
 
         docs.forEach(doc => {
@@ -91,6 +94,9 @@ const RaceTrack = ({ navigation, route }) => {
                     break;
                 case 'prior_year':
                     data.hasPriorYearIssues = true;
+                    break;
+                case 'insurance_1095a':
+                    data.hasInsurance1095A = true;
                     break;
             }
         });
@@ -124,10 +130,59 @@ const RaceTrack = ({ navigation, route }) => {
     const [estimateInfo, setEstimateInfo] = useState(null);
     const [materialChange, setMaterialChange] = useState(null);
 
+    // Document Touchscreen Signature States
+    const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+    const [selectedFileToSign, setSelectedFileToSign] = useState(null);
+    const [screenPaths, setScreenPaths] = useState([]);
+    const [pdfPaths, setPdfPaths] = useState([]);
+    const [currentScreenPath, setCurrentScreenPath] = useState('');
+    // eslint-disable-next-line no-unused-vars
+    const [currentPdfPath, setCurrentPdfPath] = useState('');
+    const [signFile, { isLoading: isSigningFile }] = useSignFileMutation();
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: (evt) => {
+                const { locationX, locationY } = evt.nativeEvent;
+                const flippedY = 180 - locationY; // canvasHeight is 180
+                
+                const screenStart = `M ${locationX.toFixed(1)} ${locationY.toFixed(1)}`;
+                const pdfStart = `M ${locationX.toFixed(1)} ${flippedY.toFixed(1)}`;
+                
+                setCurrentScreenPath(screenStart);
+                setCurrentPdfPath(pdfStart);
+            },
+            onPanResponderMove: (evt) => {
+                const { locationX, locationY } = evt.nativeEvent;
+                const flippedY = 180 - locationY;
+                
+                setCurrentScreenPath((prev) => `${prev} L ${locationX.toFixed(1)} ${locationY.toFixed(1)}`);
+                setCurrentPdfPath((prev) => `${prev} L ${locationX.toFixed(1)} ${flippedY.toFixed(1)}`);
+            },
+            onPanResponderRelease: () => {
+                setCurrentScreenPath((latestScreen) => {
+                    if (latestScreen) {
+                        setScreenPaths((prev) => [...prev, latestScreen]);
+                    }
+                    return '';
+                });
+                setCurrentPdfPath((latestPdf) => {
+                    if (latestPdf) {
+                        setPdfPaths((prev) => [...prev, latestPdf]);
+                    }
+                    return '';
+                });
+            }
+        })
+    ).current;
+
     const liveScoringData = getScoringData(documents);
     const liveScore = calculateComplexityScore(liveScoringData);
-    const liveTier = getTierInfo(liveScore);
+    const liveTier = getTierInfo(liveScore, liveScoringData.hasInsurance1095A);
     const hasPickedDocs = documents.some(d => d.localFiles?.length > 0);
+    const unsignedFiles = (filesData?.files || []).filter(f => f.type === 'signature_request' && f.status !== 'signed');
 
 
     // Find the booking that matches the currently selected year
@@ -404,7 +459,7 @@ const RaceTrack = ({ navigation, route }) => {
         // 2. Calculate complexity
         const currentScoringData = getScoringData(documents);
         const score = calculateComplexityScore(currentScoringData);
-        const tier = getTierInfo(score);
+        const tier = getTierInfo(score, currentScoringData.hasInsurance1095A);
 
         // 3. Always show estimate if starting new OR if new documents are picked OR no price yet
         if (!bookingId || bookingStatus === 'new' || isStartingNew || hasPickedDocs || !bookingData?.booking?.price) {
@@ -723,6 +778,39 @@ const RaceTrack = ({ navigation, route }) => {
 
                 {bookingStatus !== 'preparation' && (
                     <>
+                        {/* Signature Required Card */}
+                        {unsignedFiles.length > 0 && (
+                            <View style={styles.signatureRequiredCard}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={styles.signatureIconContainer}>
+                                        <Feather name="edit-3" size={20} color={AppColors.WHITE} />
+                                    </View>
+                                    <View style={{ marginLeft: 15, flex: 1 }}>
+                                        <AppText title="Signature Required" textSize={1.8} textColor={AppColors.RED_COLOR} textFontWeight />
+                                        <AppText title={`You have ${unsignedFiles.length} document${unsignedFiles.length === 1 ? '' : 's'} waiting for your signature.`} textSize={1.4} textColor={AppColors.GRAY} />
+                                    </View>
+                                </View>
+                                <View style={{ marginTop: 15 }}>
+                                    {unsignedFiles.map((file) => (
+                                        <View key={file._id} style={styles.unsignedFileRow}>
+                                            <AppText title={file.name} textSize={1.5} textColor={AppColors.ThemeColor} textFontWeight style={{ flex: 1 }} />
+                                            <TouchableOpacity
+                                                style={styles.signNowButton}
+                                                onPress={() => {
+                                                    setSelectedFileToSign(file);
+                                                    setScreenPaths([]);
+                                                    setPdfPaths([]);
+                                                    setSignatureModalOpen(true);
+                                                }}
+                                            >
+                                                <AppText title="Sign Now" textSize={1.4} textColor={AppColors.WHITE} textFontWeight />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+
                         <LineBreak space={2} />
 
                         {/* Documents Needed Section */}
@@ -747,38 +835,110 @@ const RaceTrack = ({ navigation, route }) => {
                             <LineBreak space={1} />
                             <LineBreak space={1} />
 
-                            {bookingStatus === 'review' || bookingStatus === 'approved' ? (
+                            {(bookingStatus === 'review' || bookingStatus === 'approved' || bookingStatus === 'filed') ? (
                                 (() => {
                                     const returnDoc = (filesData?.files || []).find(f => f.type === 'return_doc');
+                                    const signatureFiles = (filesData?.files || []).filter(f => f.type === 'signature_request');
 
-                                    console.log("returnDoc", returnDoc)
                                     return (
-                                        <View style={styles.returnDocCard}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <View style={styles.fileIconBig}>
-                                                    <Icon name="file-pdf-box" size={30} color="#F44336" />
+                                        <View style={{ width: '100%' }}>
+                                            {returnDoc ? (
+                                                <View style={styles.returnDocCard}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <View style={styles.fileIconBig}>
+                                                            <Icon name="file-pdf-box" size={30} color="#F44336" />
+                                                        </View>
+                                                        <View style={{ marginLeft: 15, flex: 1 }}>
+                                                            <AppText title={returnDoc?.name || `Tax Return ${selectedYear} (Final)`} textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
+                                                            <AppText title="Uploaded by Admin" textSize={1.4} textColor={AppColors.GRAY} />
+                                                        </View>
+                                                    </View>
+                                                    <TouchableOpacity
+                                                        style={styles.viewButton}
+                                                        onPress={() => {
+                                                            const url = getImageUrl(returnDoc.url, 'file');
+                                                            Linking.openURL(url).catch(err =>
+                                                                console.error("Couldn't load page", err),
+                                                            );
+                                                        }}
+                                                    >
+                                                        <AppText title="View Return" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                                    </TouchableOpacity>
                                                 </View>
-                                                <View style={{ marginLeft: 15, flex: 1 }}>
-                                                    <AppText title={returnDoc?.name || `Tax Return ${selectedYear} (Final)`} textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
-                                                    <AppText title="Uploaded by Admin" textSize={1.4} textColor={AppColors.GRAY} />
+                                            ) : bookingStatus === 'filed' ? null : (
+                                                <View style={styles.returnDocCard}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <View style={styles.fileIconBig}>
+                                                            <Icon name="file-pdf-box" size={30} color="#F44336" />
+                                                        </View>
+                                                        <View style={{ marginLeft: 15, flex: 1 }}>
+                                                            <AppText title={`Tax Return ${selectedYear} (Final)`} textSize={1.8} textColor={AppColors.ThemeColor} textFontWeight />
+                                                            <AppText title="Uploaded by Admin" textSize={1.4} textColor={AppColors.GRAY} />
+                                                        </View>
+                                                    </View>
+                                                    <TouchableOpacity
+                                                        style={[styles.viewButton, { opacity: 0.5 }]}
+                                                        disabled={true}
+                                                    >
+                                                        <AppText title="View Return" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                                    </TouchableOpacity>
                                                 </View>
-                                            </View>
-                                            <TouchableOpacity
-                                                style={[styles.viewButton, !returnDoc && { opacity: 0.5 }]}
-                                                disabled={!returnDoc}
-                                                onPress={() => {
-                                                    if (returnDoc) {
-                                                        const url = getImageUrl(returnDoc.url, 'file');
-                                                        Linking.openURL(url).catch(err =>
-                                                            console.error("Couldn't load page", err),
-                                                        );
-                                                    } else {
-                                                        ShowToast('Return document not found');
-                                                    }
-                                                }}
-                                            >
-                                                <AppText title="View Return" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
-                                            </TouchableOpacity>
+                                            )}
+
+                                            {bookingStatus === 'filed' && signatureFiles.length > 0 && (
+                                                <View style={{ marginTop: 20 }}>
+                                                    <AppText title="Forms & Signatures" textSize={2} textColor={AppColors.ThemeColor} textFontWeight style={{ marginBottom: 12 }} />
+                                                    {signatureFiles.map((file) => (
+                                                        <View key={file._id} style={[styles.docItem, { paddingVertical: 12 }]}>
+                                                            <View style={styles.docInfo}>
+                                                                <View style={[styles.statusDot, { backgroundColor: file.status === 'signed' ? "#60C14C" : "#FF9800" }]} />
+                                                                <View style={{ flex: 1, marginLeft: 12 }}>
+                                                                    <AppText title={file.name} textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                                                    <AppText
+                                                                        title={file.status === 'signed' ? "Signed" : "Signature Pending"}
+                                                                        textSize={1.3}
+                                                                        textColor={file.status === 'signed' ? "#60C14C" : AppColors.GRAY}
+                                                                    />
+                                                                </View>
+                                                                {file.status === 'signed' && file.signaturePaths && file.signaturePaths.length > 0 && (
+                                                                    <View style={styles.signatureThumbnail}>
+                                                                        <Svg width={60} height={35} viewBox="0 0 320 180">
+                                                                            {file.signaturePaths.map((p, idx) => (
+                                                                                <Path key={idx} d={p} stroke="#003366" strokeWidth={5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                                                            ))}
+                                                                        </Svg>
+                                                                    </View>
+                                                                )}
+                                                                <TouchableOpacity
+                                                                    style={[styles.uploadButton, { minWidth: 80, justifyContent: 'center' }]}
+                                                                    onPress={() => {
+                                                                        if (file.status === 'signed') {
+                                                                            const url = getImageUrl(file.url, 'file');
+                                                                            Linking.openURL(url).catch(err =>
+                                                                                console.error("Couldn't open signed document", err)
+                                                                            );
+                                                                        } else {
+                                                                            setSelectedFileToSign(file);
+                                                                            setScreenPaths([]);
+                                                                            setPdfPaths([]);
+                                                                            setSignatureModalOpen(true);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Icon name={file.status === 'signed' ? "eye-outline" : "pencil-outline"} size={14} color={AppColors.ThemeColor} />
+                                                                    <AppText
+                                                                        title={file.status === 'signed' ? "View" : "Sign"}
+                                                                        textSize={1.4}
+                                                                        textColor={AppColors.ThemeColor}
+                                                                        textFontWeight
+                                                                        style={{ marginLeft: 4 }}
+                                                                    />
+                                                                </TouchableOpacity>
+                                                            </View>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            )}
                                         </View>
                                     );
                                 })()
@@ -1063,6 +1223,116 @@ const RaceTrack = ({ navigation, route }) => {
                             />
                         </View>
                     </TouchableOpacity>
+                </Modal>
+
+                {/* Touchscreen Signature Modal */}
+                <Modal
+                    visible={signatureModalOpen}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setSignatureModalOpen(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.signatureModalContent}>
+                            <View style={styles.signatureModalHeader}>
+                                <AppText title="Sign Document" textSize={2} textColor={AppColors.ThemeColor} textFontWeight />
+                                <TouchableOpacity onPress={() => setSignatureModalOpen(false)}>
+                                    <Icon name="close" size={24} color={AppColors.GRAY} />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            <AppText title={selectedFileToSign?.name || "Tax Form"} textSize={1.6} textColor={AppColors.GRAY} style={{ marginBottom: 15 }} />
+
+                             {selectedFileToSign?.url && (
+                                 <TouchableOpacity
+                                     style={styles.previewDocButton}
+                                     onPress={() => {
+                                         const url = getImageUrl(selectedFileToSign.url, 'file');
+                                         Linking.openURL(url).catch(err =>
+                                             console.error("Couldn't open document", err),
+                                         );
+                                     }}
+                                 >
+                                     <Icon name="file-document-outline" size={18} color={AppColors.ThemeColor} />
+                                     <AppText title="View Document before signing" textSize={1.4} textColor={AppColors.ThemeColor} textFontWeight style={{ marginLeft: 6 }} />
+                                 </TouchableOpacity>
+                             )}
+
+                            <View style={styles.canvasContainer}>
+                                <AppText title="Draw your signature inside the box below" textSize={1.3} textColor={AppColors.GRAY} style={{ marginBottom: 8, textAlign: 'center' }} />
+                                
+                                <View 
+                                    style={styles.signatureCanvas}
+                                    {...panResponder.panHandlers}
+                                >
+                                    <Svg style={StyleSheet.absoluteFill}>
+                                        {/* Render all finished paths */}
+                                        {screenPaths.map((p, i) => (
+                                            <Path key={i} d={p} stroke="#003366" strokeWidth={3.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                        ))}
+                                        {/* Render currently drawing path */}
+                                        {currentScreenPath ? (
+                                            <Path d={currentScreenPath} stroke="#003366" strokeWidth={3.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                        ) : null}
+                                    </Svg>
+                                    
+                                    {(screenPaths.length === 0 && !currentScreenPath) && (
+                                        <View style={styles.canvasPlaceholder} pointerEvents="none">
+                                            <AppText title="Sign Here" textSize={2.2} textColor={AppColors.LIGHTGRAY} />
+                                            <View style={styles.canvasLine} />
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.signatureModalActions}>
+                                <TouchableOpacity 
+                                    style={styles.signatureClearButton}
+                                    onPress={() => {
+                                        setScreenPaths([]);
+                                        setPdfPaths([]);
+                                    }}
+                                >
+                                    <AppText title="Clear" textSize={1.6} textColor={AppColors.ThemeColor} textFontWeight />
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={[
+                                        styles.signatureSubmitButton, 
+                                        (screenPaths.length === 0 || isSigningFile) && { opacity: 0.5 }
+                                    ]}
+                                    disabled={screenPaths.length === 0 || isSigningFile}
+                                    onPress={async () => {
+                                        if (!selectedFileToSign?._id) return;
+                                        try {
+                                            const res = await signFile({
+                                                id: selectedFileToSign._id,
+                                                data: {
+                                                    paths: pdfPaths,
+                                                    signerName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
+                                                }
+                                            }).unwrap();
+                                            
+                                            if (res.success) {
+                                                ShowToast("Document signed successfully!");
+                                                setSignatureModalOpen(false);
+                                                getFiles({ bookingId });
+                                            }
+                                        } catch (err) {
+                                            console.error("Signing Error:", err);
+                                            ShowToast("Failed to submit signature");
+                                        }
+                                    }}
+                                >
+                                    {isSigningFile ? (
+                                        <ActivityIndicator size="small" color={AppColors.WHITE} />
+                                    ) : (
+                                        <AppText title="Submit" textSize={1.6} textColor={AppColors.WHITE} textFontWeight />
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
                 </Modal>
             </View>
         </Container>
@@ -1419,5 +1689,133 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginVertical: 4,
+    },
+    signatureRequiredCard: {
+        backgroundColor: '#FFF5F5',
+        borderWidth: 1.5,
+        borderColor: '#FFD8D8',
+        borderRadius: 15,
+        padding: 15,
+        marginTop: 15,
+    },
+    signatureIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: AppColors.RED_COLOR,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    unsignedFileRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#FFE3E3',
+    },
+    signNowButton: {
+        backgroundColor: AppColors.ThemeColor,
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+    signatureModalContent: {
+        backgroundColor: AppColors.WHITE,
+        borderRadius: 20,
+        padding: 20,
+        width: '90%',
+        maxHeight: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.25,
+        shadowRadius: 15,
+        elevation: 10,
+    },
+    signatureModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F3F6',
+        paddingBottom: 8,
+    },
+    canvasContainer: {
+        width: '100%',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    signatureCanvas: {
+        width: '100%',
+        height: 180,
+        backgroundColor: '#F9FAFB',
+        borderWidth: 1.5,
+        borderColor: '#D1D5DB',
+        borderRadius: 12,
+        borderStyle: 'dashed',
+        position: 'relative',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    canvasPlaceholder: {
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+    },
+    canvasLine: {
+        width: '80%',
+        height: 1,
+        backgroundColor: '#E5E7EB',
+        marginTop: 40,
+    },
+    signatureModalActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+        gap: 12,
+    },
+    signatureClearButton: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 10,
+        borderWidth: 1.5,
+        borderColor: '#D1D5DB',
+    },
+    signatureSubmitButton: {
+        flex: 2,
+        backgroundColor: AppColors.ThemeColor,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    previewDocButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 10,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        width: '100%',
+    },
+    signatureThumbnail: {
+        width: 60,
+        height: 35,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        backgroundColor: '#F9FAFB',
+        borderRadius: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        overflow: 'hidden',
     },
 });

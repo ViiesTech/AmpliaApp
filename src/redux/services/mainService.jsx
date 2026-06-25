@@ -189,6 +189,13 @@ export const mainApis = createApi({
         body: data,
       }),
     }),
+    signFile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `file/${id}/sign`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 export const {
@@ -214,4 +221,5 @@ export const {
   useCalculateTaxMutation,
   useLinkFileMutation,
   useCreatePaymentIntentMutation,
+  useSignFileMutation,
 } = mainApis;

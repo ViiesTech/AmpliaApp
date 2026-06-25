@@ -62,7 +62,8 @@ export const calculateComplexityScore = (data) => {
         data.hasPriorYearIssues || 
         (data.dependentCount || 0) > 0 || 
         data.hasChildcareCredit || 
-        data.hasEducationCredit;
+        data.hasEducationCredit ||
+        data.hasInsurance1095A;
 
     if (!hasDocuments) return 0;
 
@@ -103,12 +104,18 @@ export const calculateComplexityScore = (data) => {
  * @param {number} score 
  * @returns {Object} Tier information
  */
-export const getTierInfo = (score) => {
+export const getTierInfo = (score, hasInsurance1095A = false) => {
     if (score === 0) return { name: 'None', basePrice: 0 };
-    if (score <= TIERS.TIER_1.max) return TIERS.TIER_1;
-    if (score <= TIERS.TIER_2.max) return TIERS.TIER_2;
-    if (score <= TIERS.TIER_3.max) return TIERS.TIER_3;
-    return TIERS.TIER_4;
+    let tier;
+    if (score <= TIERS.TIER_1.max) tier = { ...TIERS.TIER_1 };
+    else if (score <= TIERS.TIER_2.max) tier = { ...TIERS.TIER_2 };
+    else if (score <= TIERS.TIER_3.max) tier = { ...TIERS.TIER_3 };
+    else tier = { ...TIERS.TIER_4 };
+
+    if (hasInsurance1095A) {
+        tier = { ...tier, basePrice: tier.basePrice + 25 };
+    }
+    return tier;
 };
 
 /**
@@ -120,14 +127,17 @@ export const getTierInfo = (score) => {
 export const detectMaterialChange = (oldData, newData) => {
     const oldScore = calculateComplexityScore(oldData);
     const newScore = calculateComplexityScore(newData);
-    const oldTier = getTierInfo(oldScore);
-    const newTier = getTierInfo(newScore);
+    const oldTier = getTierInfo(oldScore, oldData.hasInsurance1095A);
+    const newTier = getTierInfo(newScore, newData.hasInsurance1095A);
 
     const reasons = [];
 
-    // 1. Tier Change
+    // 1. Tier Change / Price Change
     if (newTier.name !== oldTier.name) {
         reasons.push('Complexity tier increased');
+    }
+    if (newTier.basePrice > oldTier.basePrice) {
+        reasons.push('Estimated price increased');
     }
 
     // 2. Addition of 3+ income documents at once
@@ -144,6 +154,7 @@ export const detectMaterialChange = (oldData, newData) => {
     if (!oldData.hasForeignIncome && newData.hasForeignIncome) reasons.push('Added Foreign Income/Assets');
     if (!oldData.hasITIN && newData.hasITIN) reasons.push('Added ITIN Application');
     if ((oldData.k1Count || 0) === 0 && (newData.k1Count || 0) > 0) reasons.push('Added K-1 Statements');
+    if (!oldData.hasInsurance1095A && newData.hasInsurance1095A) reasons.push('Added Insurance 1095-A');
 
     return {
         isMaterial: reasons.length > 0,
